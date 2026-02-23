@@ -35,6 +35,8 @@ export interface Friendship {
     created_at: string;
 }
 
+// ======== FEED ========
+
 export interface FeedPost {
     id: string;
     author_id: string;
@@ -44,18 +46,56 @@ export interface FeedPost {
     updated_at: string;
     // Joined
     author?: Profile;
+    // Aggregated
+    likes_count?: number;
+    comments_count?: number;
+    liked_by_me?: boolean;
+}
+
+export interface PostLike {
+    id: string;
+    post_id: string;
+    user_id: string;
+    created_at: string;
+}
+
+export interface PostComment {
+    id: string;
+    post_id: string;
+    author_id: string;
+    content: string;
+    created_at: string;
+    // Joined
+    author?: Profile;
+}
+
+// ======== GALERIA ========
+
+export interface GalleryFolder {
+    id: string;
+    owner_id: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    // Aggregated
+    photo_count?: number;
+    cover_url?: string | null;
 }
 
 export interface Photo {
     id: string;
     owner_id: string;
     url: string;
+    thumbnail_url: string | null;
     description: string | null;
     visibility: 'private' | 'public';
+    folder_id: string | null;
     created_at: string;
     // Joined
     owner?: Profile;
 }
+
+// ======== FAMÍLIA ========
 
 export interface Family {
     id: string;
@@ -63,6 +103,8 @@ export interface Family {
     family_name: string;
     family_photo_url: string | null;
     created_at: string;
+    // Aggregated
+    sims_count?: number;
 }
 
 export interface Sim {
