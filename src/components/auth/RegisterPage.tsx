@@ -53,7 +53,7 @@ export function RegisterPage() {
             if (user) {
                 await createProfile(user.id, username, displayName || username);
                 await createInviteForUser(user.id);
-                navigate('/pending');
+                // useEffect fará o redirecionamento para /feed e o ProtectedRoute lidará com /pending
             }
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Erro ao criar conta';
@@ -98,7 +98,7 @@ export function RegisterPage() {
                         </div>
 
                         {/* OAuth Buttons */}
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-[16px]">
                             <OAuthButton
                                 provider="discord"
                                 onClick={() => handleOAuth('discord')}
@@ -116,7 +116,7 @@ export function RegisterPage() {
                         <GlassDivider text="ou cadastre com email" />
 
                         {/* Email Form */}
-                        <form onSubmit={handleEmailRegister} className="flex flex-col gap-4">
+                        <form onSubmit={handleEmailRegister} className="flex flex-col gap-[16px]">
                             <GlassInput
                                 label="Nome de Usuário"
                                 value={username}

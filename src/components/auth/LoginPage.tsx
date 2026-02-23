@@ -36,7 +36,7 @@ export function LoginPage() {
 
         try {
             await signInWithEmail(email, password);
-            navigate('/feed');
+            // useEffect fará o redirecionamento assim que o estado atualizar
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Erro ao entrar';
             setError(message);
@@ -80,7 +80,7 @@ export function LoginPage() {
                         </div>
 
                         {/* OAuth Buttons */}
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-[16px]">
                             <OAuthButton
                                 provider="discord"
                                 onClick={() => handleOAuth('discord')}
@@ -98,7 +98,7 @@ export function LoginPage() {
                         <GlassDivider text="ou entre com email" />
 
                         {/* Email Form */}
-                        <form onSubmit={handleEmailLogin} className="flex flex-col gap-4">
+                        <form onSubmit={handleEmailLogin} className="flex flex-col gap-[16px]">
                             <GlassInput
                                 label="E-mail"
                                 type="email"
