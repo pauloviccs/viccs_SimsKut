@@ -25,48 +25,57 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     const { setUser, setProfile, setLoading, setInitialized } = useAuthStore();
 
     useEffect(() => {
-        // Carrega sessão inicial
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchProfile(session.user.id)
-                    .then(setProfile)
-                    .catch((err) => console.error('Error fetching initial profile:', err))
-                    .finally(() => {
-                        setLoading(false);
-                        setInitialized(true);
-                    });
-            } else {
-                setLoading(false);
-                setInitialized(true);
-            }
-        });
+        let mounted = true;
 
-        // Listener de mudanças
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'INITIAL_SESSION') return; // Ignora o primeiro porque o getSession já fez isso
+        } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (!mounted) return;
 
             if (session?.user) {
-                setUser(session.user);
-                try {
-                    const profile = await fetchProfile(session.user.id);
-                    setProfile(profile);
-                } catch (err) {
-                    console.error('Error fetching profile on auth change:', err);
-                    setProfile(null);
+                const currentUser = useAuthStore.getState().user;
+
+                // Só refaz as chamadas se for um usuário diferente 
+                // Evita problemas com eventos fantasmas (ex: SIGNED_IN seguido de INITIAL_SESSION)
+                if (currentUser?.id !== session.user.id) {
+                    setLoading(true);
+                    setUser(session.user);
+
+                    try {
+                        const profile = await fetchProfile(session.user.id);
+                        if (mounted) setProfile(profile);
+                    } catch (err) {
+                        console.error('Error fetching profile on auth change:', err);
+                        if (mounted) setProfile(null);
+                    } finally {
+                        if (mounted) {
+                            setLoading(false);
+                            setInitialized(true);
+                        }
+                    }
+                } else {
+                    // Mesmo usuário, apenas garante que as flags estão prontas
+                    if (mounted) {
+                        setLoading(false);
+                        setInitialized(true);
+                    }
                 }
             } else {
-                setUser(null);
-                setProfile(null);
+                // Usuário saiu
+                if (mounted) {
+                    setUser(null);
+                    setProfile(null);
+                    setLoading(false);
+                    setInitialized(true);
+                }
             }
-            setLoading(false);
-            setInitialized(true);
         });
 
-        return () => subscription.unsubscribe();
-    }, [setUser, setProfile, setLoading]);
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
+    }, [setUser, setProfile, setLoading, setInitialized]);
 
     return <>{children}</>;
 }

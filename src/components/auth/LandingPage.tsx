@@ -20,8 +20,8 @@ export function LandingPage() {
         try {
             await signOut();
             logout();
-            // Force a hard refresh of the route locally
-            navigate('/', { replace: true });
+            // Force a hard refresh of the route via browser, fully clearing memory states
+            window.location.replace('/');
         } catch (err) {
             console.error('Logout error:', err);
         }
