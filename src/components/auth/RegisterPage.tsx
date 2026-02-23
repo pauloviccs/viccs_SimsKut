@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { UserPlus, ArrowLeft } from 'lucide-react';
@@ -10,18 +10,27 @@ import { GlassDivider } from '@/components/ui/GlassDivider';
 import { OAuthButton } from '@/components/ui/OAuthButton';
 import { signUpWithEmail, signInWithOAuth, createProfile } from '@/lib/authService';
 import { createInviteForUser } from '@/lib/inviteService';
+import { useAuthStore } from '@/store/authStore';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
 export function RegisterPage() {
     const navigate = useNavigate();
+    const { user, isLoading } = useAuthStore();
     const [username, setUsername] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+
+    // Se já logado, redireciona
+    useEffect(() => {
+        if (!isLoading && user) {
+            navigate('/feed', { replace: true });
+        }
+    }, [user, isLoading, navigate]);
 
     async function handleEmailRegister(e: React.FormEvent) {
         e.preventDefault();
@@ -37,7 +46,7 @@ export function RegisterPage() {
             return;
         }
 
-        setIsLoading(true);
+        setLoading(true);
 
         try {
             const { user } = await signUpWithEmail(email, password);
@@ -50,7 +59,7 @@ export function RegisterPage() {
             const message = err instanceof Error ? err.message : 'Erro ao criar conta';
             setError(message);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     }
 
@@ -69,27 +78,27 @@ export function RegisterPage() {
         <>
             <FluidBackground />
 
-            <div className="min-h-screen flex items-center justify-center px-4 py-8 relative z-10">
+            <div className="min-h-screen flex items-center justify-center px-6 py-10 relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 30, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={spring}
-                    className="w-full max-w-sm"
+                    className="w-full max-w-[400px]"
                 >
-                    <GlassCard variant="premium" className="p-8">
+                    <GlassCard variant="premium" className="p-10">
                         {/* Header */}
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-[var(--accent-success)]/20 flex items-center justify-center">
-                                <UserPlus size={20} className="text-[var(--accent-success)]" />
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-12 h-12 rounded-2xl bg-[var(--accent-success)]/20 flex items-center justify-center">
+                                <UserPlus size={22} className="text-[var(--accent-success)]" />
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold">Criar Conta</h1>
-                                <p className="text-xs text-white/40">Junte-se à comunidade SimsKut</p>
+                                <h1 className="text-2xl font-bold">Criar Conta</h1>
+                                <p className="text-sm text-white/40 mt-0.5">Junte-se à comunidade SimsKut</p>
                             </div>
                         </div>
 
                         {/* OAuth Buttons */}
-                        <div className="flex flex-col gap-2.5">
+                        <div className="flex flex-col gap-3">
                             <OAuthButton
                                 provider="discord"
                                 onClick={() => handleOAuth('discord')}
@@ -107,7 +116,7 @@ export function RegisterPage() {
                         <GlassDivider text="ou cadastre com email" />
 
                         {/* Email Form */}
-                        <form onSubmit={handleEmailRegister} className="flex flex-col gap-3">
+                        <form onSubmit={handleEmailRegister} className="flex flex-col gap-4">
                             <GlassInput
                                 label="Nome de Usuário"
                                 value={username}
@@ -138,7 +147,7 @@ export function RegisterPage() {
                                 <motion.p
                                     initial={{ opacity: 0, y: -5 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="text-xs text-[var(--accent-danger)] bg-[var(--accent-danger)]/10 rounded-lg px-3 py-2"
+                                    className="text-xs text-[var(--accent-danger)] bg-[var(--accent-danger)]/10 rounded-lg px-4 py-2.5"
                                 >
                                     {error}
                                 </motion.p>
@@ -146,15 +155,15 @@ export function RegisterPage() {
 
                             <GlassButton
                                 type="submit"
-                                isLoading={isLoading}
-                                className="w-full mt-1"
+                                isLoading={loading}
+                                className="w-full mt-2"
                             >
                                 Criar minha conta
                             </GlassButton>
                         </form>
 
                         {/* Footer */}
-                        <div className="mt-5 flex flex-col items-center gap-2">
+                        <div className="mt-8 flex flex-col items-center gap-3">
                             <p className="text-sm text-white/35">
                                 Já tem conta?{' '}
                                 <button

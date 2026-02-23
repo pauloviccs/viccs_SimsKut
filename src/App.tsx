@@ -10,6 +10,7 @@ import { GlobalGallery } from '@/components/gallery/GlobalGallery';
 import { PrivateGallery } from '@/components/gallery/PrivateGallery';
 import { FamilyConfig } from '@/components/family/FamilyConfig';
 import { FamilyTree } from '@/components/family/FamilyTree';
+import { AuthCallback } from '@/components/auth/AuthCallback';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 
 export default function App() {
@@ -21,8 +22,8 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/pending" element={<PendingApproval />} />
 
-            {/* Callback do OAuth (redireciona automaticamente) */}
-            <Route path="/auth/callback" element={<LoginPage />} />
+            {/* Callback do OAuth — handler dedicado */}
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Rotas protegidas (com AppShell: sidebar + navbar) */}
             <Route

@@ -76,7 +76,7 @@ export function LandingPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ ...springTransition, delay: 0.5 }}
-                        className="flex flex-col sm:flex-row gap-3 justify-center max-w-xs sm:max-w-none mx-auto"
+                        className="flex flex-col sm:flex-row gap-4 justify-center max-w-sm sm:max-w-none mx-auto"
                     >
                         <GlassButton
                             onClick={() => navigate('/register')}

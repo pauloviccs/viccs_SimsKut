@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogIn, ArrowLeft } from 'lucide-react';
@@ -9,21 +9,30 @@ import { GlassInput } from '@/components/ui/GlassInput';
 import { GlassDivider } from '@/components/ui/GlassDivider';
 import { OAuthButton } from '@/components/ui/OAuthButton';
 import { signInWithEmail, signInWithOAuth } from '@/lib/authService';
+import { useAuthStore } from '@/store/authStore';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
 export function LoginPage() {
     const navigate = useNavigate();
+    const { user, isLoading } = useAuthStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+
+    // Se já logado, redireciona
+    useEffect(() => {
+        if (!isLoading && user) {
+            navigate('/feed', { replace: true });
+        }
+    }, [user, isLoading, navigate]);
 
     async function handleEmailLogin(e: React.FormEvent) {
         e.preventDefault();
         setError('');
-        setIsLoading(true);
+        setLoading(true);
 
         try {
             await signInWithEmail(email, password);
@@ -32,7 +41,7 @@ export function LoginPage() {
             const message = err instanceof Error ? err.message : 'Erro ao entrar';
             setError(message);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     }
 
@@ -51,27 +60,27 @@ export function LoginPage() {
         <>
             <FluidBackground />
 
-            <div className="min-h-screen flex items-center justify-center px-4 relative z-10">
+            <div className="min-h-screen flex items-center justify-center px-6 py-10 relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 30, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={spring}
-                    className="w-full max-w-sm"
+                    className="w-full max-w-[400px]"
                 >
-                    <GlassCard variant="premium" className="p-8">
+                    <GlassCard variant="premium" className="p-10">
                         {/* Header */}
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/20 flex items-center justify-center">
-                                <LogIn size={20} className="text-[var(--accent-primary)]" />
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-12 h-12 rounded-2xl bg-[var(--accent-primary)]/20 flex items-center justify-center">
+                                <LogIn size={22} className="text-[var(--accent-primary)]" />
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold">Entrar</h1>
-                                <p className="text-xs text-white/40">Bem-vindo de volta ao SimsKut</p>
+                                <h1 className="text-2xl font-bold">Entrar</h1>
+                                <p className="text-sm text-white/40 mt-0.5">Bem-vindo de volta ao SimsKut</p>
                             </div>
                         </div>
 
                         {/* OAuth Buttons */}
-                        <div className="flex flex-col gap-2.5">
+                        <div className="flex flex-col gap-3">
                             <OAuthButton
                                 provider="discord"
                                 onClick={() => handleOAuth('discord')}
@@ -89,7 +98,7 @@ export function LoginPage() {
                         <GlassDivider text="ou entre com email" />
 
                         {/* Email Form */}
-                        <form onSubmit={handleEmailLogin} className="flex flex-col gap-3">
+                        <form onSubmit={handleEmailLogin} className="flex flex-col gap-4">
                             <GlassInput
                                 label="E-mail"
                                 type="email"
@@ -109,7 +118,7 @@ export function LoginPage() {
                                 <motion.p
                                     initial={{ opacity: 0, y: -5 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="text-xs text-[var(--accent-danger)] bg-[var(--accent-danger)]/10 rounded-lg px-3 py-2"
+                                    className="text-xs text-[var(--accent-danger)] bg-[var(--accent-danger)]/10 rounded-lg px-4 py-2.5"
                                 >
                                     {error}
                                 </motion.p>
@@ -117,15 +126,15 @@ export function LoginPage() {
 
                             <GlassButton
                                 type="submit"
-                                isLoading={isLoading}
-                                className="w-full mt-1"
+                                isLoading={loading}
+                                className="w-full mt-2"
                             >
                                 Entrar
                             </GlassButton>
                         </form>
 
                         {/* Footer */}
-                        <div className="mt-5 flex flex-col items-center gap-2">
+                        <div className="mt-8 flex flex-col items-center gap-3">
                             <p className="text-sm text-white/35">
                                 Não tem conta?{' '}
                                 <button
