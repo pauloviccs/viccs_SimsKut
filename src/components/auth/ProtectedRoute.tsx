@@ -37,7 +37,7 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
 
     // Se não tem profile ou convite não aprovado → vai pra pending
     // (exceto se for admin — admin não precisa de convite)
-    if (!isAdmin && profile && !profile.invite_code_used) {
+    if (!isAdmin && (!profile || !profile.invite_code_used)) {
         return <Navigate to="/pending" replace />;
     }
 

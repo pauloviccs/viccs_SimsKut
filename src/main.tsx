@@ -31,6 +31,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             if (session?.user) {
                 fetchProfile(session.user.id)
                     .then(setProfile)
+                    .catch((err) => console.error('Error fetching initial profile:', err))
                     .finally(() => setLoading(false));
             } else {
                 setLoading(false);
@@ -44,8 +45,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             if (session?.user) {
                 setLoading(true);
                 setUser(session.user);
-                const profile = await fetchProfile(session.user.id);
-                setProfile(profile);
+                try {
+                    const profile = await fetchProfile(session.user.id);
+                    setProfile(profile);
+                } catch (err) {
+                    console.error('Error fetching profile on auth change:', err);
+                    setProfile(null);
+                }
             } else {
                 setUser(null);
                 setProfile(null);

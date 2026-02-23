@@ -80,7 +80,7 @@ export function LoginPage() {
                         </div>
 
                         {/* OAuth Buttons */}
-                        <div className="flex flex-col gap-[16px]">
+                        <div className="flex flex-col space-y-4">
                             <OAuthButton
                                 provider="discord"
                                 onClick={() => handleOAuth('discord')}
@@ -98,7 +98,7 @@ export function LoginPage() {
                         <GlassDivider text="ou entre com email" />
 
                         {/* Email Form */}
-                        <form onSubmit={handleEmailLogin} className="flex flex-col gap-[16px]">
+                        <form onSubmit={handleEmailLogin} className="flex flex-col space-y-4">
                             <GlassInput
                                 label="E-mail"
                                 type="email"
