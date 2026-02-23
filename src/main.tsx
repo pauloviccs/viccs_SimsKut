@@ -17,6 +17,10 @@ const queryClient = new QueryClient({
     },
 });
 
+// Cache global para evitar race conditions em duplo mount do React 18 e múltiplos eventos
+let profileFetchPromise: Promise<any> | null = null;
+let fetchingUserId: string | null = null;
+
 /**
  * AuthProvider — Ouve mudanças de auth do Supabase e sincroniza com Zustand.
  * Imagina como um radar: sempre escutando se alguém entrou ou saiu.
@@ -25,54 +29,59 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     const { setUser, setProfile, setLoading, setInitialized } = useAuthStore();
 
     useEffect(() => {
-        let mounted = true;
-
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            if (!mounted) return;
-
             if (session?.user) {
-                const currentUser = useAuthStore.getState().user;
+                const state = useAuthStore.getState();
+                const currentUser = state.user;
+                const currentProfile = state.profile;
 
-                // Só refaz as chamadas se for um usuário diferente 
-                // Evita problemas com eventos fantasmas (ex: SIGNED_IN seguido de INITIAL_SESSION)
-                if (currentUser?.id !== session.user.id) {
+                // Se é um login novo ou o profile ainda não carregou (exemplo: depois de um F5)
+                if (currentUser?.id !== session.user.id || !currentProfile) {
                     setLoading(true);
                     setUser(session.user);
 
                     try {
-                        const profile = await fetchProfile(session.user.id);
-                        if (mounted) setProfile(profile);
+                        let profile;
+                        // Deduplicação de requisições concorrentes
+                        if (profileFetchPromise && fetchingUserId === session.user.id) {
+                            profile = await profileFetchPromise;
+                        } else {
+                            fetchingUserId = session.user.id;
+                            profileFetchPromise = fetchProfile(session.user.id);
+                            profile = await profileFetchPromise;
+                        }
+
+                        // Limpa a promessa cacheada independentemente de quem chamou
+                        if (fetchingUserId === session.user.id) {
+                            profileFetchPromise = null;
+                            fetchingUserId = null;
+                        }
+
+                        setProfile(profile);
                     } catch (err) {
                         console.error('Error fetching profile on auth change:', err);
-                        if (mounted) setProfile(null);
+                        setProfile(null);
                     } finally {
-                        if (mounted) {
-                            setLoading(false);
-                            setInitialized(true);
-                        }
-                    }
-                } else {
-                    // Mesmo usuário, apenas garante que as flags estão prontas
-                    if (mounted) {
                         setLoading(false);
                         setInitialized(true);
                     }
-                }
-            } else {
-                // Usuário saiu
-                if (mounted) {
-                    setUser(null);
-                    setProfile(null);
+                } else {
+                    // Mesmo usuário, estado 100% sincado
                     setLoading(false);
                     setInitialized(true);
                 }
+            } else {
+                // Usuário saiu
+                setUser(null);
+                setProfile(null);
+                setLoading(false);
+                setInitialized(true);
             }
         });
 
         return () => {
-            mounted = false;
             subscription.unsubscribe();
         };
     }, [setUser, setProfile, setLoading, setInitialized]);
