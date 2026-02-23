@@ -20,6 +20,8 @@ export function LandingPage() {
         try {
             await signOut();
             logout();
+            // Force a hard refresh of the route locally
+            navigate('/', { replace: true });
         } catch (err) {
             console.error('Logout error:', err);
         }

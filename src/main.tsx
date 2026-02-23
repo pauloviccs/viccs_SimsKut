@@ -45,9 +45,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         // Listener de mudanças
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'INITIAL_SESSION') return; // Ignora o primeiro porque o getSession já fez isso
+
             if (session?.user) {
-                setLoading(true);
                 setUser(session.user);
                 try {
                     const profile = await fetchProfile(session.user.id);
@@ -61,6 +62,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
                 setProfile(null);
             }
             setLoading(false);
+            setInitialized(true);
         });
 
         return () => subscription.unsubscribe();
