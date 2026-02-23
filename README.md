@@ -1,0 +1,251 @@
+<div align="center">
+
+# 💎 SimsKut
+
+**Rede Social Privada para Comunidades de The Sims**
+
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Tailwind](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+
+<br/>
+
+> *Uma intranet-social exclusiva para comunidades de jogadores de The Sims.*
+> *Acesso por convite, aprovação manual, e cada família é uma obra de arte.*
+
+<br/>
+
+---
+
+</div>
+
+## 🌟 Visão Geral
+
+**SimsKut** é uma rede social **privada e por convites** inspirada no antigo Orkut, mas com a estética moderna do **Liquid Glass Design System** (Apple WWDC 2025). Cada usuário gerencia sua **Família Sims**, interage com uma **galeria global**, publica no **feed** e mantém sua rede de amizades — tudo dentro de uma comunidade fechada e segura.
+
+<br/>
+
+## ✨ Features
+
+| Status | Feature | Descrição |
+|:------:|---------|-----------|
+| ✅ | **Landing Page** | Entrada por código de convite com validação |
+| ✅ | **Auth Pages** | Registro e Login com formulários glass |
+| ✅ | **Feed Social** | Timeline de posts com empty states |
+| ✅ | **Galeria Pública** | Galeria global compartilhada |
+| ✅ | **Galeria Privada** | Coleção pessoal de fotos |
+| ✅ | **Família Sims** | Configuração da família e Sims |
+| ✅ | **Árvore Genealógica** | Visualização da árvore (WIP) |
+| ✅ | **Admin Dashboard** | Stats, convites pendentes, moderação |
+| ✅ | **Liquid Glass UI** | 4 componentes primitivos glass |
+| ✅ | **Layout Responsivo** | Sidebar desktop + Bottom Nav mobile |
+| ✅ | **9 Rotas** | 3 públicas + 6 protegidas no AppShell |
+
+<br/>
+
+## 🎨 Design System — Liquid Glass
+
+O design system é inspirado no **Apple Liquid Glass** com glassmorfismo, blur layers e paleta de cores refinada.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      DESIGN TOKENS                          │
+├──────────────────┬──────────────────────────────────────────┤
+│  Glass BG        │  rgba(255, 255, 255, 0.08)              │
+│  Glass Border    │  rgba(255, 255, 255, 0.18)              │
+│  Glass Blur      │  blur(20px) / blur(40px) heavy          │
+│  Text Primary    │  rgba(255, 255, 255, 0.95)              │
+│  Text Secondary  │  rgba(255, 255, 255, 0.65)              │
+├──────────────────┼──────────────────────────────────────────┤
+│  🔵 Accent       │  #007AFF                                │
+│  🟢 Success      │  #34C759                                │
+│  🟡 Warning      │  #FF9500                                │
+│  🔴 Danger       │  #FF3B30                                │
+├──────────────────┼──────────────────────────────────────────┤
+│  Font Display    │  SF Pro Display → Inter (fallback)      │
+│  Radius          │  10px / 16px / 24px / 32px              │
+│  Animation       │  cubic-bezier(0.34, 1.56, 0.64, 1)     │
+└──────────────────┴──────────────────────────────────────────┘
+```
+
+### Componentes UI Disponíveis
+
+```
+📦 src/components/ui/
+├── GlassCard.tsx      →  Container translúcido com blur
+├── GlassButton.tsx    →  Botão com hover glow + animação spring
+├── GlassInput.tsx     →  Input com label flutuante + foco glass
+└── Avatar.tsx         →  Avatar circular com fallback de iniciais
+```
+
+<br/>
+
+## 🏗 Estrutura do Projeto
+
+```
+viccs_SimsKut/
+│
+├── 📄 index.html                    # Entry point HTML
+├── 📄 package.json                  # Dependências (11 prod + 7 dev)
+├── 📄 vite.config.ts                # Vite config + alias @/
+├── 📄 vercel.json                   # SPA rewrite para Vercel
+├── 📄 tsconfig.json                 # TypeScript strict mode
+│
+└── 📂 src/
+    ├── 📄 App.tsx                   # Router principal (9 rotas)
+    ├── 📄 main.tsx                  # QueryClient + BrowserRouter
+    │
+    ├── 📂 components/
+    │   ├── 📂 admin/                # AdminDashboard
+    │   ├── 📂 auth/                 # LandingPage, RegisterPage, LoginPage
+    │   ├── 📂 family/               # FamilyConfig, FamilyTree
+    │   ├── 📂 feed/                 # FeedPage
+    │   ├── 📂 gallery/              # GlobalGallery, PrivateGallery
+    │   ├── 📂 layout/               # AppShell, Sidebar, Navbar
+    │   └── 📂 ui/                   # GlassCard, GlassButton, GlassInput, Avatar
+    │
+    ├── 📂 lib/                      # supabaseClient, inviteUtils
+    ├── 📂 store/                    # authStore (Zustand)
+    ├── 📂 styles/                   # global.css, liquid-glass.css
+    └── 📂 types/                    # TypeScript interfaces (10 tipos)
+```
+
+<br/>
+
+## 🧬 Schema de Dados
+
+O projeto define **10 interfaces TypeScript** que espelham o schema SQL do Supabase:
+
+```typescript
+Profile        →  Perfil do usuário (username, avatar, bio, is_admin)
+InviteCode     →  Código de convite (status: pending → approved → used)
+Friendship     →  Relacionamento (pending → accepted / blocked)
+FeedPost       →  Post no feed (texto + imagem)
+Photo          →  Foto (pública ou privada)
+Family         →  Família Sims do usuário
+Sim            →  Personagem Sim (profissão, bio, traits, fotos)
+SimTrait       →  Qualidade ou habilidade do Sim
+SimPhoto       →  Foto individual do Sim
+```
+
+<br/>
+
+## 🛠 Tech Stack Completa
+
+| Camada | Tecnologia | Versão | Função |
+|--------|-----------|--------|--------|
+| **Runtime** | Node.js | 22.17 | Ambiente de execução |
+| **Framework** | React | 18.3 | UI declarativa |
+| **Linguagem** | TypeScript | 5.5 | Type-safety |
+| **Build** | Vite | 5.4 | Dev server + bundler |
+| **Styling** | Tailwind CSS | 4.0 | Utility-first CSS |
+| **Design** | Liquid Glass | — | Design system custom |
+| **Backend** | Supabase | 2.45 | Auth, DB, Storage, RLS |
+| **State (client)** | Zustand | 4.5 | Auth store global |
+| **State (server)** | TanStack Query | 5.56 | Cache + sync |
+| **Routing** | React Router | 6.26 | SPA navigation |
+| **Forms** | React Hook Form | 7.53 | Validação de formulários |
+| **Validation** | Zod | 3.23 | Schema validation |
+| **Animations** | Framer Motion | 11.5 | Animações + transições |
+| **Icons** | Lucide React | 0.441 | Ícones SVG |
+| **Deploy** | Vercel | — | Hosting + CDN |
+| **Fonts** | Inter | — | Google Fonts |
+
+<br/>
+
+## 🚀 Quick Start
+
+### Pré-requisitos
+
+- **Node.js** ≥ 18
+- **npm** ≥ 9
+- Conta no [Supabase](https://supabase.com) (para backend)
+
+### Instalação
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/pauloviccs/viccs_SimsKut.git
+cd viccs_SimsKut
+
+# 2. Instale as dependências
+npm install
+
+# 3. Configure as variáveis de ambiente
+cp .env.local.example .env.local
+# Edite .env.local com suas chaves do Supabase:
+#   VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+#   VITE_SUPABASE_ANON_KEY=sua-anon-key
+
+# 4. Inicie o dev server
+npm run dev
+```
+
+O app estará disponível em **`http://localhost:5173`** 🎉
+
+### Scripts Disponíveis
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Dev server com HMR |
+| `npm run build` | Build de produção (tsc + vite build) |
+| `npm run preview` | Preview do build local |
+| `npm run lint` | Linting com ESLint |
+
+<br/>
+
+## 🗺 Roadmap
+
+```
+Phase 0 — Scaffold                         ██████████████████████ 100%
+├── Vite + React + TS + Tailwind
+├── Design System Liquid Glass
+├── Componentes UI + Layout responsivo
+├── 9 rotas (3 públicas + 6 protegidas)
+└── TypeScript interfaces completas
+
+Phase 1 — Auth & Convites                   ░░░░░░░░░░░░░░░░░░░░   0%
+├── Supabase Auth (login/registro real)
+├── Fluxo de convites conectado ao banco
+├── SQL Migrations + RLS Policies
+└── Admin: aprovar/rejeitar convites
+
+Phase 2 — Social Core                      ░░░░░░░░░░░░░░░░░░░░   0%
+├── Feed com posts reais (CRUD + scroll)
+├── Upload de fotos (Supabase Storage)
+├── Sistema de amizades
+└── Notificações em tempo real
+
+Phase 3 — Família & Sims                   ░░░░░░░░░░░░░░░░░░░░   0%
+├── CRUD completo de Família/Sims
+├── Árvore Genealógica (D3.js/react-flow)
+├── Traits e habilidades dos Sims
+└── Galeria individual por Sim
+
+Phase 4 — Polish                           ░░░░░░░░░░░░░░░░░░░░   0%
+├── Tema claro/escuro toggle
+├── Favicon SVG personalizado
+├── Performance + lazy loading
+└── SEO meta tags
+```
+
+<br/>
+
+## 📜 Licença
+
+Este projeto é distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](./LICENSE) para mais detalhes.
+
+<br/>
+
+---
+
+<div align="center">
+
+Feito com 💎 por [Paulo Vinicios](https://github.com/pauloviccs)
+
+**SimsKut** — *Onde cada família conta uma história.*
+
+</div>
