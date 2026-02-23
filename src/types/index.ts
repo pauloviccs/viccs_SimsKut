@@ -11,6 +11,7 @@ export interface Profile {
     bio: string | null;
     invite_code_used: string | null;
     is_admin: boolean;
+    tag_changed: boolean;
     created_at: string;
 }
 

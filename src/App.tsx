@@ -12,6 +12,7 @@ import { FamilyConfig } from '@/components/family/FamilyConfig';
 import { FamilyTree } from '@/components/family/FamilyTree';
 import { AuthCallback } from '@/components/auth/AuthCallback';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
+import { SettingsPage } from '@/components/settings/SettingsPage';
 
 export default function App() {
     return (
@@ -38,6 +39,7 @@ export default function App() {
                 <Route path="/gallery/private" element={<PrivateGallery />} />
                 <Route path="/family" element={<FamilyConfig />} />
                 <Route path="/family-tree" element={<FamilyTree />} />
+                <Route path="/settings" element={<SettingsPage />} />
             </Route>
 
             {/* Admin — protegido + adminOnly */}

@@ -1,13 +1,14 @@
-import { forwardRef, type InputHTMLAttributes, useState } from 'react';
+import { forwardRef, type InputHTMLAttributes, type ReactNode, useState } from 'react';
 
 interface GlassInputProps extends InputHTMLAttributes<HTMLInputElement> {
-    label?: string;
+    label?: ReactNode;
     error?: string;
 }
 
 export const GlassInput = forwardRef<HTMLInputElement, GlassInputProps>(
     ({ label, error, className = '', id, value, defaultValue, ...props }, ref) => {
-        const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+        const labelStr = typeof label === 'string' ? label : undefined;
+        const inputId = id || labelStr?.toLowerCase().replace(/\s+/g, '-');
         const [isFocused, setIsFocused] = useState(false);
         const [hasValue, setHasValue] = useState(
             Boolean(value || defaultValue)
@@ -50,7 +51,7 @@ export const GlassInput = forwardRef<HTMLInputElement, GlassInputProps>(
                             ${error ? 'border-[var(--accent-danger)]/60 focus:border-[var(--accent-danger)]/80 focus:ring-[var(--accent-danger)]/20' : ''}
                             ${className}
                         `}
-                        placeholder={label || ' '}
+                        placeholder={labelStr || ' '}
                         {...props}
                     />
                     {label && (

@@ -1,0 +1,290 @@
+import { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Camera, Save, AlertTriangle, User, Hash } from 'lucide-react';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { GlassButton } from '@/components/ui/GlassButton';
+import { GlassInput } from '@/components/ui/GlassInput';
+import { Avatar } from '@/components/ui/Avatar';
+import { AvatarCropper } from './AvatarCropper';
+import { useAuthStore } from '@/store/authStore';
+import { uploadAvatar, updateProfileAvatar, updateProfileInfo } from '@/lib/avatarService';
+import { fetchProfile } from '@/lib/authService';
+
+const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
+
+/**
+ * SettingsPage — Painel de configurações do perfil.
+ * Imagina como o vestiário do jogo: onde você customiza seu avatar e nome.
+ */
+export function SettingsPage() {
+    const { user, profile, setProfile } = useAuthStore();
+
+    // Form state
+    const [displayName, setDisplayName] = useState(profile?.display_name || '');
+    const [username, setUsername] = useState(() => {
+        const full = profile?.username || '';
+        const hashIndex = full.lastIndexOf('#');
+        return hashIndex > 0 ? full.substring(0, hashIndex) : full;
+    });
+    const [tag, setTag] = useState(() => {
+        const full = profile?.username || '';
+        const hashIndex = full.lastIndexOf('#');
+        return hashIndex > 0 ? full.substring(hashIndex + 1) : '';
+    });
+
+    // UI state
+    const [saving, setSaving] = useState(false);
+    const [savingAvatar, setSavingAvatar] = useState(false);
+    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [cropFile, setCropFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const tagAlreadyChanged = profile?.tag_changed ?? false;
+
+    // === Avatar Upload ===
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validação básica
+            if (!file.type.startsWith('image/')) {
+                setMessage({ type: 'error', text: 'Selecione um arquivo de imagem.' });
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                setMessage({ type: 'error', text: 'Imagem muito grande. Máximo 10MB.' });
+                return;
+            }
+            setCropFile(file);
+        }
+        // Reset input para permitir selecionar o mesmo arquivo novamente
+        e.target.value = '';
+    };
+
+    const handleCropComplete = async (blob: Blob) => {
+        if (!user) return;
+        setCropFile(null);
+        setSavingAvatar(true);
+        setMessage(null);
+
+        try {
+            const url = await uploadAvatar(user.id, blob);
+            await updateProfileAvatar(user.id, url);
+
+            // Atualiza o store
+            const newProfile = await fetchProfile(user.id);
+            if (newProfile) setProfile(newProfile);
+
+            setMessage({ type: 'success', text: 'Foto de perfil atualizada!' });
+        } catch (err) {
+            console.error('Avatar upload error:', err);
+            setMessage({ type: 'error', text: 'Erro ao salvar foto. Tente novamente.' });
+        } finally {
+            setSavingAvatar(false);
+        }
+    };
+
+    // === Profile Info Save ===
+    const handleSaveInfo = async () => {
+        if (!user) return;
+        setSaving(true);
+        setMessage(null);
+
+        try {
+            const newUsername = tag ? `${username}#${tag}` : username;
+            const hasTagChanged = !tagAlreadyChanged && tag !== getOriginalTag();
+
+            const updateData: Record<string, unknown> = {
+                display_name: displayName.trim(),
+                username: newUsername.trim(),
+            };
+
+            if (hasTagChanged && tag) {
+                updateData.tag_changed = true;
+            }
+
+            await updateProfileInfo(user.id, updateData as any);
+
+            // Atualiza o store
+            const newProfile = await fetchProfile(user.id);
+            if (newProfile) setProfile(newProfile);
+
+            setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
+        } catch (err) {
+            console.error('Profile update error:', err);
+            setMessage({ type: 'error', text: 'Erro ao salvar. Tente novamente.' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    function getOriginalTag(): string {
+        const full = profile?.username || '';
+        const hashIndex = full.lastIndexOf('#');
+        return hashIndex > 0 ? full.substring(hashIndex + 1) : '';
+    }
+
+    return (
+        <div className="space-y-6">
+            <motion.h1
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-2xl font-bold"
+            >
+                Configurações
+            </motion.h1>
+
+            {/* === Avatar Section === */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...spring, delay: 0.1 }}
+            >
+                <GlassCard className="p-6">
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-white/80">
+                        <Camera size={18} className="text-[var(--accent-primary)]" />
+                        Foto de Perfil
+                    </h2>
+
+                    <div className="flex items-center gap-5">
+                        <div className="relative group">
+                            <Avatar
+                                src={profile?.avatar_url}
+                                alt={profile?.display_name || 'User'}
+                                size="xl"
+                            />
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={savingAvatar}
+                                className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                            >
+                                <Camera size={22} className="text-white/80" />
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <GlassButton
+                                variant="secondary"
+                                onClick={() => fileInputRef.current?.click()}
+                                isLoading={savingAvatar}
+                                className="text-sm"
+                            >
+                                {savingAvatar ? 'Salvando...' : 'Trocar Foto'}
+                            </GlassButton>
+                            <p className="text-[11px] text-white/30">
+                                JPG, PNG ou WebP. Máx. 10MB. Será recortada em 300×300.
+                            </p>
+                        </div>
+                    </div>
+
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                    />
+                </GlassCard>
+            </motion.div>
+
+            {/* === Profile Info Section === */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...spring, delay: 0.2 }}
+            >
+                <GlassCard className="p-6">
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-white/80">
+                        <User size={18} className="text-[var(--accent-primary)]" />
+                        Informações do Perfil
+                    </h2>
+
+                    <div className="space-y-4">
+                        <GlassInput
+                            label="Nome de Exibição"
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                            placeholder="Seu nome visível no SimsKut"
+                        />
+
+                        <div className="flex gap-3">
+                            <div className="flex-1">
+                                <GlassInput
+                                    label="Usuário"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="simskuter"
+                                />
+                            </div>
+                            <div className="w-[120px]">
+                                <GlassInput
+                                    label={
+                                        <span className="flex items-center gap-1">
+                                            <Hash size={12} />
+                                            Tag
+                                        </span>
+                                    }
+                                    value={tag}
+                                    onChange={(e) => {
+                                        // Só números, max 4 dígitos
+                                        const clean = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                        setTag(clean);
+                                    }}
+                                    placeholder="0001"
+                                    disabled={tagAlreadyChanged}
+                                    maxLength={4}
+                                />
+                            </div>
+                        </div>
+
+                        {tagAlreadyChanged && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-[var(--accent-warning)]/10 border border-[var(--accent-warning)]/20"
+                            >
+                                <AlertTriangle size={14} className="text-[var(--accent-warning)] mt-0.5 shrink-0" />
+                                <p className="text-xs text-[var(--accent-warning)]/80">
+                                    Sua tag já foi alterada anteriormente. Não é possível alterar novamente.
+                                </p>
+                            </motion.div>
+                        )}
+
+                        {/* Message */}
+                        {message && (
+                            <motion.p
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={`text-xs px-4 py-2.5 rounded-lg ${message.type === 'success'
+                                        ? 'text-[var(--accent-success)] bg-[var(--accent-success)]/10'
+                                        : 'text-[var(--accent-danger)] bg-[var(--accent-danger)]/10'
+                                    }`}
+                            >
+                                {message.text}
+                            </motion.p>
+                        )}
+
+                        <GlassButton
+                            onClick={handleSaveInfo}
+                            isLoading={saving}
+                            className="w-full mt-2"
+                        >
+                            <span className="flex items-center gap-2">
+                                <Save size={16} />
+                                Salvar Alterações
+                            </span>
+                        </GlassButton>
+                    </div>
+                </GlassCard>
+            </motion.div>
+
+            {/* === Avatar Cropper Modal === */}
+            {cropFile && (
+                <AvatarCropper
+                    file={cropFile}
+                    onCrop={handleCropComplete}
+                    onCancel={() => setCropFile(null)}
+                />
+            )}
+        </div>
+    );
+}
