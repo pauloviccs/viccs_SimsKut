@@ -120,3 +120,27 @@ export async function deleteImage(bucket: string, path: string): Promise<void> {
     const { error } = await supabase.storage.from(bucket).remove([path]);
     if (error) throw error;
 }
+
+/**
+ * Upload direto sem compressão — para GIFs animados e outros formatos
+ * que perderiam qualidade/animação se convertidos para WebP.
+ */
+export async function uploadRawFile(
+    file: File | Blob,
+    bucket: string,
+    path: string,
+    contentType: string
+): Promise<{ url: string; thumbnailUrl: string }> {
+    const { error } = await supabase.storage
+        .from(bucket)
+        .upload(path, file, {
+            contentType,
+            upsert: true,
+        });
+
+    if (error) throw error;
+
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    // GIFs usam a mesma URL como thumbnail
+    return { url: data.publicUrl, thumbnailUrl: data.publicUrl };
+}

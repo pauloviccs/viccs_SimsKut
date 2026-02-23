@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Save, Camera } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
+import { Avatar } from '@/components/ui/Avatar';
+import { AvatarCropper } from '@/components/settings/AvatarCropper';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/lib/supabaseClient';
+import { uploadAvatar, updateProfileAvatar } from '@/lib/avatarService';
+import { fetchProfile } from '@/lib/authService';
 
 export function AdminProfile() {
     const { profile, user, setProfile } = useAuthStore();
@@ -19,6 +23,11 @@ export function AdminProfile() {
     const [newPassword, setNewPassword] = useState('');
     const [passwordSaving, setPasswordSaving] = useState(false);
     const [passwordMessage, setPasswordMessage] = useState('');
+
+    // Avatar
+    const [cropFile, setCropFile] = useState<File | null>(null);
+    const [savingAvatar, setSavingAvatar] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     async function handleSaveProfile(e: React.FormEvent) {
         e.preventDefault();
@@ -73,6 +82,46 @@ export function AdminProfile() {
         }
     }
 
+    // === Avatar handlers (mesma lógica do SettingsPage) ===
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                setMessage('❌ Selecione um arquivo de imagem.');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                setMessage('❌ Imagem muito grande. Máximo 10MB.');
+                return;
+            }
+            setCropFile(file);
+        }
+        e.target.value = '';
+    };
+
+    const handleCropComplete = async (blob: Blob) => {
+        if (!user) return;
+        setCropFile(null);
+        setSavingAvatar(true);
+        setMessage('');
+
+        try {
+            const url = await uploadAvatar(user.id, blob);
+            await updateProfileAvatar(user.id, url);
+
+            // Atualiza o store — sincroniza avatar em toda a app
+            const newProfile = await fetchProfile(user.id);
+            if (newProfile) setProfile(newProfile);
+
+            setMessage('✅ Foto de perfil atualizada!');
+        } catch (err) {
+            console.error('Avatar upload error:', err);
+            setMessage('❌ Erro ao salvar foto. Tente novamente.');
+        } finally {
+            setSavingAvatar(false);
+        }
+    };
+
     return (
         <div>
             <h1 className="text-2xl font-bold mb-6">Meu Perfil</h1>
@@ -81,14 +130,18 @@ export function AdminProfile() {
                 {/* Profile Info */}
                 <GlassCard variant="premium" className="p-6">
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="relative">
-                            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold">
-                                {displayName?.[0]?.toUpperCase() ||
-                                    username?.[0]?.toUpperCase() ||
-                                    'A'}
-                            </div>
-                            <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[var(--accent-primary)] flex items-center justify-center cursor-pointer">
-                                <Camera size={12} className="text-white" />
+                        <div className="relative group">
+                            <Avatar
+                                src={profile?.avatar_url}
+                                alt={displayName || username || 'Admin'}
+                                size="xl"
+                            />
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={savingAvatar}
+                                className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                            >
+                                <Camera size={22} className="text-white/80" />
                             </button>
                         </div>
                         <div>
@@ -96,6 +149,11 @@ export function AdminProfile() {
                             <p className="text-xs text-white/35">
                                 {user?.email}
                             </p>
+                            {savingAvatar && (
+                                <p className="text-xs text-[var(--accent-primary)] mt-1">
+                                    Salvando foto...
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -168,6 +226,24 @@ export function AdminProfile() {
                     </form>
                 </GlassCard>
             </div>
+
+            {/* Hidden file input */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+            />
+
+            {/* Avatar Cropper Modal */}
+            {cropFile && (
+                <AvatarCropper
+                    file={cropFile}
+                    onCrop={handleCropComplete}
+                    onCancel={() => setCropFile(null)}
+                />
+            )}
         </div>
     );
 }
