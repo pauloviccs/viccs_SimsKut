@@ -1,0 +1,69 @@
+@import "tailwindcss";
+@import "./liquid-glass.css";
+
+/* =============================================
+   GLOBAL STYLES — SimsKut
+   ============================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-text);
+    color: var(--text-primary);
+    background: #0a0a0f;
+    background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 122, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(52, 199, 89, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(255, 149, 0, 0.05) 0%, transparent 50%);
+    min-height: 100vh;
+}
+
+#root {
+    min-height: 100vh;
+}
+
+/* Scrollbar estilizada */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Seleção de texto */
+::selection {
+    background: rgba(0, 122, 255, 0.3);
+    color: white;
+}
+
+/* Focus outline acessível */
+:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+/* Link reset */
+a {
+    text-decoration: none;
+    color: inherit;
+}

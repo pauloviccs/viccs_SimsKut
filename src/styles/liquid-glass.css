@@ -1,0 +1,59 @@
+/* =============================================
+   LIQUID GLASS DESIGN SYSTEM — SimsKut
+   Inspirado no Apple Liquid Glass (WWDC 2025)
+   ============================================= */
+
+:root {
+  /* Cores base — glass */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-hover: rgba(255, 255, 255, 0.14);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --glass-blur: blur(20px);
+  --glass-blur-heavy: blur(40px);
+
+  /* Cores de texto */
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-tertiary: rgba(255, 255, 255, 0.40);
+
+  /* Cores de ação (Apple palette) */
+  --accent-primary: #007AFF;
+  --accent-success: #34C759;
+  --accent-warning: #FF9500;
+  --accent-danger: #FF3B30;
+
+  /* Tipografia */
+  --font-display: -apple-system, "SF Pro Display", "Inter", sans-serif;
+  --font-text: -apple-system, "SF Pro Text", "Inter", sans-serif;
+
+  /* Raios de borda */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* Animações */
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+}
+
+/* Classe utilitária Glass */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-heavy {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
