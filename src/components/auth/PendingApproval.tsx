@@ -7,6 +7,8 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { useAuthStore } from '@/store/authStore';
 import { getMyInvite, checkInviteStatus } from '@/lib/inviteService';
+import { fetchProfile } from '@/lib/authService';
+import { supabase } from '@/lib/supabaseClient';
 import type { InviteCode } from '@/types';
 
 const DISCORD_URL = 'https://discord.gg/6PsfjsNuGV';
@@ -14,7 +16,7 @@ const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
 export function PendingApproval() {
     const navigate = useNavigate();
-    const { user } = useAuthStore();
+    const { user, setProfile } = useAuthStore();
     const [invite, setInvite] = useState<InviteCode | null>(null);
     const [copied, setCopied] = useState(false);
     const [checking, setChecking] = useState(false);
@@ -22,9 +24,36 @@ export function PendingApproval() {
 
     useEffect(() => {
         if (user) {
-            getMyInvite(user.id).then(setInvite).catch(console.error);
+            getMyInvite(user.id).then(async (inv) => {
+                setInvite(inv);
+                // 1. Se o convite já for aprovado, ele deve ser liberado automaticamente.
+                if (inv?.status === 'approved') {
+                    setStatusMessage('✅ Aprovado! Redirecionando...');
+                    await syncProfileAndRedirect(inv);
+                }
+            }).catch(console.error);
         }
     }, [user]);
+
+    async function syncProfileAndRedirect(currentInvite: InviteCode) {
+        if (!user) return;
+
+        let newProfile = await fetchProfile(user.id);
+
+        // Fallback: se o RLS impediu o admin de atualizar o profile, o próprio usuário atualiza agora
+        if (newProfile && !newProfile.invite_code_used && currentInvite.code) {
+            const { error } = await supabase.from('profiles').update({ invite_code_used: currentInvite.code }).eq('id', user.id);
+            if (!error) {
+                newProfile = { ...newProfile, invite_code_used: currentInvite.code };
+            }
+        }
+
+        if (newProfile) {
+            setProfile(newProfile);
+        }
+
+        setTimeout(() => navigate('/feed'), 1500);
+    }
 
     async function handleCopyCode() {
         if (!invite?.code) return;
@@ -40,9 +69,9 @@ export function PendingApproval() {
 
         try {
             const status = await checkInviteStatus(user.id);
-            if (status === 'approved') {
+            if (status === 'approved' && invite) {
                 setStatusMessage('✅ Aprovado! Redirecionando...');
-                setTimeout(() => navigate('/feed'), 1500);
+                await syncProfileAndRedirect({ ...invite, status: 'approved' });
             } else if (status === 'rejected') {
                 setStatusMessage('❌ Seu convite foi negado. Entre em contato com um admin.');
             } else {

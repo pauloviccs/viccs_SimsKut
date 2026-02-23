@@ -83,7 +83,17 @@ export async function approveInvite(
     inviteId: string,
     adminId: string
 ): Promise<void> {
-    const { error } = await supabase
+    // 1. Busca os dados do convite para pegar o user e o código
+    const { data: invite, error: fetchError } = await supabase
+        .from('invite_codes')
+        .select('*')
+        .eq('id', inviteId)
+        .single();
+
+    if (fetchError) throw fetchError;
+
+    // 2. Atualiza o convite
+    const { error: inviteError } = await supabase
         .from('invite_codes')
         .update({
             status: 'approved',
@@ -92,7 +102,21 @@ export async function approveInvite(
         })
         .eq('id', inviteId);
 
-    if (error) throw error;
+    if (inviteError) throw inviteError;
+
+    // 3. Destranca o profile do usuário dono do convite
+    if (invite.used_by) {
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .update({ invite_code_used: invite.code })
+            .eq('id', invite.used_by);
+
+        if (profileError) {
+            console.error('Erro ao atualizar o profile do usuário:', profileError);
+            // Ignorado intencionalmente: se falhar por RLS do Supabase, o fallback 
+            // no PendingApproval do próprio usuário garantirá que ele mesmo atualize.
+        }
+    }
 }
 
 /** [ADMIN] Rejeitar convite */
