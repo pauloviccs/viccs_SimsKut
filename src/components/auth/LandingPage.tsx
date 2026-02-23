@@ -2,7 +2,9 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FluidBackground } from '@/components/ui/FluidBackground';
 import { GlassButton } from '@/components/ui/GlassButton';
-import { Sparkles, LogIn, UserPlus } from 'lucide-react';
+import { Sparkles, LogIn, UserPlus, LogOut, ArrowRight } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { signOut } from '@/lib/authService';
 
 const springTransition = {
     type: 'spring' as const,
@@ -12,10 +14,66 @@ const springTransition = {
 
 export function LandingPage() {
     const navigate = useNavigate();
+    const { user, profile, logout } = useAuthStore();
+
+    const handleLogout = async () => {
+        try {
+            await signOut();
+            logout();
+        } catch (err) {
+            console.error('Logout error:', err);
+        }
+    };
 
     return (
         <>
             <FluidBackground />
+
+            {/* Header for Logged in Users */}
+            {user && (
+                <motion.header
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute top-0 left-0 right-0 p-4 md:p-6 flex items-center justify-between z-50 pointer-events-auto"
+                >
+                    <div className="flex items-center gap-3 bg-white/[0.03] p-2 pr-4 rounded-full border border-white/5 backdrop-blur-md">
+                        <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)]/20 overflow-hidden border border-white/10 flex items-center justify-center">
+                            {profile?.avatar_url ? (
+                                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                <Sparkles size={18} className="text-[var(--accent-primary)]" />
+                            )}
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-medium line-clamp-1">
+                                {profile?.display_name || user.email?.split('@')[0]}
+                            </span>
+                            <span className="text-[10px] text-white/50">
+                                @{profile?.username || 'user'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <GlassButton
+                            variant="ghost"
+                            onClick={handleLogout}
+                            title="Sair da Conta"
+                            className="px-3 py-2 min-h-0 min-w-0"
+                        >
+                            <LogOut size={18} />
+                        </GlassButton>
+                        <GlassButton
+                            onClick={() => navigate('/feed')}
+                            className="px-4 py-2 min-h-0 min-w-0 hidden md:flex"
+                        >
+                            <span className="flex items-center gap-2 text-sm">
+                                Abrir Painel <ArrowRight size={16} />
+                            </span>
+                        </GlassButton>
+                    </div>
+                </motion.header>
+            )}
 
             <div className="min-h-screen flex flex-col items-center justify-center px-4 relative z-10">
                 {/* Hero */}
@@ -72,33 +130,51 @@ export function LandingPage() {
                     </motion.p>
 
                     {/* CTAs */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ ...springTransition, delay: 0.5 }}
-                        className="flex flex-col sm:flex-row gap-[16px] justify-center max-w-sm sm:max-w-none mx-auto"
-                    >
-                        <GlassButton
-                            onClick={() => navigate('/register')}
-                            className="px-8 py-3 text-base"
+                    {!user ? (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ ...springTransition, delay: 0.5 }}
+                            className="flex flex-col sm:flex-row gap-[16px] justify-center max-w-sm sm:max-w-none mx-auto"
                         >
-                            <span className="flex items-center gap-2">
-                                <UserPlus size={18} />
-                                Criar Conta
-                            </span>
-                        </GlassButton>
+                            <GlassButton
+                                onClick={() => navigate('/register')}
+                                className="px-8 py-3 text-base"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <UserPlus size={18} />
+                                    Criar Conta
+                                </span>
+                            </GlassButton>
 
-                        <GlassButton
-                            variant="secondary"
-                            onClick={() => navigate('/login')}
-                            className="px-8 py-3 text-base"
+                            <GlassButton
+                                variant="secondary"
+                                onClick={() => navigate('/login')}
+                                className="px-8 py-3 text-base"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <LogIn size={18} />
+                                    Entrar
+                                </span>
+                            </GlassButton>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ ...springTransition, delay: 0.5 }}
+                            className="flex justify-center"
                         >
-                            <span className="flex items-center gap-2">
-                                <LogIn size={18} />
-                                Entrar
-                            </span>
-                        </GlassButton>
-                    </motion.div>
+                            <GlassButton
+                                onClick={() => navigate('/feed')}
+                                className="px-8 py-3 text-base"
+                            >
+                                <span className="flex items-center gap-2">
+                                    Entrar no SimsKut <ArrowRight size={18} />
+                                </span>
+                            </GlassButton>
+                        </motion.div>
+                    )}
                 </motion.div>
 
                 {/* Footer */}
