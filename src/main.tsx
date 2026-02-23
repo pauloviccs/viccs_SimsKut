@@ -26,33 +26,36 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         let mounted = true;
+        let initDone = false;
+
+        async function loadProfile(userId: string): Promise<void> {
+            try {
+                const profile = await fetchProfile(userId);
+                if (mounted) setProfile(profile);
+            } catch (err) {
+                console.error('[Auth] Error fetching profile:', err);
+                if (mounted) setProfile(null);
+            }
+        }
 
         async function initAuth() {
             try {
-                // Forçamos a buscar a sessão real do servidor/storage no mount (refresh protegido)
                 const { data: { session }, error } = await supabase.auth.getSession();
 
                 if (error) {
                     console.error('[Auth] Erro ao buscar sessão inicial:', error);
-                    setInitialized(true);
-                    setLoading(false);
                     return;
                 }
 
                 if (session?.user && mounted) {
                     setUser(session.user);
-                    try {
-                        const profile = await fetchProfile(session.user.id);
-                        if (mounted) setProfile(profile);
-                    } catch (err) {
-                        console.error('[Auth] Error fetching initial profile:', err);
-                        if (mounted) setProfile(null);
-                    }
+                    await loadProfile(session.user.id);
                 } else if (mounted) {
                     setUser(null);
                     setProfile(null);
                 }
             } finally {
+                initDone = true;
                 if (mounted) {
                     setInitialized(true);
                     setLoading(false);
@@ -67,40 +70,34 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (!mounted) return;
 
-            // INITIAL_SESSION ignoramos pois já fazemos manualmente com getSession() que é mais seguro contra race conditions de cache
+            // Ignora INITIAL_SESSION — já cobrimos com getSession()
             if (event === 'INITIAL_SESSION') return;
+
+            // Se initAuth ainda não terminou, ignora para evitar race condition
+            if (!initDone) return;
+
+            if (event === 'SIGNED_OUT') {
+                setUser(null);
+                setProfile(null);
+                setLoading(false);
+                setInitialized(true);
+                return;
+            }
 
             if (session?.user) {
                 const currentUser = useAuthStore.getState().user;
-                const currentProfile = useAuthStore.getState().profile;
+                const isSameUser = currentUser?.id === session.user.id;
 
-                // Previne fetch redundante em SIGNED_IN seguido do inicial
-                if (currentUser?.id !== session.user.id || !currentProfile) {
-                    setLoading(true);
-                    setUser(session.user);
-
-                    try {
-                        const profile = await fetchProfile(session.user.id);
-                        if (mounted) setProfile(profile);
-                    } catch (err) {
-                        console.error('[Auth] Error fetching profile on auth change:', err);
-                        if (mounted) setProfile(null);
-                    } finally {
-                        if (mounted) {
-                            setLoading(false);
-                            setInitialized(true);
-                        }
-                    }
-                } else {
-                    if (mounted) {
-                        setLoading(false);
-                        setInitialized(true);
-                    }
+                // TOKEN_REFRESHED do mesmo user — sem necessidade de re-fetch
+                if (event === 'TOKEN_REFRESHED' && isSameUser) {
+                    return;
                 }
-            } else {
+
+                // Novo user ou SIGNED_IN
+                setLoading(true);
+                setUser(session.user);
+                await loadProfile(session.user.id);
                 if (mounted) {
-                    setUser(null);
-                    setProfile(null);
                     setLoading(false);
                     setInitialized(true);
                 }
