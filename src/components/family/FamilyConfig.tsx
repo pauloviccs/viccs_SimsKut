@@ -9,6 +9,7 @@ import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAuthStore } from '@/store/authStore';
+import { AvatarCropper } from '@/components/settings/AvatarCropper';
 import {
     getFamilies, createFamily, deleteFamily,
     getSims, createSim, updateSim, deleteSim,
@@ -51,8 +52,9 @@ export function FamilyConfig() {
 
     // Sim form
     const [simForm, setSimForm] = useState({ name: '', profession: '', bio: '' });
-    const [simPhotoFile, setSimPhotoFile] = useState<File | null>(null);
+    const [simPhotoBlob, setSimPhotoBlob] = useState<Blob | null>(null);
     const [simPhotoPreview, setSimPhotoPreview] = useState<string | null>(null);
+    const [simCropFile, setSimCropFile] = useState<File | null>(null);
     const [savingSim, setSavingSim] = useState(false);
     const [newTraitValue, setNewTraitValue] = useState('');
     const [newTraitType, setNewTraitType] = useState<'quality' | 'skill'>('quality');
@@ -101,7 +103,7 @@ export function FamilyConfig() {
 
     const openCreateSim = () => {
         setSimForm({ name: '', profession: '', bio: '' });
-        setSimPhotoFile(null);
+        setSimPhotoBlob(null);
         setSimPhotoPreview(null);
         setEditingSim(null);
         setShowCreateSim(true);
@@ -114,7 +116,7 @@ export function FamilyConfig() {
             bio: sim.bio || '',
         });
         setSimPhotoPreview(sim.photo_url);
-        setSimPhotoFile(null);
+        setSimPhotoBlob(null);
         setEditingSim(sim);
         setShowCreateSim(true);
     };
@@ -122,9 +124,15 @@ export function FamilyConfig() {
     const handleSimPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file?.type.startsWith('image/')) return;
-        setSimPhotoFile(file);
-        setSimPhotoPreview(URL.createObjectURL(file));
+        setSimCropFile(file); // Abre o cropper
         e.target.value = '';
+    };
+
+    const handleSimCropComplete = (blob: Blob) => {
+        setSimCropFile(null);
+        setSimPhotoBlob(blob);
+        const url = URL.createObjectURL(blob);
+        setSimPhotoPreview(url);
     };
 
     const handleSaveSim = async () => {
@@ -134,10 +142,10 @@ export function FamilyConfig() {
         try {
             let photoUrl = editingSim?.photo_url || undefined;
 
-            if (simPhotoFile) {
+            if (simPhotoBlob) {
                 const ts = Date.now();
                 const path = `${user.id}/${ts}.webp`;
-                const result = await processAndUpload(simPhotoFile, 'sim-photos', path, 600);
+                const result = await processAndUpload(simPhotoBlob as File, 'sim-photos', path, 300);
                 photoUrl = result.url;
             }
 
@@ -417,6 +425,15 @@ export function FamilyConfig() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {/* Cropper para foto do Sim */}
+                {simCropFile && (
+                    <AvatarCropper
+                        file={simCropFile}
+                        onCrop={handleSimCropComplete}
+                        onCancel={() => setSimCropFile(null)}
+                    />
+                )}
             </div>
         );
     }
