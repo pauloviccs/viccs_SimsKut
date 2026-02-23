@@ -51,8 +51,11 @@ export function RegisterPage() {
         try {
             const { user } = await signUpWithEmail(email, password);
             if (user) {
-                await createProfile(user.id, username, displayName || username);
+                const newProfile = await createProfile(user.id, username, displayName || username);
                 await createInviteForUser(user.id);
+                // Injeta diretamente o novo Profile na memória para previnir que o listener 
+                // da main.tsx tenha feito um fetch e retornado nulo durante a criação da conta
+                useAuthStore.getState().setProfile(newProfile);
                 // useEffect fará o redirecionamento para /feed e o ProtectedRoute lidará com /pending
             }
         } catch (err: unknown) {

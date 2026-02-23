@@ -17,10 +17,6 @@ const queryClient = new QueryClient({
     },
 });
 
-// Cache global para evitar race conditions em duplo mount do React 18 e múltiplos eventos
-let profileFetchPromise: Promise<any> | null = null;
-let fetchingUserId: string | null = null;
-
 /**
  * AuthProvider — Ouve mudanças de auth do Supabase e sincroniza com Zustand.
  * Imagina como um radar: sempre escutando se alguém entrou ou saiu.
@@ -29,59 +25,90 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     const { setUser, setProfile, setLoading, setInitialized } = useAuthStore();
 
     useEffect(() => {
+        let mounted = true;
+
+        async function initAuth() {
+            try {
+                // Forçamos a buscar a sessão real do servidor/storage no mount (refresh protegido)
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (error) {
+                    console.error('[Auth] Erro ao buscar sessão inicial:', error);
+                    setInitialized(true);
+                    setLoading(false);
+                    return;
+                }
+
+                if (session?.user && mounted) {
+                    setUser(session.user);
+                    try {
+                        const profile = await fetchProfile(session.user.id);
+                        if (mounted) setProfile(profile);
+                    } catch (err) {
+                        console.error('[Auth] Error fetching initial profile:', err);
+                        if (mounted) setProfile(null);
+                    }
+                } else if (mounted) {
+                    setUser(null);
+                    setProfile(null);
+                }
+            } finally {
+                if (mounted) {
+                    setInitialized(true);
+                    setLoading(false);
+                }
+            }
+        }
+
+        initAuth();
+
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            if (session?.user) {
-                const state = useAuthStore.getState();
-                const currentUser = state.user;
-                const currentProfile = state.profile;
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (!mounted) return;
 
-                // Se é um login novo ou o profile ainda não carregou (exemplo: depois de um F5)
+            // INITIAL_SESSION ignoramos pois já fazemos manualmente com getSession() que é mais seguro contra race conditions de cache
+            if (event === 'INITIAL_SESSION') return;
+
+            if (session?.user) {
+                const currentUser = useAuthStore.getState().user;
+                const currentProfile = useAuthStore.getState().profile;
+
+                // Previne fetch redundante em SIGNED_IN seguido do inicial
                 if (currentUser?.id !== session.user.id || !currentProfile) {
                     setLoading(true);
                     setUser(session.user);
 
                     try {
-                        let profile;
-                        // Deduplicação de requisições concorrentes
-                        if (profileFetchPromise && fetchingUserId === session.user.id) {
-                            profile = await profileFetchPromise;
-                        } else {
-                            fetchingUserId = session.user.id;
-                            profileFetchPromise = fetchProfile(session.user.id);
-                            profile = await profileFetchPromise;
-                        }
-
-                        // Limpa a promessa cacheada independentemente de quem chamou
-                        if (fetchingUserId === session.user.id) {
-                            profileFetchPromise = null;
-                            fetchingUserId = null;
-                        }
-
-                        setProfile(profile);
+                        const profile = await fetchProfile(session.user.id);
+                        if (mounted) setProfile(profile);
                     } catch (err) {
-                        console.error('Error fetching profile on auth change:', err);
-                        setProfile(null);
+                        console.error('[Auth] Error fetching profile on auth change:', err);
+                        if (mounted) setProfile(null);
                     } finally {
+                        if (mounted) {
+                            setLoading(false);
+                            setInitialized(true);
+                        }
+                    }
+                } else {
+                    if (mounted) {
                         setLoading(false);
                         setInitialized(true);
                     }
-                } else {
-                    // Mesmo usuário, estado 100% sincado
+                }
+            } else {
+                if (mounted) {
+                    setUser(null);
+                    setProfile(null);
                     setLoading(false);
                     setInitialized(true);
                 }
-            } else {
-                // Usuário saiu
-                setUser(null);
-                setProfile(null);
-                setLoading(false);
-                setInitialized(true);
             }
         });
 
         return () => {
+            mounted = false;
             subscription.unsubscribe();
         };
     }, [setUser, setProfile, setLoading, setInitialized]);

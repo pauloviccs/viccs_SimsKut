@@ -14,14 +14,13 @@ const springTransition = {
 
 export function LandingPage() {
     const navigate = useNavigate();
-    const { user, profile, logout } = useAuthStore();
+    const { user, profile, isLoading, logout } = useAuthStore();
 
     const handleLogout = async () => {
         try {
-            await signOut();
-            logout();
-            // Force a hard refresh of the route via browser, fully clearing memory states
-            window.location.replace('/');
+            logout(); // Limpa Zustand primeiro (evita re-render com sessão velha)
+            await signOut(); // Depois limpa sessão no Supabase
+            // Já estamos em "/", não precisa navegar
         } catch (err) {
             console.error('Logout error:', err);
         }
@@ -48,10 +47,10 @@ export function LandingPage() {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-medium line-clamp-1">
-                                {profile?.display_name || user.email?.split('@')[0]}
+                                {isLoading ? '...' : (profile?.display_name || user.email?.split('@')[0])}
                             </span>
                             <span className="text-[10px] text-white/50">
-                                @{profile?.username || 'user'}
+                                @{isLoading ? '...' : (profile?.username || 'user')}
                             </span>
                         </div>
                     </div>

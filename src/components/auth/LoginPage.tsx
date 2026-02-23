@@ -15,19 +15,24 @@ const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
 export function LoginPage() {
     const navigate = useNavigate();
-    const { user, isLoading } = useAuthStore();
+    const { user, profile, isLoading, isInitialized } = useAuthStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState<string | null>(null);
 
-    // Se já logado, redireciona
+    // Se já logado, redireciona — mas só depois que o profile tiver carregado
     useEffect(() => {
-        if (!isLoading && user) {
-            navigate('/feed', { replace: true });
+        if (!isLoading && isInitialized && user) {
+            if (profile?.invite_code_used || profile?.is_admin) {
+                navigate('/feed', { replace: true });
+            } else if (profile) {
+                navigate('/pending', { replace: true });
+            }
+            // Se profile é null, o AuthProvider ainda está buscando — não faz nada
         }
-    }, [user, isLoading, navigate]);
+    }, [user, profile, isLoading, isInitialized, navigate]);
 
     async function handleEmailLogin(e: React.FormEvent) {
         e.preventDefault();

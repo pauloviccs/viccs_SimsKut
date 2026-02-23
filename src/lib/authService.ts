@@ -42,18 +42,27 @@ export async function signOut() {
 }
 
 /** Busca o perfil do usuário logado */
-export async function fetchProfile(userId: string): Promise<Profile | null> {
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+export async function fetchProfile(userId: string, retryCount = 1): Promise<Profile | null> {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
 
-    if (error) {
-        if (error.code === 'PGRST116') return null; // Not found
-        throw error;
+        if (error) {
+            if (error.code === 'PGRST116') return null; // Not found
+            throw error;
+        }
+        return data;
+    } catch (err) {
+        if (retryCount > 0) {
+            console.warn(`[Auth] fetchProfile falhou, tentando novamente em 500ms. Tentativas restantes: ${retryCount}`);
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            return fetchProfile(userId, retryCount - 1);
+        }
+        throw err;
     }
-    return data;
 }
 
 /** Cria o perfil se não existir (pós-signup) */
