@@ -86,14 +86,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (session?.user) {
                 const currentUser = useAuthStore.getState().user;
+                const currentProfile = useAuthStore.getState().profile;
                 const isSameUser = currentUser?.id === session.user.id;
 
-                // TOKEN_REFRESHED do mesmo user — sem necessidade de re-fetch
-                if (event === 'TOKEN_REFRESHED' && isSameUser) {
+                // Mesmo user com profile já carregado → ignora
+                // Cobre TOKEN_REFRESHED, USER_UPDATED, e qualquer outro evento
+                // que o Supabase dispara ao voltar para a aba
+                if (isSameUser && currentProfile) {
                     return;
                 }
 
-                // Novo user ou SIGNED_IN
+                // Novo user ou SIGNED_IN sem profile
                 setLoading(true);
                 setUser(session.user);
                 await loadProfile(session.user.id);
