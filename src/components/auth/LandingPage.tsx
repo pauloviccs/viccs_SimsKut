@@ -1,56 +1,116 @@
 import { motion } from 'framer-motion';
-import { GlassCard } from '@/components/ui/GlassCard';
+import { useNavigate } from 'react-router-dom';
+import { FluidBackground } from '@/components/ui/FluidBackground';
 import { GlassButton } from '@/components/ui/GlassButton';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, LogIn, UserPlus } from 'lucide-react';
+
+const springTransition = {
+    type: 'spring' as const,
+    stiffness: 300,
+    damping: 30,
+};
 
 export function LandingPage() {
-    const mockCode = 'SIMS-XXXX-XXXX';
+    const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4">
-            <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                className="w-full max-w-sm"
-            >
-                <GlassCard className="text-center p-8">
+        <>
+            <FluidBackground />
+
+            <div className="min-h-screen flex flex-col items-center justify-center px-4 relative z-10">
+                {/* Hero */}
+                <motion.div
+                    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ ...springTransition, delay: 0.1 }}
+                    className="text-center max-w-lg"
+                >
                     {/* Logo */}
-                    <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#007AFF] to-[#34C759] flex items-center justify-center">
-                        <Sparkles size={28} className="text-white" />
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                        transition={{ ...springTransition, delay: 0 }}
+                        className="w-20 h-20 mx-auto mb-8 rounded-[var(--radius-lg)]
+                            bg-gradient-to-br from-[var(--accent-primary)] via-[var(--discord-brand)] to-[var(--accent-success)]
+                            flex items-center justify-center
+                            shadow-[0_0_60px_rgba(0,122,255,0.3)]"
+                    >
+                        <Sparkles size={36} className="text-white" />
+                    </motion.div>
 
-                    <h1 className="text-2xl font-bold mb-2 text-white/95">SimsKut</h1>
-                    <p className="text-sm text-white/50 mb-8">
+                    {/* Title */}
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ ...springTransition, delay: 0.2 }}
+                        className="text-5xl md:text-6xl font-bold mb-4 tracking-tight"
+                        style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                        Sims
+                        <span className="bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-success)] bg-clip-text text-transparent">
+                            Kut
+                        </span>
+                    </motion.h1>
+
+                    {/* Subtitle */}
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ ...springTransition, delay: 0.3 }}
+                        className="text-lg text-white/50 mb-2 max-w-md mx-auto"
+                    >
                         Rede social privada para comunidades de The Sims
-                    </p>
+                    </motion.p>
 
-                    {/* Invite Code Display */}
-                    <div className="bg-white/[0.06] rounded-xl p-4 mb-4 border border-white/10">
-                        <p className="text-xs text-white/40 mb-2 uppercase tracking-wider">
-                            Seu código de convite
-                        </p>
-                        <p className="text-xl font-mono font-bold tracking-widest text-[#007AFF]">
-                            {mockCode}
-                        </p>
-                    </div>
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5, duration: 0.6 }}
+                        className="text-sm text-white/30 mb-10"
+                    >
+                        Acesso exclusivo por convite • Aprovação manual
+                    </motion.p>
 
-                    {/* Status */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FF9500]/15 text-[#FF9500] text-xs font-medium mb-6">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FF9500] animate-pulse" />
-                        Aguardando aprovação
-                    </div>
-
-                    <div className="flex flex-col gap-3">
-                        <GlassButton variant="primary" className="w-full">
-                            Verificar status
+                    {/* CTAs */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ ...springTransition, delay: 0.5 }}
+                        className="flex flex-col sm:flex-row gap-3 justify-center max-w-xs sm:max-w-none mx-auto"
+                    >
+                        <GlassButton
+                            onClick={() => navigate('/register')}
+                            className="px-8 py-3 text-base"
+                        >
+                            <span className="flex items-center gap-2">
+                                <UserPlus size={18} />
+                                Criar Conta
+                            </span>
                         </GlassButton>
-                        <GlassButton variant="ghost" className="w-full">
-                            Já tenho uma conta →
+
+                        <GlassButton
+                            variant="secondary"
+                            onClick={() => navigate('/login')}
+                            className="px-8 py-3 text-base"
+                        >
+                            <span className="flex items-center gap-2">
+                                <LogIn size={18} />
+                                Entrar
+                            </span>
                         </GlassButton>
-                    </div>
-                </GlassCard>
-            </motion.div>
-        </div>
+                    </motion.div>
+                </motion.div>
+
+                {/* Footer */}
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1, duration: 0.8 }}
+                    className="absolute bottom-6 text-xs text-white/20"
+                >
+                    © 2026 SimsKut • Feito com 💎 por VICCS
+                </motion.p>
+            </div>
+        </>
     );
 }

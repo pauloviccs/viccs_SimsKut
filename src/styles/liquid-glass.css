@@ -1,39 +1,50 @@
 /* =============================================
-   LIQUID GLASS DESIGN SYSTEM — SimsKut
+   LIQUID GLASS DESIGN SYSTEM V2 — SimsKut
    Inspirado no Apple Liquid Glass (WWDC 2025)
+   + Skills: liquid-glass-design, apple-hig-frontend
    ============================================= */
 
 :root {
-  /* Cores base — glass */
-  --glass-bg: rgba(255, 255, 255, 0.08);
-  --glass-bg-hover: rgba(255, 255, 255, 0.14);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  /* ── Cores base glass ─────────────────────── */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-hover: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   --glass-blur: blur(20px);
   --glass-blur-heavy: blur(40px);
+  --glass-inner-glow: inset 0 0 20px rgba(255, 255, 255, 0.06);
+  --glass-specular-top: rgba(255, 255, 255, 0.4);
 
-  /* Cores de texto */
+  /* ── Cores de texto ───────────────────────── */
   --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.65);
-  --text-tertiary: rgba(255, 255, 255, 0.40);
+  --text-secondary: rgba(255, 255, 255, 0.60);
+  --text-tertiary: rgba(255, 255, 255, 0.35);
 
-  /* Cores de ação (Apple palette) */
+  /* ── Cores de ação (Apple palette) ────────── */
   --accent-primary: #007AFF;
+  --accent-primary-hover: #0A84FF;
   --accent-success: #34C759;
   --accent-warning: #FF9500;
   --accent-danger: #FF3B30;
 
-  /* Tipografia */
-  --font-display: -apple-system, "SF Pro Display", "Inter", sans-serif;
-  --font-text: -apple-system, "SF Pro Text", "Inter", sans-serif;
+  /* ── Discord & Google brand colors ────────── */
+  --discord-brand: #5865F2;
+  --discord-brand-hover: #4752C4;
+  --google-brand: #4285F4;
+  --google-brand-hover: #357ABD;
 
-  /* Raios de borda */
+  /* ── Tipografia ───────────────────────────── */
+  --font-display: -apple-system, "SF Pro Display", "Inter", system-ui, sans-serif;
+  --font-text: -apple-system, "SF Pro Text", "Inter", system-ui, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+
+  /* ── Raios de borda ───────────────────────── */
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 32px;
 
-  /* Animações */
+  /* ── Animações ────────────────────────────── */
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
   --duration-fast: 150ms;
@@ -41,13 +52,16 @@
   --duration-slow: 400ms;
 }
 
-/* Classe utilitária Glass */
+/* =============================================
+   GLASS BASE — Classe utilitária
+   ============================================= */
+
 .glass {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--glass-shadow), var(--glass-inner-glow);
 }
 
 .glass-heavy {
@@ -55,5 +69,94 @@
   backdrop-filter: var(--glass-blur-heavy);
   -webkit-backdrop-filter: var(--glass-blur-heavy);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--glass-shadow), var(--glass-inner-glow);
+}
+
+/* =============================================
+   GLASS CARD PREMIUM — Com specular highlight
+   ============================================= */
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid var(--glass-specular-top);
+  box-shadow:
+    var(--glass-shadow),
+    var(--glass-inner-glow);
+  border-radius: var(--radius-lg);
+}
+
+/* =============================================
+   FLUID BACKGROUND BLOBS
+   ============================================= */
+
+.fluid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #050508;
+}
+
+.fluid-blob {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  filter: blur(100px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.fluid-blob--primary {
+  width: 60vh;
+  height: 60vh;
+  background: radial-gradient(circle, #007AFF 0%, transparent 70%);
+  top: -15%;
+  left: -10%;
+  animation: blob 20s ease-in-out infinite;
+}
+
+.fluid-blob--secondary {
+  width: 50vh;
+  height: 50vh;
+  background: radial-gradient(circle, #5865F2 0%, transparent 70%);
+  top: 30%;
+  right: -15%;
+  animation: blob-reverse 25s ease-in-out infinite;
+}
+
+.fluid-blob--accent {
+  width: 70vh;
+  height: 70vh;
+  background: radial-gradient(circle, #34C759 0%, transparent 70%);
+  bottom: -25%;
+  left: 25%;
+  animation: blob 30s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+.fluid-blob--warm {
+  width: 40vh;
+  height: 40vh;
+  background: radial-gradient(circle, #FF9500 0%, transparent 70%);
+  top: 60%;
+  left: -5%;
+  opacity: 0.3;
+  animation: blob-reverse 22s ease-in-out infinite;
+  animation-delay: 5s;
+}
+
+/* =============================================
+   NOISE TEXTURE — Anti-banding
+   ============================================= */
+
+.fluid-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
 }

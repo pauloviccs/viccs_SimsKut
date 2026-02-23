@@ -3,6 +3,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import { LandingPage } from '@/components/auth/LandingPage';
 import { RegisterPage } from '@/components/auth/RegisterPage';
 import { LoginPage } from '@/components/auth/LoginPage';
+import { PendingApproval } from '@/components/auth/PendingApproval';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { FeedPage } from '@/components/feed/FeedPage';
 import { GlobalGallery } from '@/components/gallery/GlobalGallery';
 import { PrivateGallery } from '@/components/gallery/PrivateGallery';
@@ -17,16 +19,35 @@ export default function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/pending" element={<PendingApproval />} />
+
+            {/* Callback do OAuth (redireciona automaticamente) */}
+            <Route path="/auth/callback" element={<LoginPage />} />
 
             {/* Rotas protegidas (com AppShell: sidebar + navbar) */}
-            <Route element={<AppShell />}>
+            <Route
+                element={
+                    <ProtectedRoute>
+                        <AppShell />
+                    </ProtectedRoute>
+                }
+            >
                 <Route path="/feed" element={<FeedPage />} />
                 <Route path="/gallery/global" element={<GlobalGallery />} />
                 <Route path="/gallery/private" element={<PrivateGallery />} />
                 <Route path="/family" element={<FamilyConfig />} />
                 <Route path="/family-tree" element={<FamilyTree />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
             </Route>
+
+            {/* Admin — protegido + adminOnly */}
+            <Route
+                path="/admin/*"
+                element={
+                    <ProtectedRoute adminOnly>
+                        <AdminDashboard />
+                    </ProtectedRoute>
+                }
+            />
         </Routes>
     );
 }

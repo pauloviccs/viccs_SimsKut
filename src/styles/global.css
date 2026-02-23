@@ -2,7 +2,7 @@
 @import "./liquid-glass.css";
 
 /* =============================================
-   GLOBAL STYLES — SimsKut
+   GLOBAL STYLES — SimsKut V2
    ============================================= */
 
 * {
@@ -20,19 +20,111 @@ html {
 body {
     font-family: var(--font-text);
     color: var(--text-primary);
-    background: #0a0a0f;
-    background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(0, 122, 255, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(52, 199, 89, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 80%, rgba(255, 149, 0, 0.05) 0%, transparent 50%);
+    background: #050508;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 #root {
     min-height: 100vh;
+    position: relative;
 }
 
-/* Scrollbar estilizada */
+/* =============================================
+   BLOB ANIMATIONS — Fluid Background
+   ============================================= */
+
+@keyframes blob {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    25% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    50% {
+        transform: translate(-20px, 20px) scale(0.95);
+    }
+
+    75% {
+        transform: translate(20px, 40px) scale(1.05);
+    }
+}
+
+@keyframes blob-reverse {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    25% {
+        transform: translate(-40px, 30px) scale(1.08);
+    }
+
+    50% {
+        transform: translate(30px, -30px) scale(0.92);
+    }
+
+    75% {
+        transform: translate(-20px, -40px) scale(1.12);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Animation delays */
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+
+.animation-delay-6000 {
+    animation-delay: 6s;
+}
+
+/* =============================================
+   SCROLLBAR
+   ============================================= */
+
 ::-webkit-scrollbar {
     width: 6px;
 }
@@ -42,28 +134,49 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.22);
 }
 
-/* Seleção de texto */
+/* =============================================
+   SELECTION & FOCUS
+   ============================================= */
+
 ::selection {
     background: rgba(0, 122, 255, 0.3);
     color: white;
 }
 
-/* Focus outline acessível */
 :focus-visible {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
 }
 
-/* Link reset */
+/* =============================================
+   LINK RESET
+   ============================================= */
+
 a {
     text-decoration: none;
     color: inherit;
+}
+
+/* =============================================
+   REDUCED MOTION
+   ============================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
