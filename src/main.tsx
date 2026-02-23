@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
  * Imagina como um radar: sempre escutando se alguém entrou ou saiu.
  */
 function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { setUser, setProfile, setLoading } = useAuthStore();
+    const { setUser, setProfile, setLoading, setInitialized } = useAuthStore();
 
     useEffect(() => {
         // Carrega sessão inicial
@@ -32,9 +32,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
                 fetchProfile(session.user.id)
                     .then(setProfile)
                     .catch((err) => console.error('Error fetching initial profile:', err))
-                    .finally(() => setLoading(false));
+                    .finally(() => {
+                        setLoading(false);
+                        setInitialized(true);
+                    });
             } else {
                 setLoading(false);
+                setInitialized(true);
             }
         });
 

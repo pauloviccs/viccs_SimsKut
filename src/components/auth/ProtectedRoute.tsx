@@ -14,10 +14,11 @@ interface ProtectedRouteProps {
  * e se seu nome está na lista VIP (convite aprovado).
  */
 export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
-    const { user, profile, isLoading, isAdmin } = useAuthStore();
+    const { user, profile, isLoading, isInitialized, isAdmin } = useAuthStore();
 
-    // Ainda carregando → não renderiza nada (evita flash)
-    if (isLoading) {
+    // Aguarda a engine do Supabase levantar do LocalStorage via main.tsx (isInitialized)
+    // E aguarda as transições dinâmicas de hooks (isLoading)
+    if (!isInitialized || isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <span className="w-8 h-8 border-3 border-white/20 border-t-[var(--accent-primary)] rounded-full animate-spin" />
