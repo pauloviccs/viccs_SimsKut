@@ -207,13 +207,15 @@ BEGIN
             NEW.raw_user_meta_data ->> 'preferred_username',   -- Discord
             NEW.raw_user_meta_data ->> 'user_name',            -- Discord fallback
             NEW.raw_user_meta_data ->> 'name',                 -- Google
-            SPLIT_PART(NEW.email, '@', 1)                      -- Email fallback
+            NULLIF(SPLIT_PART(NEW.email, '@', 1), ''),         -- Email fallback
+            'user_' || substr(NEW.id::text, 1, 8)              -- Final fallback para evitar quebra de UNIQUE/NOT NULL
         ),
         COALESCE(
             NEW.raw_user_meta_data ->> 'full_name',            -- Google
-            NEW.raw_user_meta_data ->> 'custom_claims' ->> 'global_name', -- Discord
+            NEW.raw_user_meta_data -> 'custom_claims' ->> 'global_name', -- Discord (CORRIGIDO: -> em vez de ->>)
             NEW.raw_user_meta_data ->> 'name',                 -- Fallback
-            SPLIT_PART(NEW.email, '@', 1)
+            SPLIT_PART(NEW.email, '@', 1),
+            'User'
         ),
         COALESCE(
             NEW.raw_user_meta_data ->> 'avatar_url',           -- Both providers
