@@ -27,7 +27,7 @@ function timeAgo(date: string): string {
 }
 
 export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
-    const { user } = useAuthStore();
+    const { user, isAdmin } = useAuthStore();
     const [liked, setLiked] = useState(post.liked_by_me ?? false);
     const [likesCount, setLikesCount] = useState(post.likes_count ?? 0);
     const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
@@ -106,7 +106,7 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                 </div>
 
                 {/* Menu */}
-                {isAuthor && (
+                {(isAuthor || isAdmin) && (
                     <div className="relative">
                         <button
                             onClick={() => setShowMenu(!showMenu)}

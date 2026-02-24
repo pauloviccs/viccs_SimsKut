@@ -24,7 +24,7 @@ function timeAgo(date: string): string {
 }
 
 export function CommentSection({ postId, onCommentCountChange }: CommentSectionProps) {
-    const { user, profile } = useAuthStore();
+    const { user, profile, isAdmin } = useAuthStore();
     const [comments, setComments] = useState<PostComment[]>([]);
     const [loading, setLoading] = useState(true);
     const [text, setText] = useState('');
@@ -112,7 +112,7 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                                         {comment.content}
                                     </p>
                                 </div>
-                                {user?.id === comment.author_id && (
+                                {(user?.id === comment.author_id || isAdmin) && (
                                     <button
                                         onClick={() => handleDelete(comment.id)}
                                         className="ml-2 text-white/0 group-hover:text-white/30 hover:!text-[var(--accent-danger)] transition-colors cursor-pointer"
