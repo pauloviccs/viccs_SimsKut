@@ -56,9 +56,17 @@ export function FeedPage() {
 
     // Infinite scroll
     useEffect(() => {
-        const handleScroll = () => {
+        const scrollContainer = document.getElementById('main-scroll-container') || window;
+
+        const handleScroll = (e: Event) => {
+            const target = e.target as HTMLElement;
+            const isWindow = scrollContainer === window;
+            const scrollY = isWindow ? window.scrollY : target.scrollTop;
+            const innerHeight = isWindow ? window.innerHeight : target.clientHeight;
+            const scrollHeight = isWindow ? document.body.offsetHeight : target.scrollHeight;
+
             if (
-                window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
+                innerHeight + scrollY >= scrollHeight - 500 &&
                 hasMore &&
                 !loadingMore
             ) {
@@ -66,8 +74,8 @@ export function FeedPage() {
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        scrollContainer.addEventListener('scroll', handleScroll);
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
     }, [hasMore, loadingMore, posts.length]);
 
     return (

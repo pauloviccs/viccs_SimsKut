@@ -19,6 +19,7 @@ body {
     background: #050508;
     min-height: 100dvh;
     overflow-x: clip;
+    overscroll-behavior-y: none;
 }
 
 #root {
