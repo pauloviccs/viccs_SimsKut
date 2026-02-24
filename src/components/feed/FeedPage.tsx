@@ -45,32 +45,42 @@ export function FeedPage() {
     useEffect(() => {
         if (!user) return; // Só escuta se estiver logado
 
+        console.log('[Realtime] Tentando conectar ao canal...', user.id);
         const channel = supabase.channel('realtime_feed')
             .on(
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'feed_posts' },
                 async (payload) => {
+                    console.log('[Realtime] Novo post detectado!', payload);
                     const newPostId = payload.new.id;
                     const authorId = payload.new.author_id;
 
                     // Se eu fui o autor, o PostComposer já adicionou na tela localmente (optimistic UI)
                     // E se eu tentar puxar aqui de novo, duplica. Então eu pulo se fui eu.
-                    if (authorId === user.id) return;
+                    if (authorId === user.id) {
+                        console.log('[Realtime] Post ignorado: Eu sou o autor.');
+                        return;
+                    }
 
                     // Busca o post inteiro formatado pra UI (com join de profile etc)
                     const fullPost = await getSinglePost(newPostId);
+                    console.log('[Realtime] Post formatado buscado:', fullPost);
                     if (fullPost) {
                         setPosts(prev => {
                             // Previne o mesmo post entrar 2x em race conditions
                             if (prev.some(p => p.id === fullPost.id)) return prev;
+                            console.log('[Realtime] Renderizando novo post na tela.');
                             return [fullPost, ...prev];
                         });
                     }
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log('[Realtime] Status da subscrição:', status);
+            });
 
         return () => {
+            console.log('[Realtime] Desmontando canal de realtime.');
             supabase.removeChannel(channel);
         };
     }, [user]);
