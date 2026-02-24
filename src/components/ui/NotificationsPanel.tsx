@@ -147,8 +147,8 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                 {open && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, x: -4 }}
-                        animate={{ opacity: 1, scale: 1, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, x: -4 }}
+                        animate={{ opacity: 1, scale: 1, x: 0, pointerEvents: 'auto' }}
+                        exit={{ opacity: 0, scale: 0.95, x: -4, pointerEvents: 'none' }}
                         transition={{ duration: 0.15 }}
                         className={`absolute z-50 glass-popup rounded-[var(--radius-md)] border border-white/10 overflow-hidden ${collapsed
                             ? 'left-full ml-2 top-0 w-[320px]'
@@ -188,48 +188,50 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                     Solicitações de Amizade
                                                 </span>
                                             </div>
-                                            {requests.map((req) => (
-                                                <motion.div
-                                                    key={req.friendshipId}
-                                                    layout
-                                                    initial={{ opacity: 0, y: -4 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, x: -20 }}
-                                                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.03] transition-colors"
-                                                >
-                                                    <Avatar
-                                                        src={req.requester.avatar_url}
-                                                        alt={req.requester.display_name || 'User'}
-                                                        size="sm"
-                                                    />
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-xs font-medium text-white/80 truncate">
-                                                            {req.requester.display_name || req.requester.username}
-                                                        </p>
-                                                        <p className="text-[10px] text-white/30">
-                                                            quer ser seu amigo · {timeAgo(req.created_at)}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                        <button
-                                                            onClick={() => handleAccept(req.friendshipId)}
-                                                            disabled={actingOn === req.friendshipId}
-                                                            className="w-7 h-7 rounded-full bg-[var(--accent-success)]/20 text-[var(--accent-success)] hover:bg-[var(--accent-success)]/30 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40"
-                                                            title="Aceitar"
-                                                        >
-                                                            <UserCheck size={13} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleReject(req.friendshipId)}
-                                                            disabled={actingOn === req.friendshipId}
-                                                            className="w-7 h-7 rounded-full bg-white/[0.06] text-white/40 hover:bg-[var(--accent-danger)]/20 hover:text-[var(--accent-danger)] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40"
-                                                            title="Recusar"
-                                                        >
-                                                            <X size={13} />
-                                                        </button>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
+                                            <AnimatePresence mode="popLayout">
+                                                {requests.map((req) => (
+                                                    <motion.div
+                                                        key={req.friendshipId}
+                                                        layout
+                                                        initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                                                        animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+                                                        exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                                                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.03] transition-colors"
+                                                    >
+                                                        <Avatar
+                                                            src={req.requester.avatar_url}
+                                                            alt={req.requester.display_name || 'User'}
+                                                            size="sm"
+                                                        />
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs font-medium text-white/80 truncate">
+                                                                {req.requester.display_name || req.requester.username}
+                                                            </p>
+                                                            <p className="text-[10px] text-white/30">
+                                                                quer ser seu amigo · {timeAgo(req.created_at)}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <button
+                                                                onClick={() => handleAccept(req.friendshipId)}
+                                                                disabled={actingOn === req.friendshipId}
+                                                                className="w-7 h-7 rounded-full bg-[var(--accent-success)]/20 text-[var(--accent-success)] hover:bg-[var(--accent-success)]/30 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40"
+                                                                title="Aceitar"
+                                                            >
+                                                                <UserCheck size={13} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleReject(req.friendshipId)}
+                                                                disabled={actingOn === req.friendshipId}
+                                                                className="w-7 h-7 rounded-full bg-white/[0.06] text-white/40 hover:bg-[var(--accent-danger)]/20 hover:text-[var(--accent-danger)] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40"
+                                                                title="Recusar"
+                                                            >
+                                                                <X size={13} />
+                                                            </button>
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+                                            </AnimatePresence>
                                         </>
                                     )}
 
@@ -244,56 +246,59 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                     Menções
                                                 </span>
                                             </div>
-                                            {mentions.map((notif) => (
-                                                <motion.div
-                                                    key={notif.id}
-                                                    layout
-                                                    initial={{ opacity: 0, y: -4 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, x: -20 }}
-                                                    className={`flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.03] transition-colors ${!notif.read ? 'bg-white/[0.02]' : ''}`}
-                                                >
-                                                    <div className="relative">
-                                                        <Avatar
-                                                            src={notif.actor?.avatar_url}
-                                                            alt={notif.actor?.display_name || 'User'}
-                                                            size="sm"
-                                                        />
-                                                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
-                                                            {notif.type === 'mention_post'
-                                                                ? <AtSign size={9} className="text-white" />
-                                                                : <MessageCircle size={9} className="text-white" />
-                                                            }
+                                            <AnimatePresence mode="popLayout">
+                                                {mentions.map((notif) => (
+                                                    <motion.div
+                                                        key={notif.id}
+                                                        layout
+                                                        initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                                                        animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+                                                        exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                                                        className={`flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-colors cursor-pointer group ${!notif.read ? 'bg-white/[0.02]' : ''}`}
+                                                        onClick={() => handleDismissMention(notif.id)}
+                                                        title="Clique para descartar"
+                                                    >
+                                                        <div className="relative shrink-0">
+                                                            <Avatar
+                                                                src={notif.actor?.avatar_url}
+                                                                alt={notif.actor?.display_name || 'User'}
+                                                                size="sm"
+                                                            />
+                                                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
+                                                                {notif.type === 'mention_post'
+                                                                    ? <AtSign size={9} className="text-white" />
+                                                                    : <MessageCircle size={9} className="text-white" />
+                                                                }
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-xs text-white/80">
-                                                            <span className="font-medium">
-                                                                {notif.actor?.display_name || notif.actor?.username}
-                                                            </span>
-                                                            {' '}te mencionou em um{' '}
-                                                            {notif.type === 'mention_post' ? 'post' : 'comentário'}
-                                                        </p>
-                                                        {notif.content && (
-                                                            <p className="text-[10px] text-white/30 truncate mt-0.5">
-                                                                "{notif.content.substring(0, 60)}{notif.content.length > 60 ? '...' : ''}"
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs text-white/80">
+                                                                <span className="font-medium">
+                                                                    {notif.actor?.display_name || notif.actor?.username}
+                                                                </span>
+                                                                {' '}te mencionou em um{' '}
+                                                                {notif.type === 'mention_post' ? 'post' : 'comentário'}
                                                             </p>
-                                                        )}
-                                                        <p className="text-[10px] text-white/20 mt-0.5">
-                                                            {timeAgo(notif.created_at)}
-                                                        </p>
-                                                    </div>
-                                                    {!notif.read && (
-                                                        <button
-                                                            onClick={() => handleDismissMention(notif.id)}
-                                                            className="w-6 h-6 rounded-full bg-white/[0.06] text-white/30 hover:text-white/60 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                                                            title="Marcar como lida"
-                                                        >
-                                                            <X size={11} />
-                                                        </button>
-                                                    )}
-                                                </motion.div>
-                                            ))}
+                                                            {notif.content && (
+                                                                <p className="text-[10px] text-white/30 truncate mt-0.5">
+                                                                    "{notif.content.substring(0, 60)}{notif.content.length > 60 ? '...' : ''}"
+                                                                </p>
+                                                            )}
+                                                            <p className="text-[10px] text-white/20 mt-0.5">
+                                                                {timeAgo(notif.created_at)}
+                                                            </p>
+                                                        </div>
+                                                        <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <button
+                                                                className="w-6 h-6 rounded-full bg-white/[0.06] text-white/30 hover:text-white/60 flex items-center justify-center transition-colors"
+                                                                title="Marcar como lida"
+                                                            >
+                                                                <X size={11} />
+                                                            </button>
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+                                            </AnimatePresence>
                                         </>
                                     )}
                                 </div>
