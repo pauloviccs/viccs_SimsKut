@@ -35,7 +35,8 @@ const tabs: { key: ProfileTab; label: string; icon: any }[] = [
 ];
 
 export function ProfilePage() {
-    const { username } = useParams<{ username: string }>();
+    const { username: rawUsername } = useParams<{ username: string }>();
+    const username = rawUsername ? decodeURIComponent(rawUsername) : undefined;
     const { user } = useAuthStore();
 
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -313,7 +314,7 @@ export function ProfilePage() {
                                                     <div className="text-xs text-white/30 mb-2 flex items-center gap-1">
                                                         Respondeu a
                                                         <Link
-                                                            to={`/profile/${comment.post.author?.username}`}
+                                                            to={`/profile/${encodeURIComponent(comment.post.author?.username || '')}`}
                                                             className="text-[var(--accent-primary)] hover:underline"
                                                         >
                                                             @{comment.post.author?.username}

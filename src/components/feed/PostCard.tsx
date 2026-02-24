@@ -78,7 +78,7 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
         >
             {/* Header */}
             <div className="flex items-start gap-3">
-                <Link to={`/profile/${post.author?.username}`}>
+                <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`}>
                     <Avatar
                         src={post.author?.avatar_url}
                         alt={post.author?.display_name || 'User'}
@@ -88,12 +88,12 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <Link to={`/profile/${post.author?.username}`} className="hover:underline">
+                        <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`} className="hover:underline">
                             <span className="text-sm font-semibold text-white/90 truncate">
                                 {post.author?.display_name || 'Anônimo'}
                             </span>
                         </Link>
-                        <Link to={`/profile/${post.author?.username}`} className="hover:underline">
+                        <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`} className="hover:underline">
                             <span className="text-xs text-white/30">
                                 @{post.author?.username || 'user'}
                             </span>

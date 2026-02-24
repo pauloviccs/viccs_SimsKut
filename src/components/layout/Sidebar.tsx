@@ -97,7 +97,7 @@ export function Sidebar() {
                 {/* Meu Perfil — link dinâmico */}
                 {profile?.username && (
                     <NavLink
-                        to={`/profile/${profile.username}`}
+                        to={`/profile/${encodeURIComponent(profile.username)}`}
                         title={collapsed ? profileItem.label : undefined}
                         className={({ isActive }) => `
                             flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5
