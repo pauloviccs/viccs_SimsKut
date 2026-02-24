@@ -68,12 +68,17 @@ export async function createMentionNotification(
     if (error) console.error('Erro ao criar notificação:', error);
 }
 
-/** Marca notificação como lida */
-export async function markNotificationRead(notificationId: string): Promise<void> {
-    await supabase
+/** Exclui a notificação do banco de dados */
+export async function deleteNotification(notificationId: string): Promise<void> {
+    const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .delete()
         .eq('id', notificationId);
+
+    if (error) {
+        console.error('Erro ao deletar notificação:', error);
+        throw error;
+    }
 }
 
 // ======== USER SEARCH (Autocomplete @) ========

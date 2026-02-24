@@ -10,7 +10,7 @@ import {
 } from '@/lib/friendshipService';
 import {
     getNotifications,
-    markNotificationRead,
+    deleteNotification,
     type AppNotification,
 } from '@/lib/notificationService';
 
@@ -95,7 +95,7 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
 
     const handleDismissMention = async (id: string) => {
         try {
-            await markNotificationRead(id);
+            await deleteNotification(id);
             setMentions((prev) => prev.filter((m) => m.id !== id));
         } catch (err) { console.error(err); }
     };
