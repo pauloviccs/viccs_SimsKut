@@ -28,7 +28,7 @@ export function renderMentions(text: string): ReactNode[] {
             <Link
                 key={`mention-${match.index}`}
                 to={`/profile/${encodeURIComponent(username)}`}
-                className="text-[var(--accent-primary)] hover:underline font-medium"
+                className="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded-md bg-white/5 border border-white/10 text-[var(--accent-primary)] hover:bg-white/10 hover:text-white transition-all font-medium whitespace-nowrap"
                 onClick={(e) => e.stopPropagation()}
             >
                 @{username}
