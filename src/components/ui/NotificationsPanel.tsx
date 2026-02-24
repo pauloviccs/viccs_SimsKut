@@ -131,7 +131,7 @@ export function NotificationsPanel({ collapsed = false }: NotificationsPanelProp
                         animate={{ opacity: 1, scale: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.95, x: -4 }}
                         transition={{ duration: 0.15 }}
-                        className={`absolute z-50 glass-heavy rounded-[var(--radius-md)] border border-white/10 overflow-hidden ${collapsed
+                        className={`absolute z-50 glass-popup rounded-[var(--radius-md)] border border-white/10 overflow-hidden ${collapsed
                             ? 'left-full ml-2 top-0 w-[300px]'
                             : 'left-0 top-full mt-1 w-full min-w-[280px]'
                             }`}

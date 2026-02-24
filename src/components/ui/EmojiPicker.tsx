@@ -148,7 +148,7 @@ export function EmojiPicker({ onSelect, size = 18, position = 'top' }: EmojiPick
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: position === 'top' ? 8 : -8 }}
                         transition={{ duration: 0.15 }}
-                        className={`absolute ${popupPosition} right-0 z-50 w-[320px] sm:w-[352px] glass-heavy rounded-[var(--radius-md)] border border-white/10 overflow-hidden`}
+                        className={`absolute ${popupPosition} right-0 z-50 w-[320px] sm:w-[352px] glass-popup rounded-[var(--radius-md)] border border-white/10 overflow-hidden`}
                     >
                         {/* Category Tabs */}
                         <div className="flex border-b border-white/[0.08] px-1">
@@ -158,8 +158,8 @@ export function EmojiPicker({ onSelect, size = 18, position = 'top' }: EmojiPick
                                     onClick={() => setActiveCategory(i)}
                                     type="button"
                                     className={`flex-1 py-2 text-center text-base transition-colors cursor-pointer ${activeCategory === i
-                                            ? 'bg-white/[0.08] border-b-2 border-[var(--accent-primary)]'
-                                            : 'hover:bg-white/[0.04]'
+                                        ? 'bg-white/[0.08] border-b-2 border-[var(--accent-primary)]'
+                                        : 'hover:bg-white/[0.04]'
                                         }`}
                                     title={cat.label}
                                 >
