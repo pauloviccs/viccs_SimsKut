@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { Home, Image, Lock, Users, Settings } from 'lucide-react';
+import { NotificationsPanel } from '@/components/ui/NotificationsPanel';
 
 const navItems = [
     { to: '/feed', icon: Home, label: 'Feed' },
@@ -32,6 +33,10 @@ export function Navbar() {
                         <span>{label}</span>
                     </NavLink>
                 ))}
+                {/* Notificações — não é NavLink, é popup */}
+                <div className="flex flex-col items-center gap-0.5 min-w-[44px]">
+                    <NotificationsPanel collapsed />
+                </div>
             </div>
         </nav>
     );

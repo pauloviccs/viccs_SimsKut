@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Trash2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
+import { EmojiPicker } from '@/components/ui/EmojiPicker';
 import { useAuthStore } from '@/store/authStore';
 import { getComments, addComment, deleteComment } from '@/lib/feedService';
 import type { PostComment } from '@/types';
@@ -133,7 +134,7 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                     alt={profile?.display_name || 'User'}
                     size="sm"
                 />
-                <div className="flex-1 flex items-center gap-2 bg-white/[0.04] rounded-full px-3 py-1.5 border border-white/[0.06]">
+                <div className="flex-1 flex items-center gap-1 bg-white/[0.04] rounded-full px-3 py-1.5 border border-white/[0.06]">
                     <input
                         value={text}
                         onChange={(e) => setText(e.target.value)}
@@ -141,6 +142,11 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                         placeholder="Escreva um comentário..."
                         className="flex-1 bg-transparent text-xs text-white/80 placeholder-white/25 outline-none"
                         maxLength={500}
+                    />
+                    <EmojiPicker
+                        onSelect={(emoji) => setText((prev) => prev + emoji)}
+                        size={14}
+                        position="top"
                     />
                     <button
                         onClick={handleSend}

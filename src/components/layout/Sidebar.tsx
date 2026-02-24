@@ -17,6 +17,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useSidebarStore } from '@/store/sidebarStore';
 import { signOut } from '@/lib/authService';
 import { Avatar } from '@/components/ui/Avatar';
+import { NotificationsPanel } from '@/components/ui/NotificationsPanel';
 
 const navItems = [
     { to: '/feed', icon: Home, label: 'Feed' },
@@ -89,6 +90,13 @@ export function Sidebar() {
                             </div>
                         )}
                     </div>
+                </div>
+            )}
+
+            {/* === Notifications === */}
+            {user && (
+                <div className="mx-3 mb-2">
+                    <NotificationsPanel collapsed={collapsed} />
                 </div>
             )}
 

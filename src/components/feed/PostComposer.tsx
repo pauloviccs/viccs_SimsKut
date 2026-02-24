@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ImagePlus, Images, Send, X } from 'lucide-react';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { Avatar } from '@/components/ui/Avatar';
+import { EmojiPicker } from '@/components/ui/EmojiPicker';
 import { useAuthStore } from '@/store/authStore';
 import { createPost } from '@/lib/feedService';
 import { processAndUpload, uploadRawFile } from '@/lib/imageService';
@@ -171,6 +172,11 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                                 >
                                     <Images size={18} />
                                 </button>
+                                <EmojiPicker
+                                    onSelect={(emoji) => setContent((prev) => prev + emoji)}
+                                    size={18}
+                                    position="bottom"
+                                />
                             </div>
 
                             <div className="flex items-center gap-3">

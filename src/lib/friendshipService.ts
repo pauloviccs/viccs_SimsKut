@@ -126,3 +126,36 @@ export async function getFriends(userId: string): Promise<Profile[]> {
         return requester.id === userId ? addressee : requester;
     });
 }
+
+// ======== PENDING REQUESTS (NOTIFICATIONS) ========
+
+export interface PendingRequest {
+    friendshipId: string;
+    requester: Profile;
+    created_at: string;
+}
+
+/** Busca todas as solicitações pendentes recebidas pelo usuário logado */
+export async function getPendingRequests(): Promise<PendingRequest[]> {
+    const userId = (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) return [];
+
+    const { data, error } = await supabase
+        .from('friendships')
+        .select(`
+            id,
+            created_at,
+            requester:profiles!requester_id(*)
+        `)
+        .eq('addressee_id', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map((f: any) => ({
+        friendshipId: f.id,
+        requester: Array.isArray(f.requester) ? f.requester[0] : f.requester,
+        created_at: f.created_at,
+    }));
+}
