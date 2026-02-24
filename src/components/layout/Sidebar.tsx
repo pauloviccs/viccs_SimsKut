@@ -102,45 +102,70 @@ export function Sidebar() {
 
             {/* === Navigation === */}
             <nav className="flex flex-col gap-1 flex-1 overflow-y-auto px-3">
-                {/* Meu Perfil — link dinâmico */}
-                {profile?.username && (
-                    <NavLink
-                        to={`/profile/${encodeURIComponent(profile.username)}`}
-                        title={collapsed ? profileItem.label : undefined}
-                        className={({ isActive }) => `
-                            flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5
-                            rounded-[10px] text-sm font-medium
-                            transition-all duration-[150ms]
-                            ${isActive
-                                ? 'bg-white/15 text-white'
-                                : 'text-white/50 hover:text-white/80 hover:bg-white/[0.06]'
-                            }
-                        `}
-                    >
-                        <profileItem.icon size={18} className="shrink-0" />
-                        {!collapsed && profileItem.label}
-                    </NavLink>
-                )}
+                {navItems.map(({ to, icon: Icon, label }) => {
+                    // Inject profile right after Feed
+                    if (label === 'Feed') {
+                        return (
+                            <div key="feed-group" className="contents">
+                                <NavLink
+                                    to={to}
+                                    title={collapsed ? label : undefined}
+                                    className={({ isActive }) => `
+                                        flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5
+                                        rounded-[10px] text-sm font-medium
+                                        transition-all duration-[150ms]
+                                        ${isActive
+                                            ? 'bg-white/15 text-white'
+                                            : 'text-white/50 hover:text-white/80 hover:bg-white/[0.06]'
+                                        }
+                                    `}
+                                >
+                                    <Icon size={18} className="shrink-0" />
+                                    {!collapsed && label}
+                                </NavLink>
+                                {profile?.username && (
+                                    <NavLink
+                                        key="profile"
+                                        to={`/profile/${encodeURIComponent(profile.username)}`}
+                                        title={collapsed ? profileItem.label : undefined}
+                                        className={({ isActive }) => `
+                                            flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5
+                                            rounded-[10px] text-sm font-medium
+                                            transition-all duration-[150ms]
+                                            ${isActive
+                                                ? 'bg-white/15 text-white'
+                                                : 'text-white/50 hover:text-white/80 hover:bg-white/[0.06]'
+                                            }
+                                        `}
+                                    >
+                                        <profileItem.icon size={18} className="shrink-0" />
+                                        {!collapsed && profileItem.label}
+                                    </NavLink>
+                                )}
+                            </div>
+                        );
+                    }
 
-                {navItems.map(({ to, icon: Icon, label }) => (
-                    <NavLink
-                        key={to}
-                        to={to}
-                        title={collapsed ? label : undefined}
-                        className={({ isActive }) => `
-                            flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5
-                            rounded-[10px] text-sm font-medium
-                            transition-all duration-[150ms]
-                            ${isActive
-                                ? 'bg-white/15 text-white'
-                                : 'text-white/50 hover:text-white/80 hover:bg-white/[0.06]'
-                            }
-                        `}
-                    >
-                        <Icon size={18} className="shrink-0" />
-                        {!collapsed && label}
-                    </NavLink>
-                ))}
+                    return (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            title={collapsed ? label : undefined}
+                            className={({ isActive }) => `
+                                flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5
+                                rounded-[10px] text-sm font-medium
+                                transition-all duration-[150ms]
+                                ${isActive
+                                    ? 'bg-white/15 text-white'
+                                    : 'text-white/50 hover:text-white/80 hover:bg-white/[0.06]'
+                                }
+                            `}
+                        >
+                            <Icon size={18} className="shrink-0" />
+                            {!collapsed && label}
+                        </NavLink>
+                    );
+                })}
 
                 {isAdmin && (
                     <NavLink

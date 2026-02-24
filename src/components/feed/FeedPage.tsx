@@ -1,50 +1,96 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Loader2 } from 'lucide-react';
-import { GlassCard } from '@/components/ui/GlassCard';
+import { Loader2 } from 'lucide-react';
 import { PostComposer } from './PostComposer';
 import { PostCard } from './PostCard';
-import { getPosts } from '@/lib/feedService';
+import { getPosts, getSinglePost } from '@/lib/feedService';
+import { supabase } from '@/lib/supabaseClient';
 import type { FeedPost } from '@/types';
+import { useAuthStore } from '@/store/authStore';
+import { MessageSquare } from 'lucide-react'; // Keep MessageSquare for the empty state
+import { GlassCard } from '@/components/ui/GlassCard'; // Keep GlassCard for the empty state
 
 export function FeedPage() {
+    const { user } = useAuthStore();
     const [posts, setPosts] = useState<FeedPost[]>([]);
     const [loading, setLoading] = useState(true);
+    const [, setError] = useState('');
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-
     const PAGE_SIZE = 20;
 
+    const initialFetchDone = useRef(false);
+
+    const fetchPosts = async () => {
+        try {
+            setLoading(true);
+            const data = await getPosts(PAGE_SIZE, 0);
+            setPosts(data);
+            setHasMore(data.length === PAGE_SIZE);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        let mounted = true;
-        getPosts(PAGE_SIZE, 0)
-            .then((data) => {
-                if (mounted) {
-                    setPosts(data);
-                    setHasMore(data.length === PAGE_SIZE);
-                }
-            })
-            .catch(console.error)
-            .finally(() => {
-                if (mounted) setLoading(false);
-            });
-        return () => { mounted = false; };
+        if (!initialFetchDone.current) {
+            fetchPosts();
+            initialFetchDone.current = true;
+        }
     }, []);
 
-    const loadMore = async () => {
-        if (loadingMore || !hasMore) return;
-        setLoadingMore(true);
+    // Subscrição a novos posts via Supabase Realtime
+    useEffect(() => {
+        if (!user) return; // Só escuta se estiver logado
+
+        const channel = supabase.channel('realtime_feed')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'feed_posts' },
+                async (payload) => {
+                    const newPostId = payload.new.id;
+                    const authorId = payload.new.author_id;
+
+                    // Se eu fui o autor, o PostComposer já adicionou na tela localmente (optimistic UI)
+                    // E se eu tentar puxar aqui de novo, duplica. Então eu pulo se fui eu.
+                    if (authorId === user.id) return;
+
+                    // Busca o post inteiro formatado pra UI (com join de profile etc)
+                    const fullPost = await getSinglePost(newPostId);
+                    if (fullPost) {
+                        setPosts(prev => {
+                            // Previne o mesmo post entrar 2x em race conditions
+                            if (prev.some(p => p.id === fullPost.id)) return prev;
+                            return [fullPost, ...prev];
+                        });
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user]);
+
+    const loadMore = useCallback(async () => {
+        if (loadingMore || !hasMore || posts.length === 0) return;
 
         try {
-            const more = await getPosts(PAGE_SIZE, posts.length);
-            setPosts((prev) => [...prev, ...more]);
-            setHasMore(more.length === PAGE_SIZE);
-        } catch {
-            // ignore
+            setLoadingMore(true);
+            const data = await getPosts(PAGE_SIZE, posts.length);
+            if (data.length > 0) {
+                setPosts(prev => [...prev, ...data]);
+            }
+            setHasMore(data.length === PAGE_SIZE);
+        } catch (err) {
+            console.error('Erro ao carregar mais posts:', err);
         } finally {
             setLoadingMore(false);
         }
-    };
+    }, [loadingMore, hasMore, posts.length]);
 
     const handlePostCreated = (post: FeedPost) => {
         setPosts((prev) => [post, ...prev]);

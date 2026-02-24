@@ -49,6 +49,43 @@ export async function getPosts(limit = 20, offset = 0): Promise<FeedPost[]> {
     }));
 }
 
+/** Busca um único post recém-criado formatado para a UI */
+export async function getSinglePost(postId: string): Promise<FeedPost | null> {
+    const userId = (await supabase.auth.getUser()).data.user?.id;
+
+    const { data, error } = await supabase
+        .from('feed_posts')
+        .select(`
+            *,
+            author:profiles!author_id(*),
+            post_likes(count),
+            post_comments(count)
+        `)
+        .eq('id', postId)
+        .single();
+
+    if (error || !data) return null;
+
+    let liked_by_me = false;
+    if (userId) {
+        const { data: likeData } = await supabase
+            .from('post_likes')
+            .select('id')
+            .eq('post_id', postId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        liked_by_me = !!likeData;
+    }
+
+    return {
+        ...data,
+        author: Array.isArray(data.author) ? data.author[0] : data.author,
+        likes_count: data.post_likes?.[0]?.count ?? 0,
+        comments_count: data.post_comments?.[0]?.count ?? 0,
+        liked_by_me,
+    };
+}
+
 /** Cria um novo post */
 export async function createPost(
     authorId: string,
