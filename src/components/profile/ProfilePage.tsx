@@ -15,6 +15,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { PostCard } from '@/components/feed/PostCard';
 import { FriendshipButton } from './FriendshipButton';
 import { ProfileEditModal } from './ProfileEditModal';
+import { FriendsListModal } from './FriendsListModal';
 import { useAuthStore } from '@/store/authStore';
 import {
     fetchProfileByUsername,
@@ -44,6 +45,7 @@ export function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<ProfileTab>('posts');
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showFriendsList, setShowFriendsList] = useState(false);
 
     // Tab data
     const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -229,10 +231,13 @@ export function ProfilePage() {
 
                 {/* Counters */}
                 <div className="flex items-center gap-5 mt-3 text-sm">
-                    <span className="text-white/90 font-semibold">
+                    <button
+                        onClick={() => setShowFriendsList(true)}
+                        className="text-white/90 font-semibold hover:underline cursor-pointer group"
+                    >
                         {stats.friends_count}
-                        <span className="text-white/40 font-normal ml-1">Amigos</span>
-                    </span>
+                        <span className="text-white/40 font-normal ml-1 group-hover:text-white/60 transition-colors">Amigos</span>
+                    </button>
                     <span className="text-white/90 font-semibold">
                         {stats.posts_count}
                         <span className="text-white/40 font-normal ml-1">Posts</span>
@@ -379,6 +384,15 @@ export function ProfilePage() {
                     profile={profile}
                     onClose={() => setShowEditModal(false)}
                     onSave={handleProfileUpdated}
+                />
+            )}
+
+            {/* =========== FRIENDS LIST MODAL =========== */}
+            {showFriendsList && profile && (
+                <FriendsListModal
+                    userId={profile.id}
+                    title={`Amigos de ${profile.display_name || profile.username}`}
+                    onClose={() => setShowFriendsList(false)}
                 />
             )}
         </div>

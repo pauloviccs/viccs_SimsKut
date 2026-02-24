@@ -127,6 +127,29 @@ export async function getFriends(userId: string): Promise<Profile[]> {
     });
 }
 
+/** Lista amigos aceitos com estatísticas incluídas */
+export async function getFriendsWithStats(userId: string): Promise<(Profile & { stats: { friends_count: number; posts_count: number; photos_count: number; } })[]> {
+    const friends = await getFriends(userId);
+
+    // Buscar stats para cada amigo em paralelo
+    const friendsWithStats = await Promise.all(
+        friends.map(async (friend) => {
+            const { data: statsData, error: statsError } = await supabase
+                .rpc('get_profile_stats', { target_id: friend.id })
+                .maybeSingle();
+
+            const stats = (statsError || !statsData ? { friends_count: 0, posts_count: 0, photos_count: 0 } : statsData) as { friends_count: number; posts_count: number; photos_count: number; };
+
+            return {
+                ...friend,
+                stats
+            };
+        })
+    );
+
+    return friendsWithStats;
+}
+
 // ======== PENDING REQUESTS (NOTIFICATIONS) ========
 
 export interface PendingRequest {
