@@ -12,7 +12,7 @@ const navItems = [
 
 export function Navbar() {
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-heavy border-t border-white/10">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-heavy border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
             <div className="flex items-center justify-around py-2 px-1">
                 {navItems.map(({ to, icon: Icon, label }) => (
                     <NavLink

@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { PostComposer } from './PostComposer';
 import { PostCard } from './PostCard';
 import { getPosts } from '@/lib/feedService';
+import { useAuthStore } from '@/store/authStore';
 import type { FeedPost } from '@/types';
 
 export function FeedPage() {
+    const { profile } = useAuthStore();
     const [posts, setPosts] = useState<FeedPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -72,13 +75,21 @@ export function FeedPage() {
 
     return (
         <div className="max-w-2xl mx-auto">
-            <motion.h1
+            <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-2xl font-bold mb-6"
+                className="flex items-center justify-between mb-6"
             >
-                Feed
-            </motion.h1>
+                <h1 className="text-2xl font-bold">Feed</h1>
+                {profile?.username && (
+                    <Link
+                        to={`/profile/${encodeURIComponent(profile.username)}`}
+                        className="md:hidden text-xl font-bold text-white hover:text-white/80 transition-colors"
+                    >
+                        Perfil
+                    </Link>
+                )}
+            </motion.div>
 
             <PostComposer onPostCreated={handlePostCreated} />
 

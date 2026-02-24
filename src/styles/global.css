@@ -17,13 +17,14 @@ body {
     font-family: var(--font-text);
     color: var(--text-primary);
     background: #050508;
-    min-height: 100vh;
-    overflow-x: hidden;
+    min-height: 100dvh;
+    overflow-x: clip;
 }
 
 #root {
-    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
+    overflow-x: clip;
 }
 
 /* =============================================
