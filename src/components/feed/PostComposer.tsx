@@ -119,7 +119,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
 
     return (
         <>
-            <div className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-4 mb-6">
+            <div className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-4 mb-6 relative z-20">
                 <div className="flex gap-3">
                     <Avatar
                         src={profile?.avatar_url}

@@ -16,7 +16,7 @@ export function Navbar() {
     ];
 
     return (
-        <nav className="md:hidden flex fixed bottom-0 left-0 right-0 z-50 glass-heavy border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
+        <nav className="md:hidden flex fixed bottom-0 left-0 right-0 z-50 glass-heavy border-t border-white/10 pb-[env(safe-area-inset-bottom)] transform-gpu">
             <div className="flex w-full items-center justify-between py-2 px-3">
                 {navItems.map(({ to, icon: Icon, label }) => (
                     <NavLink
