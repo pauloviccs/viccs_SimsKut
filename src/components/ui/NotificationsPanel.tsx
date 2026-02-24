@@ -21,6 +21,7 @@ import {
 
 interface NotificationsPanelProps {
     collapsed?: boolean;
+    upward?: boolean;
 }
 
 function timeAgo(date: string): string {
@@ -34,7 +35,7 @@ function timeAgo(date: string): string {
     return `${days}d`;
 }
 
-export function NotificationsPanel({ collapsed = false }: NotificationsPanelProps) {
+export function NotificationsPanel({ collapsed = false, upward = false }: NotificationsPanelProps) {
     const [open, setOpen] = useState(false);
     const [requests, setRequests] = useState<PendingRequest[]>([]);
     const [mentions, setMentions] = useState<AppNotification[]>([]);
@@ -136,7 +137,9 @@ export function NotificationsPanel({ collapsed = false }: NotificationsPanelProp
                         transition={{ duration: 0.15 }}
                         className={`absolute z-50 glass-popup rounded-[var(--radius-md)] border border-white/10 overflow-hidden ${collapsed
                             ? 'left-full ml-2 top-0 w-[320px]'
-                            : 'left-0 top-full mt-1 w-full min-w-[300px]'
+                            : upward
+                                ? 'right-0 bottom-full mb-2 w-[300px]'
+                                : 'left-0 top-full mt-1 w-full min-w-[300px]'
                             }`}
                     >
                         {/* Header */}

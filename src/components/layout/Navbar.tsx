@@ -35,7 +35,7 @@ export function Navbar() {
                 ))}
                 {/* Notificações — não é NavLink, é popup */}
                 <div className="flex flex-col items-center gap-0.5 min-w-[44px]">
-                    <NotificationsPanel collapsed />
+                    <NotificationsPanel collapsed={false} upward={true} />
                 </div>
             </div>
         </nav>
