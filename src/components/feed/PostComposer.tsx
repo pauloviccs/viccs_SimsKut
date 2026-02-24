@@ -4,8 +4,10 @@ import { ImagePlus, Images, Send, X } from 'lucide-react';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { Avatar } from '@/components/ui/Avatar';
 import { EmojiPicker } from '@/components/ui/EmojiPicker';
+import { MentionInput } from '@/components/ui/MentionInput';
 import { useAuthStore } from '@/store/authStore';
 import { createPost } from '@/lib/feedService';
+import { processMentions } from '@/lib/notificationService';
 import { processAndUpload, uploadRawFile } from '@/lib/imageService';
 import type { FeedPost } from '@/types';
 import { GalleryPicker } from './GalleryPicker';
@@ -99,6 +101,11 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
             const post = await createPost(user.id, content.trim() || null, imageUrl);
             onPostCreated(post);
 
+            // Processar menções (@) e notificar
+            if (content.trim()) {
+                processMentions(content.trim(), user.id, 'mention_post', post.id).catch(console.error);
+            }
+
             // Reset
             setContent('');
             removeImage();
@@ -121,11 +128,12 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                     />
 
                     <div className="flex-1 min-w-0">
-                        <textarea
+                        <MentionInput
                             value={content}
-                            onChange={(e) => setContent(e.target.value)}
+                            onChange={setContent}
                             placeholder="O que está acontecendo nos Sims? 🎮"
                             className="w-full bg-transparent text-sm text-white/90 placeholder-white/30 resize-none outline-none min-h-[60px]"
+                            mode="textarea"
                             rows={2}
                             maxLength={MAX_CHARS + 10}
                         />

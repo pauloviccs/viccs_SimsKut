@@ -3,8 +3,11 @@ import { motion } from 'framer-motion';
 import { Send, Trash2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { EmojiPicker } from '@/components/ui/EmojiPicker';
+import { MentionInput } from '@/components/ui/MentionInput';
 import { useAuthStore } from '@/store/authStore';
 import { getComments, addComment, deleteComment } from '@/lib/feedService';
+import { processMentions } from '@/lib/notificationService';
+import { renderMentions } from '@/lib/renderMentions';
 import type { PostComment } from '@/types';
 
 interface CommentSectionProps {
@@ -54,6 +57,9 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
             setComments((prev) => [...prev, comment]);
             setText('');
             onCommentCountChange?.(comments.length + 1);
+
+            // Processar menções (@) e notificar
+            processMentions(text.trim(), user.id, 'mention_comment', comment.id).catch(console.error);
         } catch {
             // ignore
         } finally {
@@ -109,7 +115,7 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                                         </span>
                                     </div>
                                     <p className="text-xs text-white/60 mt-0.5 break-words">
-                                        {comment.content}
+                                        {renderMentions(comment.content)}
                                     </p>
                                 </div>
                                 {(user?.id === comment.author_id || isAdmin) && (
@@ -135,9 +141,9 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                     size="sm"
                 />
                 <div className="flex-1 flex items-center gap-1 bg-white/[0.04] rounded-full px-3 py-1.5 border border-white/[0.06]">
-                    <input
+                    <MentionInput
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={setText}
                         onKeyDown={handleKeyDown}
                         placeholder="Escreva um comentário..."
                         className="flex-1 bg-transparent text-xs text-white/80 placeholder-white/25 outline-none"

@@ -654,6 +654,56 @@ $$ LANGUAGE sql SECURITY DEFINER;
 -- WHERE username = 'SEU_USERNAME_AQUI';
 
 -- =============================================
--- FIM DO SCHEMA — SimsKut
+-- FIM DO SCHEMA ORIGINAL — SimsKut
 -- Execute este SQL inteiro no Supabase SQL Editor
 -- =============================================
+
+
+-- ╔══════════════════════════════════════════════╗
+-- ║  10. TABELA: notifications                  ║
+-- ║  Notificações de menções (@) em posts/cmts  ║
+-- ╚══════════════════════════════════════════════╝
+
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    actor_id    UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    type        TEXT NOT NULL CHECK (type IN ('mention_post', 'mention_comment')),
+    reference_id UUID,
+    content     TEXT,
+    read        BOOLEAN DEFAULT FALSE,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON public.notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_created ON public.notifications(created_at DESC);
+
+COMMENT ON TABLE public.notifications IS 'Notificações de menções. type: mention_post ou mention_comment';
+
+-- RLS
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+-- Usuário vê apenas as próprias notificações
+CREATE POLICY "notifications_select_own"
+    ON public.notifications FOR SELECT
+    TO authenticated
+    USING (user_id = auth.uid());
+
+-- Qualquer autenticado pode criar notificação (ao mencionar alguém)
+CREATE POLICY "notifications_insert_authenticated"
+    ON public.notifications FOR INSERT
+    TO authenticated
+    WITH CHECK (actor_id = auth.uid());
+
+-- Usuário pode atualizar as próprias (marcar como lida)
+CREATE POLICY "notifications_update_own"
+    ON public.notifications FOR UPDATE
+    TO authenticated
+    USING (user_id = auth.uid());
+
+-- Usuário pode deletar as próprias
+CREATE POLICY "notifications_delete_own"
+    ON public.notifications FOR DELETE
+    TO authenticated
+    USING (user_id = auth.uid());
+

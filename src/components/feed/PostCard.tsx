@@ -6,6 +6,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { CommentSection } from './CommentSection';
 import { useAuthStore } from '@/store/authStore';
 import { toggleLike, deletePost } from '@/lib/feedService';
+import { renderMentions } from '@/lib/renderMentions';
 import type { FeedPost } from '@/types';
 
 interface PostCardProps {
@@ -136,7 +137,7 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
             {/* Content */}
             {post.content && (
                 <p className="text-sm text-white/80 mt-3 whitespace-pre-wrap break-words">
-                    {post.content}
+                    {renderMentions(post.content)}
                 </p>
             )}
 
