@@ -8,11 +8,19 @@ export interface Profile {
     username: string;
     display_name: string | null;
     avatar_url: string | null;
+    banner_url: string | null;
     bio: string | null;
+    website_url: string | null;
     invite_code_used: string | null;
     is_admin: boolean;
     tag_changed: boolean;
     created_at: string;
+}
+
+export interface ProfileStats {
+    friends_count: number;
+    posts_count: number;
+    photos_count: number;
 }
 
 export interface InviteCode {

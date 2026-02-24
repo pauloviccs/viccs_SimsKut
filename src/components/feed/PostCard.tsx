@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Trash2, MoreHorizontal } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
@@ -77,20 +78,26 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
         >
             {/* Header */}
             <div className="flex items-start gap-3">
-                <Avatar
-                    src={post.author?.avatar_url}
-                    alt={post.author?.display_name || 'User'}
-                    size="md"
-                />
+                <Link to={`/profile/${post.author?.username}`}>
+                    <Avatar
+                        src={post.author?.avatar_url}
+                        alt={post.author?.display_name || 'User'}
+                        size="md"
+                    />
+                </Link>
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-white/90 truncate">
-                            {post.author?.display_name || 'Anônimo'}
-                        </span>
-                        <span className="text-xs text-white/30">
-                            @{post.author?.username || 'user'}
-                        </span>
+                        <Link to={`/profile/${post.author?.username}`} className="hover:underline">
+                            <span className="text-sm font-semibold text-white/90 truncate">
+                                {post.author?.display_name || 'Anônimo'}
+                            </span>
+                        </Link>
+                        <Link to={`/profile/${post.author?.username}`} className="hover:underline">
+                            <span className="text-xs text-white/30">
+                                @{post.author?.username || 'user'}
+                            </span>
+                        </Link>
                         <span className="text-xs text-white/20">·</span>
                         <span className="text-xs text-white/30">
                             {timeAgo(post.created_at)}
@@ -150,8 +157,8 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                 <button
                     onClick={handleLike}
                     className={`flex items-center gap-1.5 text-sm transition-colors cursor-pointer ${liked
-                            ? 'text-[var(--accent-danger)]'
-                            : 'text-white/40 hover:text-[var(--accent-danger)]'
+                        ? 'text-[var(--accent-danger)]'
+                        : 'text-white/40 hover:text-[var(--accent-danger)]'
                         }`}
                 >
                     <Heart size={16} fill={liked ? 'currentColor' : 'none'} />

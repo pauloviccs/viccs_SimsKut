@@ -13,6 +13,7 @@ import { FamilyTree } from '@/components/family/FamilyTree';
 import { AuthCallback } from '@/components/auth/AuthCallback';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { SettingsPage } from '@/components/settings/SettingsPage';
+import { ProfilePage } from '@/components/profile/ProfilePage';
 
 export default function App() {
     return (
@@ -40,6 +41,7 @@ export default function App() {
                 <Route path="/family" element={<FamilyConfig />} />
                 <Route path="/family-tree" element={<FamilyTree />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/profile/:username" element={<ProfilePage />} />
             </Route>
 
             {/* Admin — protegido + adminOnly */}

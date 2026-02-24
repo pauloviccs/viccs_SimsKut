@@ -621,6 +621,31 @@ CREATE POLICY "posts_read" ON storage.objects FOR SELECT
 
 
 -- ╔══════════════════════════════════════════════════╗
+-- ║  PROFILE UPDATES — Colunas novas + RPC          ║
+-- ╚══════════════════════════════════════════════════════╝
+
+-- Novas colunas do perfil (banner e website)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS banner_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS website_url TEXT;
+
+-- Storage policy de UPDATE para avatars (banner reutiliza mesmo bucket)
+CREATE POLICY "avatars_update" ON storage.objects FOR UPDATE
+    TO authenticated
+    USING (bucket_id = 'avatars' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+-- RPC para contadores do perfil (evita N+1 queries)
+CREATE OR REPLACE FUNCTION get_profile_stats(target_id UUID)
+RETURNS JSON AS $$
+  SELECT json_build_object(
+    'friends_count', (SELECT COUNT(*)::INT FROM friendships
+      WHERE (requester_id = target_id OR addressee_id = target_id) AND status = 'accepted'),
+    'posts_count', (SELECT COUNT(*)::INT FROM feed_posts WHERE author_id = target_id),
+    'photos_count', (SELECT COUNT(*)::INT FROM photos WHERE owner_id = target_id)
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
+
+
+-- ╔══════════════════════════════════════════════════╗
 -- ║  SEED: Primeiro admin (ALTERE O EMAIL!)         ║
 -- ╚══════════════════════════════════════════════════════╝
 

@@ -1,7 +1,7 @@
 interface AvatarProps {
     src?: string | null;
     alt?: string;
-    size?: 'sm' | 'md' | 'lg' | 'xl';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
     className?: string;
 }
 
@@ -10,6 +10,7 @@ const sizes: Record<string, string> = {
     md: 'w-10 h-10 text-sm',
     lg: 'w-14 h-14 text-base',
     xl: 'w-20 h-20 text-lg',
+    '2xl': 'w-32 h-32 text-2xl',
 };
 
 export function Avatar({ src, alt = 'Avatar', size = 'md', className = '' }: AvatarProps) {
