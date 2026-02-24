@@ -22,6 +22,7 @@ import {
 interface NotificationsPanelProps {
     collapsed?: boolean;
     upward?: boolean;
+    hideLabel?: boolean;
 }
 
 function timeAgo(date: string): string {
@@ -35,7 +36,7 @@ function timeAgo(date: string): string {
     return `${days}d`;
 }
 
-export function NotificationsPanel({ collapsed = false, upward = false }: NotificationsPanelProps) {
+export function NotificationsPanel({ collapsed = false, upward = false, hideLabel = false }: NotificationsPanelProps) {
     const [open, setOpen] = useState(false);
     const [requests, setRequests] = useState<PendingRequest[]>([]);
     const [mentions, setMentions] = useState<AppNotification[]>([]);
@@ -110,10 +111,24 @@ export function NotificationsPanel({ collapsed = false, upward = false }: Notifi
                 onClick={() => setOpen(!open)}
                 type="button"
                 title="Notificações"
-                className={`relative flex items-center ${collapsed ? 'justify-center' : 'gap-3'} w-full px-3 py-2.5 rounded-[10px] text-sm font-medium transition-all duration-[150ms] cursor-pointer text-white/50 hover:text-white/80 hover:bg-white/[0.06]`}
+                className={
+                    hideLabel
+                        ? `relative flex items-center justify-center shrink-0 w-[44px] h-[44px] rounded-full transition-all duration-[150ms] cursor-pointer ${open ? 'text-[#007AFF] bg-white/[0.08]' : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'}`
+                        : `relative flex items-center ${collapsed ? 'justify-center' : 'gap-3'} w-full px-3 py-2.5 rounded-[10px] text-sm font-medium transition-all duration-[150ms] cursor-pointer text-white/50 hover:text-white/80 hover:bg-white/[0.06]`
+                }
             >
-                <div className="relative shrink-0">
-                    <Bell size={18} />
+                <div className="relative shrink-0 flex items-center justify-center">
+                    {totalCount > 0 ? (
+                        <motion.div
+                            animate={{ rotate: [0, 15, -15, 10, -10, 0] }}
+                            transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 3 }}
+                            className="origin-top"
+                        >
+                            <Bell size={hideLabel ? 22 : 18} />
+                        </motion.div>
+                    ) : (
+                        <Bell size={hideLabel ? 22 : 18} />
+                    )}
                     {totalCount > 0 && (
                         <motion.span
                             initial={{ scale: 0 }}
@@ -124,7 +139,7 @@ export function NotificationsPanel({ collapsed = false, upward = false }: Notifi
                         </motion.span>
                     )}
                 </div>
-                {!collapsed && 'Notificações'}
+                {(!collapsed && !hideLabel) && <span className="truncate">Notificações</span>}
             </button>
 
             {/* Popup */}
