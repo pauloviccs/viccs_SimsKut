@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     LayoutDashboard,
@@ -7,6 +8,7 @@ import {
     MessageSquare,
     UserCog,
     LogOut,
+    ArrowLeft,
     Sparkles,
 } from 'lucide-react';
 import { FluidBackground } from '@/components/ui/FluidBackground';
@@ -31,6 +33,7 @@ const tabs: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
 export function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<AdminTab>('overview');
     const { profile, logout } = useAuthStore();
+    const navigate = useNavigate();
 
     async function handleLogout() {
         await signOut();
@@ -124,6 +127,16 @@ export function AdminDashboard() {
                                 <p className="text-[10px] text-white/30">Administrador</p>
                             </div>
                         </div>
+                        <button
+                            onClick={() => navigate('/feed')}
+                            className="flex items-center gap-2 px-3 py-2 w-full
+                                rounded-[var(--radius-sm)] text-sm text-white/40
+                                hover:text-white/80 hover:bg-white/5
+                                transition-colors cursor-pointer"
+                        >
+                            <ArrowLeft size={16} />
+                            Voltar ao Feed
+                        </button>
                         <button
                             onClick={handleLogout}
                             className="flex items-center gap-2 px-3 py-2 w-full
