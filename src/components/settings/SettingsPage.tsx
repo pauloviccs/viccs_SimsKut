@@ -8,7 +8,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { AvatarCropper } from './AvatarCropper';
 import { useAuthStore } from '@/store/authStore';
 import { uploadAvatar, updateProfileAvatar, updateProfileInfo } from '@/lib/avatarService';
-import { fetchProfile } from '@/lib/authService';
+import { useNavigate } from 'react-router-dom';
+import { fetchProfile, signOut } from '@/lib/authService';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
@@ -17,7 +18,8 @@ const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
  * Imagina como o vestiário do jogo: onde você customiza seu avatar e nome.
  */
 export function SettingsPage() {
-    const { user, profile, setProfile } = useAuthStore();
+    const { user, profile, setProfile, logout } = useAuthStore();
+    const navigate = useNavigate();
 
     // Form state
     const [displayName, setDisplayName] = useState(profile?.display_name || '');
@@ -114,6 +116,16 @@ export function SettingsPage() {
             setMessage({ type: 'error', text: 'Erro ao salvar. Tente novamente.' });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            logout();
+            await signOut();
+            navigate('/');
+        } catch (err) {
+            console.error('Logout error:', err);
         }
     };
 
@@ -255,8 +267,8 @@ export function SettingsPage() {
                                 initial={{ opacity: 0, y: -5 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 className={`text-xs px-4 py-2.5 rounded-lg ${message.type === 'success'
-                                        ? 'text-[var(--accent-success)] bg-[var(--accent-success)]/10'
-                                        : 'text-[var(--accent-danger)] bg-[var(--accent-danger)]/10'
+                                    ? 'text-[var(--accent-success)] bg-[var(--accent-success)]/10'
+                                    : 'text-[var(--accent-danger)] bg-[var(--accent-danger)]/10'
                                     }`}
                             >
                                 {message.text}
@@ -285,6 +297,18 @@ export function SettingsPage() {
                     onCancel={() => setCropFile(null)}
                 />
             )}
+
+            {/* === Mobile Logout Button === */}
+            <div className="md:hidden mt-8">
+                <GlassButton
+                    variant="danger"
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2"
+                >
+                    <AlertTriangle size={18} />
+                    Sair da Conta
+                </GlassButton>
+            </div>
         </div>
     );
 }
