@@ -113,6 +113,8 @@ export interface Family {
     created_at: string;
     // Aggregated
     sims_count?: number;
+    // Joined
+    sims?: Sim[];
 }
 
 export interface Sim {

@@ -301,17 +301,17 @@ export function FamilyConfig() {
                                                 onChange={(e) => setNewTraitType(e.target.value as 'quality' | 'skill')}
                                                 className="bg-white/[0.05] border border-white/10 rounded-lg text-[10px] text-white/60 px-2 py-1.5 outline-none"
                                             >
-                                                <option value="quality">Qualidade</option>
-                                                <option value="skill">Habilidade</option>
+                                                <option value="quality" className="bg-[#0f0f13] text-white">Qualidade</option>
+                                                <option value="skill" className="bg-[#0f0f13] text-white">Habilidade</option>
                                             </select>
                                             <select
                                                 value={newTraitValue}
                                                 onChange={(e) => setNewTraitValue(e.target.value)}
                                                 className="flex-1 bg-white/[0.05] border border-white/10 rounded-lg text-[10px] text-white/60 px-2 py-1.5 outline-none"
                                             >
-                                                <option value="">Selecionar...</option>
+                                                <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
                                                 {(newTraitType === 'quality' ? QUALITY_OPTIONS : SKILL_OPTIONS).map((opt) => (
-                                                    <option key={opt} value={opt}>{opt}</option>
+                                                    <option key={opt} value={opt} className="bg-[#0f0f13] text-white">{opt}</option>
                                                 ))}
                                             </select>
                                             <button
@@ -389,9 +389,9 @@ export function FamilyConfig() {
                                             onChange={(e) => setSimForm({ ...simForm, profession: e.target.value })}
                                             className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50"
                                         >
-                                            <option value="">Selecionar...</option>
+                                            <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
                                             {PROFESSIONS.map((p) => (
-                                                <option key={p} value={p}>{p}</option>
+                                                <option key={p} value={p} className="bg-[#0f0f13] text-white">{p}</option>
                                             ))}
                                         </select>
                                     </div>

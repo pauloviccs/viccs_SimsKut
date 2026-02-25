@@ -9,6 +9,9 @@ import {
     ImageIcon,
     MessageCircle,
     Users as UsersIcon,
+    Briefcase,
+    Zap,
+    Star
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
@@ -23,8 +26,9 @@ import {
     getUserPosts,
     getUserComments,
     getUserPhotos,
+    getUserFamiliesWithSims
 } from '@/lib/profileService';
-import type { Profile, ProfileStats, FeedPost, PostComment, Photo } from '@/types';
+import type { Profile, ProfileStats, FeedPost, PostComment, Photo, Family } from '@/types';
 
 type ProfileTab = 'posts' | 'replies' | 'media' | 'family';
 
@@ -51,6 +55,7 @@ export function ProfilePage() {
     const [posts, setPosts] = useState<FeedPost[]>([]);
     const [comments, setComments] = useState<(PostComment & { post?: FeedPost })[]>([]);
     const [photos, setPhotos] = useState<Photo[]>([]);
+    const [families, setFamilies] = useState<Family[]>([]);
     const [tabLoading, setTabLoading] = useState(false);
 
     const isOwnProfile = user?.id === profile?.id;
@@ -98,6 +103,9 @@ export function ProfilePage() {
                 } else if (activeTab === 'media') {
                     const data = await getUserPhotos(profile.id);
                     if (mounted) setPhotos(data);
+                } else if (activeTab === 'family') {
+                    const data = await getUserFamiliesWithSims(profile.id);
+                    if (mounted) setFamilies(data);
                 }
             } catch (err) {
                 console.error(err);
@@ -366,12 +374,77 @@ export function ProfilePage() {
                             )}
 
                             {activeTab === 'family' && (
-                                <GlassCard className="text-center py-10">
-                                    <UsersIcon size={32} className="mx-auto mb-3 text-white/20" />
-                                    <p className="text-sm text-white/40">
-                                        Família Sims — em breve! 🏠
-                                    </p>
-                                </GlassCard>
+                                <div className="space-y-6">
+                                    {families.length === 0 ? (
+                                        <GlassCard className="text-center py-10">
+                                            <UsersIcon size={32} className="mx-auto mb-3 text-white/20" />
+                                            <p className="text-sm text-white/40">
+                                                Nenhuma família criada.
+                                            </p>
+                                        </GlassCard>
+                                    ) : (
+                                        families.map(family => (
+                                            <div key={family.id} className="space-y-4">
+                                                <div className="flex items-center gap-3 pb-2 border-b border-white/5">
+                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-success)]/20 flex items-center justify-center">
+                                                        <UsersIcon size={18} className="text-white/60" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-white/90">{family.family_name}</h3>
+                                                        <p className="text-xs text-white/40">{(family.sims as any)?.length || 0} Sims</p>
+                                                    </div>
+                                                </div>
+
+                                                {(!family.sims || (family.sims as any).length === 0) ? (
+                                                    <p className="text-sm text-white/30 italic pl-2">Nenhum Sim nesta família ainda.</p>
+                                                ) : (
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                        {(family.sims as any).map((sim: any) => (
+                                                            <div key={sim.id} className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-4">
+                                                                <div className="flex gap-4">
+                                                                    <Avatar
+                                                                        src={sim.photo_url}
+                                                                        alt={sim.name}
+                                                                        size="xl"
+                                                                    />
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <h3 className="text-lg font-semibold text-white/90 truncate">{sim.name}</h3>
+                                                                        {sim.profession && (
+                                                                            <p className="text-xs text-[var(--accent-primary)] flex items-center gap-1 mt-1 truncate">
+                                                                                <Briefcase size={12} className="shrink-0" /> {sim.profession}
+                                                                            </p>
+                                                                        )}
+                                                                        {sim.bio && (
+                                                                            <p className="text-xs text-white/50 mt-2 line-clamp-2">{sim.bio}</p>
+                                                                        )}
+
+                                                                        {/* Traits */}
+                                                                        {sim.traits && sim.traits.length > 0 && (
+                                                                            <div className="flex flex-wrap gap-1.5 mt-3">
+                                                                                {sim.traits.map((trait: any) => (
+                                                                                    <span
+                                                                                        key={trait.id}
+                                                                                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${trait.trait_type === 'quality'
+                                                                                            ? 'bg-[var(--accent-warning)]/15 text-[var(--accent-warning)]'
+                                                                                            : 'bg-[var(--accent-success)]/15 text-[var(--accent-success)]'
+                                                                                            }`}
+                                                                                    >
+                                                                                        {trait.trait_type === 'quality' ? <Star size={10} /> : <Zap size={10} />}
+                                                                                        {trait.value}
+                                                                                    </span>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             )}
                         </motion.div>
                     </AnimatePresence>

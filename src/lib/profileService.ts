@@ -184,3 +184,23 @@ export async function getUserPhotos(userId: string): Promise<Photo[]> {
     if (error) throw error;
     return data || [];
 }
+
+// ======== USER FAMILIES ========
+
+/** Busca as famílias de um usuário com seus respectivos sims e traços */
+export async function getUserFamiliesWithSims(userId: string) {
+    const { data, error } = await supabase
+        .from('families')
+        .select(`
+            *,
+            sims (
+                *,
+                traits:sim_traits(*)
+            )
+        `)
+        .eq('owner_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}
