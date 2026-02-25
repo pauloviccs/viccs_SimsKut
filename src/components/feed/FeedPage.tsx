@@ -13,6 +13,7 @@ import { GlassCard } from '@/components/ui/GlassCard'; // Keep GlassCard for the
 export function FeedPage() {
     const { user } = useAuthStore();
     const [posts, setPosts] = useState<FeedPost[]>([]);
+    const [newPosts, setNewPosts] = useState<FeedPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [, setError] = useState('');
     const [loadingMore, setLoadingMore] = useState(false);
@@ -66,11 +67,18 @@ export function FeedPage() {
                     const fullPost = await getSinglePost(newPostId);
                     console.log('[Realtime] Post formatado buscado:', fullPost);
                     if (fullPost) {
-                        setPosts(prev => {
-                            // Previne o mesmo post entrar 2x em race conditions
-                            if (prev.some(p => p.id === fullPost.id)) return prev;
-                            console.log('[Realtime] Renderizando novo post na tela.');
-                            return [fullPost, ...prev];
+                        // Verifica se o post já está na tela (em posts)
+                        setPosts(currPosts => {
+                            if (currPosts.some(p => p.id === fullPost.id)) return currPosts;
+
+                            // Caso contrário, adiciona à fila (buffer de delay) para evitar layout shift no Feed
+                            setNewPosts(currNewPosts => {
+                                if (currNewPosts.some(p => p.id === fullPost.id)) return currNewPosts;
+                                console.log('[Realtime] Post movido para fila de espera.');
+                                return [fullPost, ...currNewPosts];
+                            });
+
+                            return currPosts;
                         });
                     }
                 }
@@ -145,6 +153,32 @@ export function FeedPage() {
             </motion.h1>
 
             <PostComposer onPostCreated={handlePostCreated} />
+
+            <AnimatePresence>
+                {newPosts.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                        className="sticky top-[88px] z-40 flex justify-center mb-4"
+                    >
+                        <button
+                            onClick={() => {
+                                setPosts(prev => [...newPosts, ...prev]);
+                                setNewPosts([]);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium py-2.5 px-6 rounded-full shadow-lg hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all flex items-center gap-2 group"
+                        >
+                            <span className="relative flex h-2.5 w-2.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                            </span>
+                            Mostrar {newPosts.length} novo{newPosts.length > 1 ? 's' : ''} post{newPosts.length > 1 ? 's' : ''}
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {loading ? (
                 <div className="flex justify-center py-12">
