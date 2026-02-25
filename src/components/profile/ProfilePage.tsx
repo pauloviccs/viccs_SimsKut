@@ -11,7 +11,8 @@ import {
     Users as UsersIcon,
     Briefcase,
     Zap,
-    Star
+    Star,
+    X
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
@@ -52,6 +53,7 @@ export function ProfilePage() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showFriendsList, setShowFriendsList] = useState(false);
     const [viewingSim, setViewingSim] = useState<any | null>(null);
+    const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
     // Tab data
     const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -360,12 +362,13 @@ export function ProfilePage() {
                                             {photos.map((photo) => (
                                                 <div
                                                     key={photo.id}
-                                                    className="aspect-square rounded-[var(--radius-md)] overflow-hidden border border-white/10"
+                                                    className="aspect-square rounded-[var(--radius-md)] overflow-hidden border border-white/10 group cursor-pointer"
+                                                    onClick={() => setSelectedPhoto(photo)}
                                                 >
                                                     <img
-                                                        src={photo.url}
-                                                        alt={photo.description || 'Foto'}
-                                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                                        src={photo.thumbnail_url || photo.url}
+                                                        alt={photo.title || photo.description || 'Foto'}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                         loading="lazy"
                                                     />
                                                 </div>
@@ -482,6 +485,51 @@ export function ProfilePage() {
                         sim={viewingSim}
                         onClose={() => setViewingSim(null)}
                     />
+                )}
+            </AnimatePresence>
+
+            {/* =========== LIGHTBOX MODAL =========== */}
+            <AnimatePresence>
+                {selectedPhoto && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+                        onClick={() => setSelectedPhoto(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative max-w-3xl max-h-[90vh] w-full"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <img
+                                src={selectedPhoto.url}
+                                alt={selectedPhoto.title || selectedPhoto.description || 'Foto'}
+                                className="w-full max-h-[80vh] object-contain rounded-[var(--radius-lg)]"
+                            />
+                            <button
+                                onClick={() => setSelectedPhoto(null)}
+                                className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
+                            >
+                                <X size={20} />
+                            </button>
+                            <div className="mt-4 p-4 glass-heavy rounded-[var(--radius-sm)] border border-white/10">
+                                {selectedPhoto.title && (
+                                    <h2 className="text-xl font-bold text-white/90 mb-1">
+                                        {selectedPhoto.title}
+                                    </h2>
+                                )}
+                                {selectedPhoto.description ? (
+                                    <p className="text-sm text-white/70 whitespace-pre-wrap">{selectedPhoto.description}</p>
+                                ) : (
+                                    !selectedPhoto.title && <p className="text-sm text-white/40 italic">Sem descrição</p>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>
