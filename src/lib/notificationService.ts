@@ -13,7 +13,7 @@ export interface AppNotification {
     id: string;
     user_id: string;
     actor_id: string;
-    type: 'mention_post' | 'mention_comment';
+    type: 'mention_post' | 'mention_comment' | 'like_post' | 'like_photo' | 'comment_photo';
     reference_id: string | null;
     content: string | null;
     read: boolean;
@@ -66,6 +66,32 @@ export async function createMentionNotification(
     });
 
     if (error) console.error('Erro ao criar notificação:', error);
+}
+
+/** Cria notificação de interação genérica (like, comment) sem validação de Regex */
+export async function createInteractionNotification(
+    targetUserId: string,
+    actorId: string,
+    type: 'like_post' | 'like_photo' | 'comment_photo',
+    referenceId: string,
+    contentPreview: string | null = null
+): Promise<void> {
+    // Não notifica a si mesmo
+    if (targetUserId === actorId) return;
+
+    // TODO: Num cenário real, antes de inserir um 'like_post' por exemplo, 
+    // poderíamos verificar se JÁ EXISTE uma notificação de like não lida desse usuário
+    // para evitar spam de "X curtiu" quando ele descurte e curte de novo rápido.
+    // Pela vibe coding, vamos inserir direto e deixar o cleanup pra queries futuras.
+    const { error } = await supabase.from('notifications').insert({
+        user_id: targetUserId,
+        actor_id: actorId,
+        type,
+        reference_id: referenceId,
+        content: contentPreview ? contentPreview.substring(0, 100) : null,
+    });
+
+    if (error) console.error(`Erro ao criar notificação de interação (${type}):`, error);
 }
 
 /** Exclui a notificação do banco de dados */

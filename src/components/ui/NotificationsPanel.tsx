@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, UserCheck, X, AtSign, MessageCircle } from 'lucide-react';
+import { Bell, UserCheck, X, AtSign, MessageCircle, Heart } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import {
     getPendingRequests,
@@ -264,11 +264,12 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                                 alt={notif.actor?.display_name || 'User'}
                                                                 size="sm"
                                                             />
-                                                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
-                                                                {notif.type === 'mention_post'
-                                                                    ? <AtSign size={9} className="text-white" />
-                                                                    : <MessageCircle size={9} className="text-white" />
-                                                                }
+                                                            <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ${notif.type.includes('like') ? 'bg-red-500' : 'bg-[var(--accent-primary)]'
+                                                                }`}>
+                                                                {notif.type === 'mention_post' && <AtSign size={9} className="text-white" />}
+                                                                {notif.type === 'mention_comment' && <AtSign size={9} className="text-white" />}
+                                                                {notif.type === 'comment_photo' && <MessageCircle size={9} className="text-white" />}
+                                                                {notif.type.includes('like') && <Heart size={9} className="text-white fill-current" />}
                                                             </div>
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -276,8 +277,12 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                                 <span className="font-medium">
                                                                     {notif.actor?.display_name || notif.actor?.username}
                                                                 </span>
-                                                                {' '}te mencionou em um{' '}
-                                                                {notif.type === 'mention_post' ? 'post' : 'comentário'}
+                                                                {' '}
+                                                                {notif.type === 'mention_post' && 'te mencionou em um post'}
+                                                                {notif.type === 'mention_comment' && 'te mencionou em um comentário'}
+                                                                {notif.type === 'like_post' && 'curtiu o seu post'}
+                                                                {notif.type === 'like_photo' && 'curtiu a sua foto'}
+                                                                {notif.type === 'comment_photo' && 'comentou na sua foto'}
                                                             </p>
                                                             {notif.content && (
                                                                 <p className="text-[10px] text-white/30 truncate mt-0.5">

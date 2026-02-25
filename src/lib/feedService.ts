@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { FeedPost, PostComment } from '@/types';
+import { createInteractionNotification } from './notificationService';
 
 /**
  * feedService — Backend do Feed.
@@ -17,11 +18,11 @@ export async function getPosts(limit = 20, offset = 0): Promise<FeedPost[]> {
     const { data, error } = await supabase
         .from('feed_posts')
         .select(`
-            *,
-            author:profiles!author_id(*),
-            post_likes(count),
-            post_comments(count)
-        `)
+    *,
+    author: profiles!author_id(*),
+        post_likes(count),
+        post_comments(count)
+            `)
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -56,11 +57,11 @@ export async function getSinglePost(postId: string): Promise<FeedPost | null> {
     const { data, error } = await supabase
         .from('feed_posts')
         .select(`
-            *,
-            author:profiles!author_id(*),
+        *,
+        author: profiles!author_id(*),
             post_likes(count),
             post_comments(count)
-        `)
+                `)
         .eq('id', postId)
         .single();
 
@@ -136,13 +137,29 @@ export async function toggleLike(postId: string, userId: string): Promise<boolea
         .maybeSingle();
 
     if (existing) {
+        // Remove like
         await supabase.from('post_likes').delete().eq('id', existing.id);
         return false; // unliked
     } else {
+        // Adiciona like
         const { error } = await supabase
             .from('post_likes')
             .insert({ post_id: postId, user_id: userId });
+
         if (error) throw error;
+
+        // --- Notificação ---
+        const { data: postData } = await supabase.from('feed_posts').select('author_id, content').eq('id', postId).single();
+        if (postData && postData.author_id !== userId) {
+            await createInteractionNotification(
+                postData.author_id,
+                userId,
+                'like_post',
+                postId,
+                postData.content
+            );
+        }
+
         return true; // liked
     }
 }

@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { GalleryFolder, Photo, PhotoComment } from '@/types';
+import { createInteractionNotification } from './notificationService';
 
 /**
  * galleryService — Backend da Galeria Privada.
@@ -221,6 +222,19 @@ export async function togglePhotoLike(photoId: string, userId: string): Promise<
             .from('photo_likes')
             .insert({ photo_id: photoId, user_id: userId });
         if (error) throw error;
+
+        // --- NOTIFICAÇÃO ---
+        const { data: photoData } = await supabase.from('photos').select('owner_id, title').eq('id', photoId).single();
+        if (photoData && photoData.owner_id !== userId) {
+            await createInteractionNotification(
+                photoData.owner_id,
+                userId,
+                'like_photo',
+                photoId,
+                photoData.title || 'sua foto'
+            );
+        }
+
         return true; // liked
     }
 }
@@ -260,6 +274,18 @@ export async function addPhotoComment(
         .single();
 
     if (error) throw error;
+
+    // --- NOTIFICAÇÃO ---
+    const { data: photoData } = await supabase.from('photos').select('owner_id').eq('id', photoId).single();
+    if (photoData && photoData.owner_id !== authorId) {
+        await createInteractionNotification(
+            photoData.owner_id,
+            authorId,
+            'comment_photo',
+            photoId,
+            content.trim()
+        );
+    }
 
     return {
         ...data,

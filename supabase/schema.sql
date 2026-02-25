@@ -753,7 +753,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     actor_id    UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    type        TEXT NOT NULL CHECK (type IN ('mention_post', 'mention_comment')),
+    type        TEXT NOT NULL CHECK (type IN ('mention_post', 'mention_comment', 'like_post', 'like_photo', 'comment_photo')),
     reference_id UUID,
     content     TEXT,
     read        BOOLEAN DEFAULT FALSE,
