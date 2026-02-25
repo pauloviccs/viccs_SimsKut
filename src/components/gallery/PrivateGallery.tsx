@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Lock, Upload, FolderPlus, Folder, MoreHorizontal, Pencil, Trash2,
+    Camera, Upload, FolderPlus, Folder, MoreHorizontal, Pencil, Trash2,
     ArrowLeft, Globe, EyeOff, Loader2, ImagePlus, X
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -13,6 +13,7 @@ import {
     getPhotos, addPhoto, deletePhoto, toggleVisibility,
 } from '@/lib/galleryService';
 import { processAndUpload } from '@/lib/imageService';
+import { PhotoUploadModal } from './PhotoUploadModal';
 import type { GalleryFolder, Photo } from '@/types';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
@@ -28,7 +29,9 @@ export function PrivateGallery() {
     const [editingFolder, setEditingFolder] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [pendingUploads, setPendingUploads] = useState<File[]>([]);
     const [menuOpen, setMenuOpen] = useState<string | null>(null);
+    const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
     const fileRef = useRef<HTMLInputElement>(null);
 
     // Load folders
@@ -87,26 +90,31 @@ export function PrivateGallery() {
         }
     };
 
-    const handleUploadPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!user || !currentFolder) return;
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        if (!files.length) return;
+        if (files.length) {
+            setPendingUploads(files);
+        }
+        e.target.value = '';
+    };
 
+    const handleConfirmUpload = async (title: string, description: string) => {
+        if (!user || !currentFolder || !pendingUploads.length) return;
         setUploading(true);
         try {
-            for (const file of files) {
+            for (const file of pendingUploads) {
                 if (!file.type.startsWith('image/')) continue;
                 const ts = Date.now();
                 const path = `${user.id}/${currentFolder.id}/${ts}.webp`;
                 const result = await processAndUpload(file, 'gallery-images', path);
-                const photo = await addPhoto(user.id, result.url, result.thumbnailUrl, currentFolder.id);
+                const photo = await addPhoto(user.id, result.url, result.thumbnailUrl, currentFolder.id, title, description);
                 setPhotos((prev) => [photo, ...prev]);
             }
         } catch (err) {
             console.error('Upload error:', err);
         } finally {
             setUploading(false);
-            e.target.value = '';
+            setPendingUploads([]);
         }
     };
 
@@ -174,12 +182,13 @@ export function PrivateGallery() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
                                     className="relative group rounded-[var(--radius-md)] overflow-hidden aspect-square glass-heavy border border-white/10"
+                                    onClick={() => setSelectedPhoto(photo)}
                                 >
                                     <img
                                         src={photo.thumbnail_url || photo.url}
-                                        alt={photo.description || 'Foto'}
+                                        alt={photo.title || photo.description || 'Foto'}
                                         loading="lazy"
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
                                     />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end justify-between p-2 opacity-0 group-hover:opacity-100">
                                         <button
@@ -213,9 +222,66 @@ export function PrivateGallery() {
                     type="file"
                     accept="image/*"
                     multiple
-                    onChange={handleUploadPhotos}
+                    onChange={handleFileSelect}
                     className="hidden"
                 />
+
+                {/* Lightbox do PrivateGallery */}
+                <AnimatePresence>
+                    {selectedPhoto && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+                            onClick={() => setSelectedPhoto(null)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="relative max-w-3xl max-h-[90vh] w-full"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <img
+                                    src={selectedPhoto.url}
+                                    alt={selectedPhoto.title || selectedPhoto.description || 'Foto'}
+                                    className="w-full max-h-[80vh] object-contain rounded-[var(--radius-lg)]"
+                                />
+                                <button
+                                    onClick={() => setSelectedPhoto(null)}
+                                    className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
+                                >
+                                    <X size={20} />
+                                </button>
+                                <div className="mt-4 p-4 glass-heavy rounded-[var(--radius-sm)] border border-white/10">
+                                    {selectedPhoto.title && (
+                                        <h2 className="text-xl font-bold text-white/90 mb-1">
+                                            {selectedPhoto.title}
+                                        </h2>
+                                    )}
+                                    {selectedPhoto.description ? (
+                                        <p className="text-sm text-white/70 whitespace-pre-wrap">{selectedPhoto.description}</p>
+                                    ) : (
+                                        !selectedPhoto.title && <p className="text-sm text-white/40 italic">Sem descrição</p>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Upload Modal */}
+                <AnimatePresence>
+                    {pendingUploads.length > 0 && (
+                        <PhotoUploadModal
+                            files={pendingUploads}
+                            onClose={() => setPendingUploads([])}
+                            onUpload={handleConfirmUpload}
+                            isUploading={uploading}
+                        />
+                    )}
+                </AnimatePresence>
             </div>
         );
     }
@@ -267,7 +333,7 @@ export function PrivateGallery() {
                 </div>
             ) : folders.length === 0 ? (
                 <GlassCard className="text-center py-12">
-                    <Lock size={40} className="mx-auto mb-4 text-white/30" />
+                    <Camera size={40} className="mx-auto mb-4 text-white/30" />
                     <h2 className="text-lg font-semibold text-white/70 mb-2">Sua galeria está vazia</h2>
                     <p className="text-sm text-white/40">
                         Crie uma pasta para organizar suas fotos! 🖼️

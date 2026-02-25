@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS public.photos (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id    UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     url         TEXT NOT NULL,
+    title       TEXT,
     description TEXT,
     visibility  TEXT NOT NULL DEFAULT 'private'
                 CHECK (visibility IN ('private', 'public')),

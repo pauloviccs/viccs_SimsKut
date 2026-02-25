@@ -95,6 +95,7 @@ export interface Photo {
     owner_id: string;
     url: string;
     thumbnail_url: string | null;
+    title: string | null;
     description: string | null;
     visibility: 'private' | 'public';
     folder_id: string | null;

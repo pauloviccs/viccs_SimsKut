@@ -19,6 +19,7 @@ import { PostCard } from '@/components/feed/PostCard';
 import { FriendshipButton } from './FriendshipButton';
 import { ProfileEditModal } from './ProfileEditModal';
 import { FriendsListModal } from './FriendsListModal';
+import { SimDetailsModal } from './SimDetailsModal';
 import { useAuthStore } from '@/store/authStore';
 import {
     fetchProfileByUsername,
@@ -50,6 +51,7 @@ export function ProfilePage() {
     const [activeTab, setActiveTab] = useState<ProfileTab>('posts');
     const [showEditModal, setShowEditModal] = useState(false);
     const [showFriendsList, setShowFriendsList] = useState(false);
+    const [viewingSim, setViewingSim] = useState<any | null>(null);
 
     // Tab data
     const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -400,7 +402,11 @@ export function ProfilePage() {
                                                 ) : (
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                         {(family.sims as any).map((sim: any) => (
-                                                            <div key={sim.id} className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-4">
+                                                            <div
+                                                                key={sim.id}
+                                                                className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-4 cursor-pointer hover:border-white/20 transition-colors"
+                                                                onClick={() => setViewingSim(sim)}
+                                                            >
                                                                 <div className="flex gap-4">
                                                                     <Avatar
                                                                         src={sim.photo_url}
@@ -468,6 +474,16 @@ export function ProfilePage() {
                     onClose={() => setShowFriendsList(false)}
                 />
             )}
+
+            {/* =========== SHOW SIM MODAL =========== */}
+            <AnimatePresence>
+                {viewingSim && (
+                    <SimDetailsModal
+                        sim={viewingSim}
+                        onClose={() => setViewingSim(null)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }

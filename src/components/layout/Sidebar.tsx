@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
     Home,
     Image,
-    Lock,
+    Camera,
     Users,
     TreePine,
     Settings,
@@ -22,7 +22,7 @@ import { NotificationsPanel } from '@/components/ui/NotificationsPanel';
 const navItems = [
     { to: '/feed', icon: Home, label: 'Feed' },
     { to: '/gallery/global', icon: Image, label: 'Galeria Global' },
-    { to: '/gallery/private', icon: Lock, label: 'Minha Galeria' },
+    { to: '/gallery/private', icon: Camera, label: 'Minha Galeria' },
     { to: '/family', icon: Users, label: 'Minha Família' },
     { to: '/family-tree', icon: TreePine, label: 'Árvore Genealógica' },
     { to: '/settings', icon: Settings, label: 'Configurações' },

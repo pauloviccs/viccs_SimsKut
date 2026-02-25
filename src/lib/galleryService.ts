@@ -119,6 +119,7 @@ export async function addPhoto(
     url: string,
     thumbnailUrl: string | null,
     folderId: string | null,
+    title: string | null = null,
     description: string | null = null,
     visibility: 'private' | 'public' = 'private'
 ): Promise<Photo> {
@@ -129,6 +130,7 @@ export async function addPhoto(
             url,
             thumbnail_url: thumbnailUrl,
             folder_id: folderId,
+            title: title?.trim() || null,
             description: description?.trim() || null,
             visibility,
         })

@@ -54,7 +54,7 @@ export function GlobalGallery() {
                         >
                             <img
                                 src={photo.thumbnail_url || photo.url}
-                                alt={photo.description || 'Foto'}
+                                alt={photo.title || photo.description || 'Foto'}
                                 loading="lazy"
                                 className="w-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
@@ -92,7 +92,7 @@ export function GlobalGallery() {
                         >
                             <img
                                 src={selectedPhoto.url}
-                                alt={selectedPhoto.description || 'Foto'}
+                                alt={selectedPhoto.title || selectedPhoto.description || 'Foto'}
                                 className="w-full max-h-[80vh] object-contain rounded-[var(--radius-lg)]"
                             />
                             <button
@@ -111,6 +111,9 @@ export function GlobalGallery() {
                                     <p className="text-sm font-medium text-white/90">
                                         {selectedPhoto.owner?.display_name || 'Anônimo'}
                                     </p>
+                                    {selectedPhoto.title && (
+                                        <p className="text-[14px] font-semibold text-white/95 mt-1">{selectedPhoto.title}</p>
+                                    )}
                                     {selectedPhoto.description && (
                                         <p className="text-xs text-white/50 mt-0.5">{selectedPhoto.description}</p>
                                     )}
