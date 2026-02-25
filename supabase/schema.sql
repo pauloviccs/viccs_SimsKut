@@ -120,6 +120,46 @@ COMMENT ON TABLE public.photos IS 'Galeria de fotos dos usuários. Pode ser púb
 
 
 -- ╔══════════════════════════════════════════════╗
+-- ║  5b. TABELA: photo_likes                     ║
+-- ║  Likes nas fotos                             ║
+-- ╚══════════════════════════════════════════════╝
+
+CREATE TABLE IF NOT EXISTS public.photo_likes (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    photo_id    UUID NOT NULL REFERENCES public.photos(id) ON DELETE CASCADE,
+    user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+
+    -- Um usuário curte uma foto apenas uma vez
+    UNIQUE (photo_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_photo_likes_photo ON public.photo_likes(photo_id);
+CREATE INDEX IF NOT EXISTS idx_photo_likes_user ON public.photo_likes(user_id);
+
+COMMENT ON TABLE public.photo_likes IS 'Likes de fotos da galeria';
+
+
+-- ╔══════════════════════════════════════════════╗
+-- ║  5c. TABELA: photo_comments                  ║
+-- ║  Comentários em fotos                        ║
+-- ╚══════════════════════════════════════════════╝
+
+CREATE TABLE IF NOT EXISTS public.photo_comments (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    photo_id    UUID NOT NULL REFERENCES public.photos(id) ON DELETE CASCADE,
+    author_id   UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    content     TEXT NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_photo_comments_photo ON public.photo_comments(photo_id);
+CREATE INDEX IF NOT EXISTS idx_photo_comments_author ON public.photo_comments(author_id);
+
+COMMENT ON TABLE public.photo_comments IS 'Comentários nas fotos da galeria';
+
+
+-- ╔══════════════════════════════════════════════╗
 -- ║  6. TABELA: families                        ║
 -- ║  Famílias Sims dos usuários                 ║
 -- ╚══════════════════════════════════════════════╝
@@ -303,6 +343,8 @@ ALTER TABLE public.invite_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.friendships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.feed_posts  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.photos      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.photo_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.photo_comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.families    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sims        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sim_traits  ENABLE ROW LEVEL SECURITY;
@@ -436,6 +478,48 @@ CREATE POLICY "photos_delete_own"
     ON public.photos FOR DELETE
     TO authenticated
     USING (owner_id = auth.uid());
+
+
+-- ─── PHOTO_LIKES ────────────────────────────────────
+
+CREATE POLICY "photo_likes_select"
+    ON public.photo_likes FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "photo_likes_insert_own"
+    ON public.photo_likes FOR INSERT
+    TO authenticated
+    WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "photo_likes_delete_own"
+    ON public.photo_likes FOR DELETE
+    TO authenticated
+    USING (user_id = auth.uid());
+
+
+-- ─── PHOTO_COMMENTS ─────────────────────────────────
+
+CREATE POLICY "photo_comments_select"
+    ON public.photo_comments FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "photo_comments_insert_own"
+    ON public.photo_comments FOR INSERT
+    TO authenticated
+    WITH CHECK (author_id = auth.uid());
+
+CREATE POLICY "photo_comments_delete_own_or_admin"
+    ON public.photo_comments FOR DELETE
+    TO authenticated
+    USING (
+        author_id = auth.uid()
+        OR EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND is_admin = true
+        )
+    );
 
 -- ─── FAMILIES ───────────────────────────────────────
 

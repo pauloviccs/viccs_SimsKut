@@ -11,8 +11,7 @@ import {
     Users as UsersIcon,
     Briefcase,
     Zap,
-    Star,
-    X
+    Star
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
@@ -21,6 +20,7 @@ import { FriendshipButton } from './FriendshipButton';
 import { ProfileEditModal } from './ProfileEditModal';
 import { FriendsListModal } from './FriendsListModal';
 import { SimDetailsModal } from './SimDetailsModal';
+import { PhotoLightbox } from '@/components/gallery/PhotoLightbox';
 import { useAuthStore } from '@/store/authStore';
 import {
     fetchProfileByUsername,
@@ -491,45 +491,14 @@ export function ProfilePage() {
             {/* =========== LIGHTBOX MODAL =========== */}
             <AnimatePresence>
                 {selectedPhoto && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
-                        onClick={() => setSelectedPhoto(null)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative max-w-3xl max-h-[90vh] w-full"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <img
-                                src={selectedPhoto.url}
-                                alt={selectedPhoto.title || selectedPhoto.description || 'Foto'}
-                                className="w-full max-h-[80vh] object-contain rounded-[var(--radius-lg)]"
-                            />
-                            <button
-                                onClick={() => setSelectedPhoto(null)}
-                                className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
-                            >
-                                <X size={20} />
-                            </button>
-                            <div className="mt-4 p-4 glass-heavy rounded-[var(--radius-sm)] border border-white/10">
-                                {selectedPhoto.title && (
-                                    <h2 className="text-xl font-bold text-white/90 mb-1">
-                                        {selectedPhoto.title}
-                                    </h2>
-                                )}
-                                {selectedPhoto.description ? (
-                                    <p className="text-sm text-white/70 whitespace-pre-wrap">{selectedPhoto.description}</p>
-                                ) : (
-                                    !selectedPhoto.title && <p className="text-sm text-white/40 italic">Sem descrição</p>
-                                )}
-                            </div>
-                        </motion.div>
-                    </motion.div>
+                    <PhotoLightbox
+                        photo={selectedPhoto}
+                        onClose={() => setSelectedPhoto(null)}
+                        onPhotoUpdate={(updated) => {
+                            setSelectedPhoto(updated);
+                            setPhotos(prev => prev.map(p => p.id === updated.id ? updated : p));
+                        }}
+                    />
                 )}
             </AnimatePresence>
         </div>

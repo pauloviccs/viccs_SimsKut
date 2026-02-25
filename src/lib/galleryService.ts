@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import type { GalleryFolder, Photo } from '@/types';
+import type { GalleryFolder, Photo, PhotoComment } from '@/types';
 
 /**
  * galleryService — Backend da Galeria Privada.
@@ -79,38 +79,82 @@ export async function deleteFolder(folderId: string): Promise<void> {
 
 // ======== FOTOS ========
 
-export async function getPhotos(
-    userId: string,
-    folderId?: string | null
-): Promise<Photo[]> {
+export async function getPhotos(userId: string, folderId: string | null = null): Promise<Photo[]> {
     let query = supabase
         .from('photos')
-        .select('*')
+        .select(`
+            *,
+            owner:profiles!owner_id(*),
+            photo_likes(count),
+            photo_comments(count)
+        `)
         .eq('owner_id', userId)
         .order('created_at', { ascending: false });
 
     if (folderId) {
         query = query.eq('folder_id', folderId);
+    } else {
+        query = query.is('folder_id', null);
     }
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+
+    let myLikes: Set<string> = new Set();
+    const currentUserId = (await supabase.auth.getUser()).data.user?.id;
+    if (currentUserId && data.length > 0) {
+        const photoIds = data.map((p: any) => p.id);
+        const { data: likes } = await supabase
+            .from('photo_likes')
+            .select('photo_id')
+            .eq('user_id', currentUserId)
+            .in('photo_id', photoIds);
+        myLikes = new Set((likes || []).map((l: any) => l.photo_id));
+    }
+
+    return (data || []).map((p: any) => ({
+        ...p,
+        owner: Array.isArray(p.owner) ? p.owner[0] : p.owner,
+        likes_count: p.photo_likes?.[0]?.count ?? 0,
+        comments_count: p.photo_comments?.[0]?.count ?? 0,
+        liked_by_me: myLikes.has(p.id)
+    }));
 }
 
-export async function getPublicPhotos(limit = 40, offset = 0): Promise<Photo[]> {
+/** Busca fotos PÚBLICAS globais */
+export async function getPublicPhotos(limit = 60, offset = 0): Promise<Photo[]> {
     const { data, error } = await supabase
         .from('photos')
-        .select('*, owner:profiles!owner_id(*)')
+        .select(`
+            *,
+            owner:profiles!owner_id(*),
+            photo_likes(count),
+            photo_comments(count)
+        `)
         .eq('visibility', 'public')
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
+    let myLikes: Set<string> = new Set();
+    const currentUserId = (await supabase.auth.getUser()).data.user?.id;
+    if (currentUserId && data.length > 0) {
+        const photoIds = data.map((p: any) => p.id);
+        const { data: likes } = await supabase
+            .from('photo_likes')
+            .select('photo_id')
+            .eq('user_id', currentUserId)
+            .in('photo_id', photoIds);
+        myLikes = new Set((likes || []).map((l: any) => l.photo_id));
+    }
+
     return (data || []).map((p: any) => ({
         ...p,
         owner: Array.isArray(p.owner) ? p.owner[0] : p.owner,
+        likes_count: p.photo_likes?.[0]?.count ?? 0,
+        comments_count: p.photo_comments?.[0]?.count ?? 0,
+        liked_by_me: myLikes.has(p.id)
     }));
 }
 
@@ -146,13 +190,85 @@ export async function deletePhoto(photoId: string): Promise<void> {
     if (error) throw error;
 }
 
-export async function toggleVisibility(photoId: string, current: 'private' | 'public'): Promise<'private' | 'public'> {
-    const next = current === 'private' ? 'public' : 'private';
-    const { error } = await supabase
+export async function toggleVisibility(photoId: string, isPublic: boolean): Promise<Photo> {
+    const newVisibility = isPublic ? 'public' : 'private';
+    const { data, error } = await supabase
         .from('photos')
-        .update({ visibility: next })
-        .eq('id', photoId);
+        .update({ visibility: newVisibility })
+        .eq('id', photoId)
+        .select()
+        .single();
+    if (error) throw error;
+    return data as Photo;
+}
+
+// ======== LIKES NAS FOTOS ========
+
+/** Toggle like em uma foto */
+export async function togglePhotoLike(photoId: string, userId: string): Promise<boolean> {
+    const { data: existing } = await supabase
+        .from('photo_likes')
+        .select('id')
+        .eq('photo_id', photoId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (existing) {
+        await supabase.from('photo_likes').delete().eq('id', existing.id);
+        return false; // unliked
+    } else {
+        const { error } = await supabase
+            .from('photo_likes')
+            .insert({ photo_id: photoId, user_id: userId });
+        if (error) throw error;
+        return true; // liked
+    }
+}
+
+// ======== COMPORTAMENTO DE COMENTÁRIOS ========
+
+/** Busca comentários de uma foto */
+export async function getPhotoComments(photoId: string): Promise<PhotoComment[]> {
+    const { data, error } = await supabase
+        .from('photo_comments')
+        .select('*, author:profiles!author_id(*)')
+        .eq('photo_id', photoId)
+        .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return next;
+
+    return (data || []).map((c: any) => ({
+        ...c,
+        author: Array.isArray(c.author) ? c.author[0] : c.author,
+    }));
+}
+
+/** Adiciona um comentário a uma foto */
+export async function addPhotoComment(
+    photoId: string,
+    authorId: string,
+    content: string
+): Promise<PhotoComment> {
+    const { data, error } = await supabase
+        .from('photo_comments')
+        .insert({
+            photo_id: photoId,
+            author_id: authorId,
+            content: content.trim(),
+        })
+        .select('*, author:profiles!author_id(*)')
+        .single();
+
+    if (error) throw error;
+
+    return {
+        ...data,
+        author: Array.isArray(data.author) ? data.author[0] : data.author,
+    };
+}
+
+/** Remove um comentário de foto */
+export async function deletePhotoComment(commentId: string): Promise<void> {
+    const { error } = await supabase.from('photo_comments').delete().eq('id', commentId);
+    if (error) throw error;
 }

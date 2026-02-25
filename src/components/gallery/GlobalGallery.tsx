@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image, Loader2, X } from 'lucide-react';
+import { Image, Loader2 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
 import { getPublicPhotos } from '@/lib/galleryService';
+import { PhotoLightbox } from './PhotoLightbox';
 import type { Photo } from '@/types';
 
 export function GlobalGallery() {
@@ -76,51 +77,14 @@ export function GlobalGallery() {
             {/* Lightbox */}
             <AnimatePresence>
                 {selectedPhoto && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
-                        onClick={() => setSelectedPhoto(null)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative max-w-3xl max-h-[90vh] w-full"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <img
-                                src={selectedPhoto.url}
-                                alt={selectedPhoto.title || selectedPhoto.description || 'Foto'}
-                                className="w-full max-h-[80vh] object-contain rounded-[var(--radius-lg)]"
-                            />
-                            <button
-                                onClick={() => setSelectedPhoto(null)}
-                                className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
-                            >
-                                <X size={20} />
-                            </button>
-                            <div className="mt-3 flex items-center gap-3">
-                                <Avatar
-                                    src={selectedPhoto.owner?.avatar_url}
-                                    alt={selectedPhoto.owner?.display_name || 'User'}
-                                    size="md"
-                                />
-                                <div>
-                                    <p className="text-sm font-medium text-white/90">
-                                        {selectedPhoto.owner?.display_name || 'Anônimo'}
-                                    </p>
-                                    {selectedPhoto.title && (
-                                        <p className="text-[14px] font-semibold text-white/95 mt-1">{selectedPhoto.title}</p>
-                                    )}
-                                    {selectedPhoto.description && (
-                                        <p className="text-xs text-white/50 mt-0.5">{selectedPhoto.description}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
+                    <PhotoLightbox
+                        photo={selectedPhoto}
+                        onClose={() => setSelectedPhoto(null)}
+                        onPhotoUpdate={(updated) => {
+                            setSelectedPhoto(updated);
+                            setPhotos(prev => prev.map(p => p.id === updated.id ? updated : p));
+                        }}
+                    />
                 )}
             </AnimatePresence>
         </div>

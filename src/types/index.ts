@@ -102,6 +102,27 @@ export interface Photo {
     created_at: string;
     // Joined
     owner?: Profile;
+    // Aggregated
+    likes_count?: number;
+    comments_count?: number;
+    liked_by_me?: boolean;
+}
+
+export interface PhotoLike {
+    id: string;
+    photo_id: string;
+    user_id: string;
+    created_at: string;
+}
+
+export interface PhotoComment {
+    id: string;
+    photo_id: string;
+    author_id: string;
+    content: string;
+    created_at: string;
+    // Joined
+    author?: Profile;
 }
 
 // ======== FAMÍLIA ========
