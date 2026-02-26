@@ -145,7 +145,7 @@ export function MentionInput({
         onChange: handleChange,
         onKeyDown: handleKeyDown,
         placeholder,
-        className,
+        className: `${className} focus:outline-none focus:ring-0 !outline-none`,
         maxLength,
     };
 
@@ -173,8 +173,8 @@ export function MentionInput({
                                 type="button"
                                 onClick={() => selectUser(user)}
                                 className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors cursor-pointer ${i === selectedIndex
-                                        ? 'bg-white/[0.08]'
-                                        : 'hover:bg-white/[0.04]'
+                                    ? 'bg-white/[0.08]'
+                                    : 'hover:bg-white/[0.04]'
                                     }`}
                             >
                                 <Avatar
