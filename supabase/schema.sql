@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     bio             TEXT,
     invite_code_used TEXT,
     is_admin        BOOLEAN DEFAULT FALSE,
+    tag_changed     BOOLEAN DEFAULT FALSE,
     created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -240,20 +241,49 @@ COMMENT ON TABLE public.sim_photos IS 'Fotos individuais de cada personagem Sim'
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+    base_name TEXT;
+    new_username TEXT;
+    is_unique BOOLEAN := FALSE;
+    random_tag TEXT;
+    attempts INT := 0;
 BEGIN
+    -- Determina o nome base
+    base_name := COALESCE(
+        NEW.raw_user_meta_data ->> 'preferred_username',
+        NEW.raw_user_meta_data ->> 'user_name',
+        NEW.raw_user_meta_data ->> 'name',
+        NULLIF(SPLIT_PART(NEW.email, '@', 1), ''),
+        'user'
+    );
+    
+    -- Remove espaços em branco ou substitui para criar o base_name
+    base_name := REGEXP_REPLACE(base_name, '\s+', '', 'g');
+
+    -- Busca uma tag única de 4 dígitos
+    WHILE NOT is_unique AND attempts < 50 LOOP
+        random_tag := LPAD(FLOOR(RANDOM() * 10000)::INT::TEXT, 4, '0');
+        new_username := base_name || '#' || random_tag;
+        
+        IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE username = new_username) THEN
+            is_unique := TRUE;
+        END IF;
+        
+        attempts := attempts + 1;
+    END LOOP;
+
+    -- Fallback se achar colisão 50 vezes (extremamente raro)
+    IF NOT is_unique THEN
+        new_username := base_name || '#' || EXTRACT(EPOCH FROM NOW())::TEXT;
+    END IF;
+
     INSERT INTO public.profiles (id, username, display_name, avatar_url)
     VALUES (
         NEW.id,
-        COALESCE(
-            NEW.raw_user_meta_data ->> 'preferred_username',   -- Discord
-            NEW.raw_user_meta_data ->> 'user_name',            -- Discord fallback
-            NEW.raw_user_meta_data ->> 'name',                 -- Google
-            NULLIF(SPLIT_PART(NEW.email, '@', 1), ''),         -- Email fallback
-            'user_' || substr(NEW.id::text, 1, 8)              -- Final fallback para evitar quebra de UNIQUE/NOT NULL
-        ),
+        new_username,
         COALESCE(
             NEW.raw_user_meta_data ->> 'full_name',            -- Google
-            NEW.raw_user_meta_data -> 'custom_claims' ->> 'global_name', -- Discord (CORRIGIDO: -> em vez de ->>)
+            NEW.raw_user_meta_data -> 'custom_claims' ->> 'global_name', -- Discord
             NEW.raw_user_meta_data ->> 'name',                 -- Fallback
             SPLIT_PART(NEW.email, '@', 1),
             'User'
