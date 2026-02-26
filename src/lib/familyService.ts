@@ -34,6 +34,11 @@ export async function createFamily(userId: string, name: string): Promise<Family
     return { ...data, sims_count: 0 };
 }
 
+export async function updateFamily(familyId: string, name: string): Promise<void> {
+    const { error } = await supabase.from('families').update({ family_name: name.trim() }).eq('id', familyId);
+    if (error) throw error;
+}
+
 export async function deleteFamily(familyId: string): Promise<void> {
     const { error } = await supabase.from('families').delete().eq('id', familyId);
     if (error) throw error;

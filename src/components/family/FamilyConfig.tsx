@@ -11,7 +11,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { useAuthStore } from '@/store/authStore';
 import { AvatarCropper } from '@/components/settings/AvatarCropper';
 import {
-    getFamilies, createFamily, deleteFamily,
+    getFamilies, createFamily, updateFamily, deleteFamily,
     getSims, createSim, updateSim, deleteSim,
     addTrait, removeTrait,
 } from '@/lib/familyService';
@@ -45,6 +45,8 @@ export function FamilyConfig() {
     const [sims, setSims] = useState<Sim[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
+    const [editingFamily, setEditingFamily] = useState<Family | null>(null);
+    const [editFamilyName, setEditFamilyName] = useState('');
     const [showCreateSim, setShowCreateSim] = useState(false);
     const [editingSim, setEditingSim] = useState<Sim | null>(null);
     const [familyName, setFamilyName] = useState('');
@@ -86,6 +88,23 @@ export function FamilyConfig() {
             setFamilies((prev) => [fam, ...prev]);
             setFamilyName('');
             setShowNewFamily(false);
+        } catch (e) { console.error(e); }
+    };
+
+    const openEditFamily = (family: Family) => {
+        setEditingFamily(family);
+        setEditFamilyName(family.family_name);
+    };
+
+    const handleUpdateFamily = async () => {
+        if (!editingFamily || !editFamilyName.trim()) return;
+        try {
+            await updateFamily(editingFamily.id, editFamilyName);
+            setFamilies((prev) => prev.map((f) => f.id === editingFamily.id ? { ...f, family_name: editFamilyName } : f));
+            if (selectedFamily?.id === editingFamily.id) {
+                setSelectedFamily({ ...selectedFamily, family_name: editFamilyName });
+            }
+            setEditingFamily(null);
         } catch (e) { console.error(e); }
     };
 
@@ -508,17 +527,77 @@ export function FamilyConfig() {
                                         <p className="text-[10px] text-white/40">{fam.sims_count ?? 0} Sims</p>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteFamily(fam.id); }}
-                                    className="w-8 h-8 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-white/0 group-hover:text-white/30 hover:!text-[var(--accent-danger)] transition-colors cursor-pointer"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
+                                <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); openEditFamily(fam); }}
+                                        className="w-8 h-8 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-white/40 hover:text-white/80 transition-colors cursor-pointer"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteFamily(fam.id); }}
+                                        className="w-8 h-8 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-white/40 hover:!text-[var(--accent-danger)] transition-colors cursor-pointer"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     ))}
                 </div>
             )}
+
+            {/* Edit Family Modal */}
+            <AnimatePresence>
+                {editingFamily && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
+                        onClick={() => setEditingFamily(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={spring}
+                            className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-6 w-full max-w-md"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between mb-5">
+                                <h3 className="text-lg font-semibold text-white/90">Editar Família</h3>
+                                <button
+                                    onClick={() => setEditingFamily(null)}
+                                    className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-white/40 cursor-pointer"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                <GlassInput
+                                    label="Nome da Família"
+                                    value={editFamilyName}
+                                    onChange={(e) => setEditFamilyName(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleUpdateFamily()}
+                                    placeholder="Ex: Família Goth"
+                                />
+                            </div>
+
+                            <GlassButton
+                                onClick={handleUpdateFamily}
+                                className="w-full mt-5"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <Save size={16} /> Salvar Alterações
+                                </span>
+                            </GlassButton>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 }
