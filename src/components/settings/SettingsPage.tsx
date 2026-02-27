@@ -12,7 +12,7 @@ import { uploadAvatar, updateProfileAvatar, updateProfileInfo } from '@/lib/avat
 import { useNavigate } from 'react-router-dom';
 import { fetchProfile, signOut } from '@/lib/authService';
 import { useThemeStore } from '@/store/themeStore';
-import { normalizeZenThemeConfig, DEFAULT_ZEN_THEME } from '@/store/themeStore';
+import { normalizeZenThemeConfig, REFERENCE_DARK_MODE_THEME } from '@/store/themeStore';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
@@ -159,7 +159,7 @@ export function SettingsPage() {
         setZenMessage(null);
         try {
             resetTheme();
-            await updateProfileInfo(user.id, { zen_background: DEFAULT_ZEN_THEME });
+            await updateProfileInfo(user.id, { zen_background: REFERENCE_DARK_MODE_THEME });
             const newProfile = await fetchProfile(user.id);
             if (newProfile) setProfile(newProfile);
             setZenMessage({ type: 'success', text: 'Fundo restaurado para o padrão (Dark Mode).' });

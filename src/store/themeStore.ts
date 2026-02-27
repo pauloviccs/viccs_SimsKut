@@ -20,6 +20,18 @@ export const DEFAULT_ZEN_THEME: ZenThemeConfig = {
     ]
 };
 
+/** Tema "Retornar ao Dark Mode" — fundo sólido preto/cinza como na referência (sem gradiente Zen). */
+export const REFERENCE_DARK_MODE_THEME: ZenThemeConfig = {
+    enabled: false,          // ZenBackground usa #050508 (fundo sólido)
+    lightness: 5,
+    noiseAmount: 0,
+    algo: 'complement',
+    dots: [
+        { id: 1, x: 0.65, y: 0.35, hsl: [230, 60, 50], isPrimary: true },
+        { id: 2, x: 0.3, y: 0.6, hsl: [50, 60, 50], isPrimary: false }
+    ]
+};
+
 const ALGOS: HarmonyAlgo[] = ['complement', 'triadic', 'analogous', 'split', 'tetradic'];
 
 /** Normalizes raw JSON from DB (profile.zen_background) into ZenThemeConfig */
@@ -132,5 +144,5 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
 
     setDots: (dots) => set((state) => ({ theme: { ...state.theme, dots } })),
 
-    resetTheme: () => set({ theme: { ...DEFAULT_ZEN_THEME } })
+    resetTheme: () => set({ theme: { ...REFERENCE_DARK_MODE_THEME } })
 }));
