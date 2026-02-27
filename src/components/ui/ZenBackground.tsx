@@ -41,7 +41,9 @@ export function ZenBackground() {
     // Expose gradient as CSS variable (so it's set even when disabled, for consistency)
     useEffect(() => {
         document.documentElement.style.setProperty('--gradient-bg', compositeBackground);
-        return () => document.documentElement.style.removeProperty('--gradient-bg');
+        return () => {
+            document.documentElement.style.removeProperty('--gradient-bg');
+        };
     }, [compositeBackground]);
 
     if (!theme.enabled) {

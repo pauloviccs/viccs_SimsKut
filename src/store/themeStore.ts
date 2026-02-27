@@ -89,8 +89,7 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
         // Update Primary
         newDots[pIndex] = { ...newDots[pIndex], hsl };
 
-        // Auto-recalc secondary dots
-        const secondaryDots = newDots.filter(d => !d.isPrimary);
+        // Auto-recalc secondary dots from harmony
         const complements = calculateComplements(newDots[pIndex], theme.algo);
 
         let subIndex = 0;
