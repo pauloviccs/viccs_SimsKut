@@ -17,9 +17,13 @@ const PALETTE_COLORS: [number, number, number][] = [
     [230, 35, 62], // slate
 ];
 
+/** During drag we only update local state; store updates once on drag end to avoid freezing. */
+type DragState = { id: number; x: number; y: number } | null;
+
 export function ZenGradientPicker({ onSave }: { onSave: () => void }) {
     const { theme, updateLightness, updateNoise, updatePrimaryColor, updateAlgo, setDots } = useThemeStore();
     const canvasRef = useRef<HTMLDivElement>(null);
+    const [dragging, setDragging] = useState<DragState>(null);
 
     // Desktop restrict note
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -62,14 +66,17 @@ export function ZenGradientPicker({ onSave }: { onSave: () => void }) {
         setDots(theme.dots.filter(d => d.id !== lastSecondaryId));
     };
 
-    // Render radial stops internally inside the box to mimic the effect real-time without canvas
-    const gradientStops = theme.dots.map(dot => {
+    // Display dots: use dragging position while dragging, otherwise theme.dots (avoids store updates during drag)
+    const displayDots = dragging
+        ? theme.dots.map(d => (d.id === dragging.id ? { ...d, x: dragging.x, y: dragging.y } : d))
+        : theme.dots;
+
+    const gradientStops = displayDots.map(dot => {
         const xPercent = (dot.x * 100).toFixed(1) + '%';
         const yPercent = (dot.y * 100).toFixed(1) + '%';
         const [h, s, l] = dot.hsl;
         return `radial-gradient(ellipse at ${xPercent} ${yPercent}, hsla(${h}, ${s}%, ${l}%, 0.8) 0%, transparent 70%)`;
     });
-
     const boxBackground = [...gradientStops, `hsl(0, 0%, ${theme.lightness}%)`].join(', ');
 
     return (
@@ -111,21 +118,33 @@ export function ZenGradientPicker({ onSave }: { onSave: () => void }) {
                     backgroundSize: '20px 20px, 100% 100%'
                 }}
             >
-                {theme.dots.map(dot => (
+                {displayDots.map(dot => (
                     <motion.div
                         key={dot.id}
                         drag
                         dragMomentum={false}
                         dragConstraints={canvasRef}
+                        onDragStart={() => setDragging({ id: dot.id, x: dot.x, y: dot.y })}
                         onDrag={(_, info) => {
                             const rect = canvasRef.current?.getBoundingClientRect();
                             if (!rect) return;
-                            const newX = Math.max(0, Math.min(1, (info.point.x - rect.left) / rect.width));
-                            const newY = Math.max(0, Math.min(1, (info.point.y - rect.top) / rect.height));
+                            const x = Math.max(0, Math.min(1, (info.point.x - rect.left) / rect.width));
+                            const y = Math.max(0, Math.min(1, (info.point.y - rect.top) / rect.height));
+                            setDragging(prev => prev && prev.id === dot.id ? { ...prev, x, y } : prev);
+                        }}
+                        onDragEnd={(_, info) => {
+                            const rect = canvasRef.current?.getBoundingClientRect();
+                            if (!rect) {
+                                setDragging(null);
+                                return;
+                            }
+                            const x = Math.max(0, Math.min(1, (info.point.x - rect.left) / rect.width));
+                            const y = Math.max(0, Math.min(1, (info.point.y - rect.top) / rect.height));
                             const newDots = theme.dots.map(d =>
-                                d.id === dot.id ? { ...d, x: newX, y: newY } : d
+                                d.id === dot.id ? { ...d, x, y } : d
                             );
                             setDots(newDots);
+                            setDragging(null);
                         }}
                         style={{
                             left: `${dot.x * 100}%`,
@@ -178,7 +197,8 @@ export function ZenGradientPicker({ onSave }: { onSave: () => void }) {
                     <span className="text-xs text-white/50 w-12">Brilho</span>
                     <input
                         type="range"
-                        min="0" max="100"
+                        min="0"
+                        max="100"
                         value={theme.lightness}
                         onChange={(e) => updateLightness(Number(e.target.value))}
                         className="flex-1 accent-white/50 h-1 bg-white/10 rounded-full appearance-none outline-none"
@@ -188,7 +208,8 @@ export function ZenGradientPicker({ onSave }: { onSave: () => void }) {
                     <span className="text-xs text-white/50 w-12">Ruído</span>
                     <input
                         type="range"
-                        min="0" max="100"
+                        min="0"
+                        max="100"
                         value={theme.noiseAmount}
                         onChange={(e) => updateNoise(Number(e.target.value))}
                         className="flex-1 accent-white/50 h-1 bg-white/10 rounded-full appearance-none outline-none"

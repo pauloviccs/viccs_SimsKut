@@ -1,22 +1,45 @@
 import { useThemeStore } from '@/store/themeStore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+
+/** Build gradient string only when inputs change (stable deps to avoid redundant work). */
+function buildCompositeBackground(
+    enabled: boolean,
+    lightness: number,
+    dots: Array<{ x: number; y: number; hsl: [number, number, number] }>
+): string {
+    if (!enabled) return '#050508';
+    const radialGradients = dots.map(dot => {
+        const [h, s, l] = dot.hsl;
+        const xPercent = (dot.x * 100).toFixed(1) + '%';
+        const yPercent = (dot.y * 100).toFixed(1) + '%';
+        return `radial-gradient(ellipse at ${xPercent} ${yPercent}, hsla(${h}, ${s}%, ${l}%, 0.8) 0%, transparent 70%)`;
+    });
+    const baseColor = `hsl(0, 0%, ${lightness}%)`;
+    return [...radialGradients, baseColor].join(', ');
+}
 
 /**
  * ZenBackground — Replaces the previous static FluidBackground.
- * It strictly renders on desktop (`md:block hidden`) 
- * and applies the dynamic HSL dots managed by the `themeStore`.
+ * Optimized: store updates only on drag end (picker), memoized gradient, throttled DOM write, debounced noise.
  */
 export function ZenBackground() {
-    const { theme } = useThemeStore();
+    const theme = useThemeStore((s) => s.theme);
     const [noiseDataUrl, setNoiseDataUrl] = useState<string>('');
+    const rafIdRef = useRef<number | null>(null);
 
-    // Generate lightweight SVG noise dynamically based on the noiseAmount
+    const compositeBackground = useMemo(
+        () => buildCompositeBackground(theme.enabled, theme.lightness, theme.dots),
+        [theme.enabled, theme.lightness, theme.dots]
+    );
+
+    // Debounce noise texture update (avoids heavy btoa/setState on every slider tick)
     useEffect(() => {
         if (theme.noiseAmount <= 0) {
             setNoiseDataUrl('');
             return;
         }
-        const svg = `
+        const t = setTimeout(() => {
+            const svg = `
             <svg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'>
                 <filter id='noise'>
                     <feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/>
@@ -24,24 +47,20 @@ export function ZenBackground() {
                 <rect width='100%' height='100%' filter='url(#noise)' opacity='0.${Math.max(1, Math.floor(theme.noiseAmount / 2))}'/>
             </svg>
         `;
-        const encoded = btoa(svg);
-        setNoiseDataUrl(`url("data:image/svg+xml;base64,${encoded}")`);
+            setNoiseDataUrl(`url("data:image/svg+xml;base64,${btoa(svg)}")`);
+        }, 120);
+        return () => clearTimeout(t);
     }, [theme.noiseAmount]);
 
-    // Resolve dots into gradient string (used for CSS variable and for render when enabled)
-    const radialGradients = theme.dots.map(dot => {
-        const [h, s, l] = dot.hsl;
-        const xPercent = (dot.x * 100).toFixed(1) + '%';
-        const yPercent = (dot.y * 100).toFixed(1) + '%';
-        return `radial-gradient(ellipse at ${xPercent} ${yPercent}, hsla(${h}, ${s}%, ${l}%, 0.8) 0%, transparent 70%)`;
-    });
-    const baseColor = `hsl(0, 0%, ${theme.lightness}%)`;
-    const compositeBackground = theme.enabled ? [...radialGradients, baseColor].join(', ') : '#050508';
-
-    // Expose gradient as CSS variable (so it's set even when disabled, for consistency)
+    // Throttle CSS variable write to next frame to avoid blocking main thread
     useEffect(() => {
-        document.documentElement.style.setProperty('--gradient-bg', compositeBackground);
+        if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = requestAnimationFrame(() => {
+            rafIdRef.current = null;
+            document.documentElement.style.setProperty('--gradient-bg', compositeBackground);
+        });
         return () => {
+            if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
             document.documentElement.style.removeProperty('--gradient-bg');
         };
     }, [compositeBackground]);
