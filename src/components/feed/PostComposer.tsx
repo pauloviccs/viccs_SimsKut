@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ImagePlus, Images, Send, X } from 'lucide-react';
 import { GlassButton } from '@/components/ui/GlassButton';
@@ -18,6 +18,39 @@ interface PostComposerProps {
 
 const MAX_CHARS = 280;
 
+const PLACEHOLDER_PHRASES = [
+    "O que está acontecendo nos Sims? 🎮",
+    "🧬 Reticulando splines...",
+    "🔮 Consultando o Oráculo Plumbob...",
+    "✨ Preparando a vida perfeita...",
+    "🏊 Limpando as piscinas...",
+    "🪜 Tirando a escada da piscina...",
+    "🦙 Encontrando a lhamacórnia...",
+    "😊 Ajustando o humor dos Sims...",
+    "🍽️ Escondendo os pratos sujos...",
+    "🔥 Removendo o fogo do fogão...",
+    "🎭 Programando drama aleatório...",
+    "🧠 Conferindo os traços de personalidade...",
+    "🚪 Instalando portas que realmente funcionam...",
+    "🌱 Alimentando a Planta-Vaca...",
+    "🧼 Ensinando Sims a lavar as mãos...",
+    "👶 Colocando o bebê no lugar seguro...",
+    "🌪️ Adicionando mais caos doméstico...",
+    "👀 Preparando os vizinhos fofoqueiros...",
+    "🎮 Ajustando o livre-arbítrio (ou não)...",
+    "🔢 Calculando quantas vezes você vai cancelar a ação...",
+    "🥤 Recolhendo copos espalhados pela casa...",
+    "😭 Procurando o bebê que está chorando...",
+    "🍝 Verificando se o Sim vai largar o prato no chão mesmo assim...",
+    "💎 Polindo o Plumbob...",
+    "📖 Carregando histórias dramáticas...",
+    "👋 Ensaiando o \"Dag Dag!\"...",
+    "💞 Preparando woohoo...",
+    "🏗️ Instalando escadas sem corrimão...",
+    "🐶 Dando banho no cachorro (mesmo ele não querendo)...",
+    "🧱 Reiniciando Sims presos no chão..."
+];
+
 /**
  * PostComposer — Campo de criação de posts.
  * Imagina como o "What's happening?" do Twitter: texto + foto opcional.
@@ -31,7 +64,13 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
     const [error, setError] = useState('');
     const [showGalleryPicker, setShowGalleryPicker] = useState(false);
     const [galleryImageUrl, setGalleryImageUrl] = useState<string | null>(null);
+    const [placeholder, setPlaceholder] = useState(PLACEHOLDER_PHRASES[0]);
     const fileRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const randomIndex = Math.floor(Math.random() * PLACEHOLDER_PHRASES.length);
+        setPlaceholder(PLACEHOLDER_PHRASES[randomIndex]);
+    }, []);
 
     const charsLeft = MAX_CHARS - content.length;
     const canPost = (content.trim().length > 0 || imageFile || galleryImageUrl) && charsLeft >= 0;
@@ -131,7 +170,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                         <MentionInput
                             value={content}
                             onChange={setContent}
-                            placeholder="O que está acontecendo nos Sims? 🎮"
+                            placeholder={placeholder}
                             className="w-full bg-transparent text-sm text-white/90 placeholder-white/30 resize-none outline-none min-h-[60px]"
                             mode="textarea"
                             rows={2}
