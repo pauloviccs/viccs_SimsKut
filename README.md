@@ -24,7 +24,9 @@
 
 ## 🌟 Visão Geral
 
-**SimsKut** é uma rede social **privada e por convites** inspirada no antigo Orkut, com a estética do **Liquid Glass Design System** (Apple WWDC 2025) e fundo **Zen** (gradiente harmônico configurável). Cada usuário gerencia sua **Família Sims**, interage com a **galeria global**, publica no **feed** com menções e comentários, mantém **perfil** e rede de amizades — tudo dentro de uma comunidade fechada e segura.
+**SimsKut** (VICCS SimsKut) é uma rede social **privada e por convites** inspirada no antigo Orkut, com a estética do **Liquid Glass Design System** (Apple WWDC 2025) e fundo **Zen** (gradiente harmônico configurável). Cada usuário gerencia sua **Família Sims**, interage com a **galeria global**, publica no **feed** com menções e comentários, mantém **perfil** e rede de amizades — tudo dentro de uma comunidade fechada e segura.
+
+Para visão técnica detalhada, WIP e TODOs, veja [.agent/overview/PROJECT_STATUS.md](.agent/overview/PROJECT_STATUS.md).
 
 <br/>
 
@@ -249,9 +251,10 @@ Phase 2 — Social Core                      ███████████�
 ├── Sistema de amizades
 └── Notificações em tempo real
 
-Phase 3 — Família & Sims                   ░░░░░░░░░░░░░░░░░░░░   0%
-├── CRUD completo de Família/Sims
-├── Árvore Genealógica (D3.js/react-flow)
+Phase 3 — Família & Sims                   ████░░░░░░░░░░░░░░░░   ~30%
+├── Configuração de Família e árvore (FamilyConfig, FamilyTree) ✅
+├── CRUD completo de Família/Sims (parcial)
+├── Árvore Genealógica (refinamento visual/navegação — WIP)
 ├── Traits e habilidades dos Sims
 └── Galeria individual por Sim
 

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Save, AlertTriangle, User, Hash, Palette } from 'lucide-react';
+import { Camera, Save, AlertTriangle, User, Hash, Palette, RotateCcw } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
@@ -12,7 +12,7 @@ import { uploadAvatar, updateProfileAvatar, updateProfileInfo } from '@/lib/avat
 import { useNavigate } from 'react-router-dom';
 import { fetchProfile, signOut } from '@/lib/authService';
 import { useThemeStore } from '@/store/themeStore';
-import { normalizeZenThemeConfig } from '@/store/themeStore';
+import { normalizeZenThemeConfig, DEFAULT_ZEN_THEME } from '@/store/themeStore';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
@@ -23,6 +23,7 @@ const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 export function SettingsPage() {
     const { user, profile, setProfile, logout } = useAuthStore();
     const theme = useThemeStore((s) => s.theme);
+    const resetTheme = useThemeStore((s) => s.resetTheme);
     const navigate = useNavigate();
 
     // Form state
@@ -150,6 +151,21 @@ export function SettingsPage() {
         } catch (err) {
             console.error('Zen background save error:', err);
             setZenMessage({ type: 'error', text: 'Erro ao salvar fundo. Tente novamente.' });
+        }
+    };
+
+    const handleResetToDefaultBackground = async () => {
+        if (!user) return;
+        setZenMessage(null);
+        try {
+            resetTheme();
+            await updateProfileInfo(user.id, { zen_background: DEFAULT_ZEN_THEME });
+            const newProfile = await fetchProfile(user.id);
+            if (newProfile) setProfile(newProfile);
+            setZenMessage({ type: 'success', text: 'Fundo restaurado para o padrão (Dark Mode).' });
+        } catch (err) {
+            console.error('Reset background error:', err);
+            setZenMessage({ type: 'error', text: 'Erro ao restaurar fundo. Tente novamente.' });
         }
     };
 
@@ -320,10 +336,21 @@ export function SettingsPage() {
                 transition={{ ...spring, delay: 0.25 }}
             >
                 <GlassCard className="p-6">
-                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-white/80">
-                        <Palette size={18} className="text-[var(--accent-primary)]" />
-                        Aparência & Customização
-                    </h2>
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <h2 className="text-base font-semibold flex items-center gap-2 text-white/80">
+                            <Palette size={18} className="text-[var(--accent-primary)]" />
+                            Aparência & Customização
+                        </h2>
+                        <button
+                            type="button"
+                            onClick={handleResetToDefaultBackground}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white/70 hover:text-white hover:bg-white/10 border border-white/15 hover:border-white/25 transition-all duration-200"
+                            title="Restaurar fundo padrão (Dark Mode)"
+                        >
+                            <RotateCcw size={14} strokeWidth={2} />
+                            Retornar ao Dark Mode
+                        </button>
+                    </div>
                     <p className="text-sm text-white/50 mb-4">
                         Personalize o fundo do aplicativo (apenas na versão Desktop).
                     </p>
