@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { useAuthStore } from '@/store/authStore';
+import { useCookieStore } from '@/store/cookieStore';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchProfile } from '@/lib/authService';
 import '@/styles/global.css';
@@ -16,6 +17,22 @@ const queryClient = new QueryClient({
         },
     },
 });
+
+/**
+ * CookieProvider — Injeta scripts baseados nas preferências do usuário em tempo real
+ */
+function CookieProvider({ children }: { children: React.ReactNode }) {
+    const { hasAnswered, preferences } = useCookieStore();
+
+    useEffect(() => {
+        if (hasAnswered && preferences.analytics) {
+            console.log('[Analytics] O usuário aceitou os cookies analíticos. Disparando trackers não-essenciais...');
+            // Injeção de gtag.js ocorreria aqui dinamicamente
+        }
+    }, [hasAnswered, preferences.analytics]);
+
+    return <>{children}</>;
+}
 
 /**
  * AuthProvider — Ouve mudanças de auth do Supabase e sincroniza com Zustand.
@@ -120,9 +137,11 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-                <AuthProvider>
-                    <App />
-                </AuthProvider>
+                <CookieProvider>
+                    <AuthProvider>
+                        <App />
+                    </AuthProvider>
+                </CookieProvider>
             </BrowserRouter>
         </QueryClientProvider>
     </StrictMode>

@@ -14,45 +14,51 @@ import { AuthCallback } from '@/components/auth/AuthCallback';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { SettingsPage } from '@/components/settings/SettingsPage';
 import { ProfilePage } from '@/components/profile/ProfilePage';
+import { CookieBanner } from '@/components/ui/CookieBanner';
 
 export default function App() {
     return (
-        <Routes>
-            {/* Rotas públicas (sem sidebar/navbar) */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/pending" element={<PendingApproval />} />
+        <>
+            <Routes>
+                {/* Rotas públicas (sem sidebar/navbar) */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/pending" element={<PendingApproval />} />
 
-            {/* Callback do OAuth — handler dedicado */}
-            <Route path="/auth/callback" element={<AuthCallback />} />
+                {/* Callback do OAuth — handler dedicado */}
+                <Route path="/auth/callback" element={<AuthCallback />} />
 
-            {/* Rotas protegidas (com AppShell: sidebar + navbar) */}
-            <Route
-                element={
-                    <ProtectedRoute>
-                        <AppShell />
-                    </ProtectedRoute>
-                }
-            >
-                <Route path="/feed" element={<FeedPage />} />
-                <Route path="/gallery/global" element={<GlobalGallery />} />
-                <Route path="/gallery/private" element={<PrivateGallery />} />
-                <Route path="/family" element={<FamilyConfig />} />
-                <Route path="/family-tree" element={<FamilyTree />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/profile/:username" element={<ProfilePage />} />
-            </Route>
+                {/* Rotas protegidas (com AppShell: sidebar + navbar) */}
+                <Route
+                    element={
+                        <ProtectedRoute>
+                            <AppShell />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route path="/feed" element={<FeedPage />} />
+                    <Route path="/gallery/global" element={<GlobalGallery />} />
+                    <Route path="/gallery/private" element={<PrivateGallery />} />
+                    <Route path="/family" element={<FamilyConfig />} />
+                    <Route path="/family-tree" element={<FamilyTree />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/profile/:username" element={<ProfilePage />} />
+                </Route>
 
-            {/* Admin — protegido + adminOnly */}
-            <Route
-                path="/admin/*"
-                element={
-                    <ProtectedRoute adminOnly>
-                        <AdminDashboard />
-                    </ProtectedRoute>
-                }
-            />
-        </Routes>
+                {/* Admin — protegido + adminOnly */}
+                <Route
+                    path="/admin/*"
+                    element={
+                        <ProtectedRoute adminOnly>
+                            <AdminDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+            </Routes>
+
+            {/* Global Overlays for Public & Protected routes */}
+            <CookieBanner />
+        </>
     );
 }
