@@ -12,6 +12,7 @@ import { uploadAvatar, updateProfileAvatar, updateProfileInfo } from '@/lib/avat
 import { useNavigate } from 'react-router-dom';
 import { fetchProfile, signOut } from '@/lib/authService';
 import { useThemeStore } from '@/store/themeStore';
+import { normalizeZenThemeConfig } from '@/store/themeStore';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
@@ -139,7 +140,12 @@ export function SettingsPage() {
         try {
             await updateProfileInfo(user.id, { zen_background: theme });
             const newProfile = await fetchProfile(user.id);
-            if (newProfile) setProfile(newProfile);
+            if (newProfile) {
+                setProfile(newProfile);
+                if (newProfile.zen_background) {
+                    useThemeStore.getState().setTheme(normalizeZenThemeConfig(newProfile.zen_background));
+                }
+            }
             setZenMessage({ type: 'success', text: 'Fundo Zen aplicado e salvo!' });
         } catch (err) {
             console.error('Zen background save error:', err);
