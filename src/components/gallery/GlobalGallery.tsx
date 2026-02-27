@@ -66,7 +66,7 @@ export function GlobalGallery() {
                                     size="sm"
                                 />
                                 <span className="text-[11px] text-white/50 truncate">
-                                    {photo.owner?.display_name || 'Anônimo'}
+                                    {photo.owner?.display_name || photo.owner?.username || 'Anônimo'}
                                 </span>
                             </div>
                         </motion.div>

@@ -193,7 +193,7 @@ export function PhotoLightbox({ photo, onClose, onPhotoUpdate }: PhotoLightboxPr
                                         />
                                         <div>
                                             <p className="text-sm font-semibold text-white/90">
-                                                {photo.owner?.display_name || 'Anônimo'}
+                                                {photo.owner?.display_name || photo.owner?.username || 'Anônimo'}
                                             </p>
                                             <p className="text-[11px] text-white/40">
                                                 {new Date(photo.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -265,7 +265,7 @@ export function PhotoLightbox({ photo, onClose, onPhotoUpdate }: PhotoLightboxPr
                                                     <div className="flex-1">
                                                         <div className="bg-white/5 rounded-2xl rounded-tl-sm px-4 py-2 relative">
                                                             <span className="text-xs font-bold text-white/90">
-                                                                {comment.author?.display_name || 'Anônimo'}
+                                                                {comment.author?.display_name || comment.author?.username || 'Anônimo'}
                                                             </span>
                                                             <p className="text-sm text-white/80 mt-0.5 break-words">
                                                                 {comment.content}

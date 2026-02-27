@@ -174,15 +174,40 @@ export async function getUserComments(
 
 /** Busca fotos públicas de um usuário */
 export async function getUserPhotos(userId: string): Promise<Photo[]> {
+    const currentUserId = (await supabase.auth.getUser()).data.user?.id;
+
     const { data, error } = await supabase
         .from('photos')
-        .select('*')
+        .select(`
+            *,
+            owner:profiles!owner_id(*),
+            photo_likes(count),
+            photo_comments(count)
+        `)
         .eq('owner_id', userId)
         .eq('visibility', 'public')
         .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+
+    let myLikes: Set<string> = new Set();
+    if (currentUserId && data.length > 0) {
+        const photoIds = data.map((p: any) => p.id);
+        const { data: likes } = await supabase
+            .from('photo_likes')
+            .select('photo_id')
+            .eq('user_id', currentUserId)
+            .in('photo_id', photoIds);
+        myLikes = new Set((likes || []).map((l: any) => l.photo_id));
+    }
+
+    return (data || []).map((p: any) => ({
+        ...p,
+        owner: Array.isArray(p.owner) ? p.owner[0] : p.owner,
+        likes_count: p.photo_likes?.[0]?.count ?? 0,
+        comments_count: p.photo_comments?.[0]?.count ?? 0,
+        liked_by_me: myLikes.has(p.id)
+    }));
 }
 
 // ======== USER FAMILIES ========

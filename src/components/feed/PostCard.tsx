@@ -91,7 +91,7 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                     <div className="flex items-center gap-2">
                         <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`} className="hover:underline">
                             <span className="text-sm font-semibold text-white/90 truncate">
-                                {post.author?.display_name || 'Anônimo'}
+                                {post.author?.display_name || post.author?.username || 'Anônimo'}
                             </span>
                         </Link>
                         <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`} className="hover:underline">
