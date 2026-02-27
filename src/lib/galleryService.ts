@@ -80,7 +80,7 @@ export async function deleteFolder(folderId: string): Promise<void> {
 
 // ======== FOTOS ========
 
-export async function getPhotos(userId: string, folderId: string | null = null): Promise<Photo[]> {
+export async function getPhotos(userId: string, folderId: string | null = null, allFolders: boolean = false): Promise<Photo[]> {
     let query = supabase
         .from('photos')
         .select(`
@@ -92,10 +92,12 @@ export async function getPhotos(userId: string, folderId: string | null = null):
         .eq('owner_id', userId)
         .order('created_at', { ascending: false });
 
-    if (folderId) {
-        query = query.eq('folder_id', folderId);
-    } else {
-        query = query.is('folder_id', null);
+    if (!allFolders) {
+        if (folderId) {
+            query = query.eq('folder_id', folderId);
+        } else {
+            query = query.is('folder_id', null);
+        }
     }
 
     const { data, error } = await query;

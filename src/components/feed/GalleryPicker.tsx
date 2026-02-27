@@ -23,7 +23,8 @@ export function GalleryPicker({ onSelect, onClose }: GalleryPickerProps) {
     useEffect(() => {
         if (!user) return;
         setLoading(true);
-        getPhotos(user.id)
+        // Passar folderId como null e allFolders como true para ver TUDO
+        getPhotos(user.id, null, true)
             .then((data) => setPhotos(data))
             .catch((err) => console.error('Gallery fetch error:', err))
             .finally(() => setLoading(false));
