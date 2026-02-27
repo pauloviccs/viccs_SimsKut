@@ -122,7 +122,7 @@ export async function updateProfileAvatar(userId: string, avatarUrl: string): Pr
 /** Atualiza campos do profile (display_name, username, bio, website_url) */
 export async function updateProfileInfo(
     userId: string,
-    data: { display_name?: string; username?: string; tag_changed?: boolean; bio?: string; website_url?: string | null }
+    data: { display_name?: string; username?: string; tag_changed?: boolean; bio?: string; website_url?: string | null; zen_background?: any }
 ): Promise<void> {
     const { error } = await supabase
         .from('profiles')

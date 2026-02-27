@@ -14,6 +14,7 @@ export interface Profile {
     invite_code_used: string | null;
     is_admin: boolean;
     tag_changed: boolean;
+    zen_background?: any; // JSONB object config
     created_at: string;
 }
 

@@ -1,15 +1,17 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Save, AlertTriangle, User, Hash } from 'lucide-react';
+import { Camera, Save, AlertTriangle, User, Hash, Palette } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { Avatar } from '@/components/ui/Avatar';
 import { AvatarCropper } from './AvatarCropper';
+import { ZenGradientPicker } from './ZenGradientPicker';
 import { useAuthStore } from '@/store/authStore';
 import { uploadAvatar, updateProfileAvatar, updateProfileInfo } from '@/lib/avatarService';
 import { useNavigate } from 'react-router-dom';
 import { fetchProfile, signOut } from '@/lib/authService';
+import { useThemeStore } from '@/store/themeStore';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
@@ -19,6 +21,7 @@ const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
  */
 export function SettingsPage() {
     const { user, profile, setProfile, logout } = useAuthStore();
+    const theme = useThemeStore((s) => s.theme);
     const navigate = useNavigate();
 
     // Form state
@@ -38,6 +41,7 @@ export function SettingsPage() {
     const [saving, setSaving] = useState(false);
     const [savingAvatar, setSavingAvatar] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [zenMessage, setZenMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [cropFile, setCropFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,6 +130,20 @@ export function SettingsPage() {
             navigate('/');
         } catch (err) {
             console.error('Logout error:', err);
+        }
+    };
+
+    const handleSaveZenBackground = async () => {
+        if (!user) return;
+        setZenMessage(null);
+        try {
+            await updateProfileInfo(user.id, { zen_background: theme });
+            const newProfile = await fetchProfile(user.id);
+            if (newProfile) setProfile(newProfile);
+            setZenMessage({ type: 'success', text: 'Fundo Zen aplicado e salvo!' });
+        } catch (err) {
+            console.error('Zen background save error:', err);
+            setZenMessage({ type: 'error', text: 'Erro ao salvar fundo. Tente novamente.' });
         }
     };
 
@@ -286,6 +304,36 @@ export function SettingsPage() {
                             </span>
                         </GlassButton>
                     </div>
+                </GlassCard>
+            </motion.div>
+
+            {/* === Aparência & Customização (Zen Gradient) === */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...spring, delay: 0.25 }}
+            >
+                <GlassCard className="p-6">
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-white/80">
+                        <Palette size={18} className="text-[var(--accent-primary)]" />
+                        Aparência & Customização
+                    </h2>
+                    <p className="text-sm text-white/50 mb-4">
+                        Personalize o fundo do aplicativo (apenas na versão Desktop).
+                    </p>
+                    <ZenGradientPicker onSave={handleSaveZenBackground} />
+                    {zenMessage && (
+                        <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`text-xs mt-3 px-4 py-2.5 rounded-lg ${zenMessage.type === 'success'
+                                ? 'text-[var(--accent-success)] bg-[var(--accent-success)]/10'
+                                : 'text-[var(--accent-danger)] bg-[var(--accent-danger)]/10'
+                                }`}
+                        >
+                            {zenMessage.text}
+                        </motion.p>
+                    )}
                 </GlassCard>
             </motion.div>
 

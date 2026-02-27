@@ -15,6 +15,9 @@
   --glass-inner-glow: inset 0 0 20px rgba(255, 255, 255, 0.06);
   --glass-specular-top: rgba(255, 255, 255, 0.4);
 
+  /* Zen Gradient (set by ZenBackground; fallback for mobile/SSR) */
+  --gradient-bg: #050508;
+
   /* ── Cores de texto ───────────────────────── */
   --text-primary: rgba(255, 255, 255, 0.95);
   --text-secondary: rgba(255, 255, 255, 0.60);
@@ -100,6 +103,8 @@
     var(--glass-inner-glow);
   border-radius: var(--radius-lg);
 }
+
+/* Zen light mode: ZenBackground applies a dark overlay for contrast; glass cards remain readable. */
 
 /* =============================================
    FLUID BACKGROUND BLOBS

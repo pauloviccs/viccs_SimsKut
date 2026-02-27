@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     invite_code_used TEXT,
     is_admin        BOOLEAN DEFAULT FALSE,
     tag_changed     BOOLEAN DEFAULT FALSE,
+    zen_background  JSONB,
     created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 

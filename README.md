@@ -24,7 +24,7 @@
 
 ## 🌟 Visão Geral
 
-**SimsKut** é uma rede social **privada e por convites** inspirada no antigo Orkut, mas com a estética moderna do **Liquid Glass Design System** (Apple WWDC 2025). Cada usuário gerencia sua **Família Sims**, interage com uma **galeria global**, publica no **feed** e mantém sua rede de amizades — tudo dentro de uma comunidade fechada e segura.
+**SimsKut** é uma rede social **privada e por convites** inspirada no antigo Orkut, com a estética do **Liquid Glass Design System** (Apple WWDC 2025) e fundo **Zen** (gradiente harmônico configurável). Cada usuário gerencia sua **Família Sims**, interage com a **galeria global**, publica no **feed** com menções e comentários, mantém **perfil** e rede de amizades — tudo dentro de uma comunidade fechada e segura.
 
 <br/>
 
@@ -33,16 +33,21 @@
 | Status | Feature | Descrição |
 |:------:|---------|-----------|
 | ✅ | **Landing Page** | Entrada por código de convite com validação |
-| ✅ | **Auth Pages** | Registro e Login com formulários glass |
-| ✅ | **Feed Social** | Timeline de posts com empty states |
-| ✅ | **Galeria Pública** | Galeria global compartilhada |
-| ✅ | **Galeria Privada** | Coleção pessoal de fotos |
+| ✅ | **Auth Pages** | Registro, Login e OAuth com formulários glass |
+| ✅ | **Feed Social** | Timeline de posts, comentários, likes e menções |
+| ✅ | **Galeria Pública** | Galeria global com pastas, likes e comentários |
+| ✅ | **Galeria Privada** | Coleção pessoal com pastas e upload |
 | ✅ | **Família Sims** | Configuração da família e Sims |
 | ✅ | **Árvore Genealógica** | Visualização da árvore (WIP) |
-| ✅ | **Admin Dashboard** | Stats, convites pendentes, moderação |
-| ✅ | **Liquid Glass UI** | 4 componentes primitivos glass |
+| ✅ | **Perfil** | Página pública por username, bio, amigos |
+| ✅ | **Configurações** | Avatar (crop), Zen gradient, preferências |
+| ✅ | **Zen Theme** | Fundo em gradiente harmônico (HarmonyEngine) |
+| ✅ | **Admin Dashboard** | Stats, convites, moderação, feed admin |
+| ✅ | **Liquid Glass UI** | Componentes glass + ZenBackground, FluidBackground |
 | ✅ | **Layout Responsivo** | Sidebar desktop + Bottom Nav mobile |
-| ✅ | **9 Rotas** | 3 públicas + 6 protegidas no AppShell |
+| ✅ | **Cookie Banner** | Consentimento de cookies |
+| ✅ | **Notificações** | Painel de notificações em tempo real |
+| ✅ | **Rotas** | 5 públicas + 7 protegidas + `/admin/*` no AppShell |
 
 <br/>
 
@@ -75,11 +80,23 @@ O design system é inspirado no **Apple Liquid Glass** com glassmorfismo, blur l
 
 ```
 📦 src/components/ui/
-├── GlassCard.tsx      →  Container translúcido com blur
-├── GlassButton.tsx    →  Botão com hover glow + animação spring
-├── GlassInput.tsx     →  Input com label flutuante + foco glass
-└── Avatar.tsx         →  Avatar circular com fallback de iniciais
+├── GlassCard.tsx        →  Container translúcido com blur
+├── GlassButton.tsx      →  Botão com hover glow + animação spring
+├── GlassInput.tsx       →  Input com label flutuante + foco glass
+├── GlassDivider.tsx     →  Divisor visual glass
+├── Avatar.tsx           →  Avatar circular com fallback de iniciais
+├── ZenBackground.tsx    →  Fundo gradiente harmônico (Zen theme)
+├── FluidBackground.tsx  →  Fundo fluido alternativo
+├── OAuthButton.tsx      →  Botão de login OAuth (Google, etc.)
+├── CookieBanner.tsx     →  Banner de consentimento de cookies
+├── NotificationsPanel.tsx →  Painel de notificações
+├── EmojiPicker.tsx      →  Seletor de emojis
+└── MentionInput.tsx     →  Input com suporte a @menções
 ```
+
+### Zen Theme (gradiente harmônico)
+
+O **HarmonyEngine** (`src/lib/zenTheme/HarmonyEngine.ts`) gera paletas a partir de uma cor primária usando algoritmos de harmonia: `complement`, `triadic`, `analogous`, `split`, `tetradic`. O usuário configura o fundo em **Configurações** (ZenGradientPicker): posição dos pontos, luminosidade, ruído e algoritmo. O estado fica em `themeStore` e pode ser persistido no perfil (`zen_background`).
 
 <br/>
 
@@ -95,36 +112,49 @@ viccs_SimsKut/
 ├── 📄 tsconfig.json                 # TypeScript strict mode
 │
 └── 📂 src/
-    ├── 📄 App.tsx                   # Router principal (9 rotas)
+    ├── 📄 App.tsx                   # Router principal (públicas + protegidas + admin)
     ├── 📄 main.tsx                  # QueryClient + BrowserRouter
     │
     ├── 📂 components/
-    │   ├── 📂 admin/                # AdminDashboard
-    │   ├── 📂 auth/                 # LandingPage, RegisterPage, LoginPage
+    │   ├── 📂 admin/                # AdminDashboard, InviteManager, UserManager, AdminFeed, etc.
+    │   ├── 📂 auth/                 # LandingPage, RegisterPage, LoginPage, PendingApproval, AuthCallback
     │   ├── 📂 family/               # FamilyConfig, FamilyTree
-    │   ├── 📂 feed/                 # FeedPage
-    │   ├── 📂 gallery/              # GlobalGallery, PrivateGallery
+    │   ├── 📂 feed/                 # FeedPage, PostCard, PostComposer, CommentSection, GalleryPicker
+    │   ├── 📂 gallery/              # GlobalGallery, PrivateGallery, PhotoUploadModal, PhotoLightbox
     │   ├── 📂 layout/               # AppShell, Sidebar, Navbar
-    │   └── 📂 ui/                   # GlassCard, GlassButton, GlassInput, Avatar
+    │   ├── 📂 profile/              # ProfilePage, ProfileEditModal, SimDetailsModal, FriendsListModal
+    │   ├── 📂 settings/            # SettingsPage, ZenGradientPicker, AvatarCropper
+    │   └── 📂 ui/                   # Glass*, Avatar, ZenBackground, FluidBackground, etc.
     │
-    ├── 📂 lib/                      # supabaseClient, inviteUtils
-    ├── 📂 store/                    # authStore (Zustand)
+    ├── 📂 lib/                      # Serviços e utilitários
+    │   ├── supabaseClient.ts
+    │   ├── authService.ts, inviteService.ts, inviteUtils.ts
+    │   ├── profileService.ts, avatarService.ts, imageService.ts
+    │   ├── feedService.ts, galleryService.ts, familyService.ts, friendshipService.ts
+    │   ├── notificationService.ts, renderMentions.tsx
+    │   └── zenTheme/HarmonyEngine.ts  # Cores harmônicas (complement, triadic, etc.)
+    │
+    ├── 📂 store/                    # authStore, themeStore, cookieStore, sidebarStore (Zustand)
     ├── 📂 styles/                   # global.css, liquid-glass.css
-    └── 📂 types/                    # TypeScript interfaces (10 tipos)
+    └── 📂 types/                    # TypeScript interfaces (Profile, FeedPost, Photo, Family, Sim, etc.)
 ```
 
 <br/>
 
 ## 🧬 Schema de Dados
 
-O projeto define **10 interfaces TypeScript** que espelham o schema SQL do Supabase:
+O projeto define interfaces TypeScript que espelham o schema SQL do Supabase:
 
 ```typescript
-Profile        →  Perfil do usuário (username, avatar, bio, is_admin)
-InviteCode     →  Código de convite (status: pending → approved → used)
+Profile        →  Perfil (username, avatar_url, banner_url, bio, zen_background, is_admin)
+ProfileStats   →  Contagens (friends_count, posts_count, photos_count)
+InviteCode     →  Código de convite (status: pending → approved → used / rejected)
 Friendship     →  Relacionamento (pending → accepted / blocked)
-FeedPost       →  Post no feed (texto + imagem)
-Photo          →  Foto (pública ou privada)
+FeedPost       →  Post no feed (content, image_url, likes/comments)
+PostLike, PostComment
+Photo          →  Foto (visibility, folder_id, likes/comments)
+GalleryFolder  →  Pasta na galeria
+PhotoLike, PhotoComment
 Family         →  Família Sims do usuário
 Sim            →  Personagem Sim (profissão, bio, traits, fotos)
 SimTrait       →  Qualidade ou habilidade do Sim
@@ -225,8 +255,9 @@ Phase 3 — Família & Sims                   ░░░░░░░░░░░�
 ├── Traits e habilidades dos Sims
 └── Galeria individual por Sim
 
-Phase 4 — Polish                           ░░░░░░░░░░░░░░░░░░░░   0%
-├── Tema claro/escuro toggle
+Phase 4 — Polish                           ████░░░░░░░░░░░░░░░░   ~20%
+├── Zen theme (gradiente harmônico configurável) ✅
+├── Tema claro/escuro (lightness no Zen)
 ├── Favicon SVG personalizado
 ├── Performance + lazy loading
 └── SEO meta tags

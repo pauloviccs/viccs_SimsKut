@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { useAuthStore } from '@/store/authStore';
 import { useCookieStore } from '@/store/cookieStore';
+import { useThemeStore, normalizeZenThemeConfig, DEFAULT_ZEN_THEME } from '@/store/themeStore';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchProfile } from '@/lib/authService';
 import '@/styles/global.css';
@@ -48,7 +49,12 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         async function loadProfile(userId: string): Promise<void> {
             try {
                 const profile = await fetchProfile(userId);
-                if (mounted) setProfile(profile);
+                if (mounted) {
+                    setProfile(profile);
+                    if (profile?.zen_background) {
+                        useThemeStore.getState().setTheme(normalizeZenThemeConfig(profile.zen_background));
+                    }
+                }
             } catch (err) {
                 console.error('[Auth] Error fetching profile:', err);
                 if (mounted) setProfile(null);
@@ -70,6 +76,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
                 } else if (mounted) {
                     setUser(null);
                     setProfile(null);
+                    useThemeStore.getState().setTheme({ ...DEFAULT_ZEN_THEME });
                 }
             } finally {
                 initDone = true;
@@ -96,6 +103,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             if (event === 'SIGNED_OUT') {
                 setUser(null);
                 setProfile(null);
+                useThemeStore.getState().setTheme({ ...DEFAULT_ZEN_THEME });
                 setLoading(false);
                 setInitialized(true);
                 return;
