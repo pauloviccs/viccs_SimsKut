@@ -17,7 +17,10 @@ export function AppShell() {
     }, []);
 
     return (
-        <div className="h-[100dvh] w-full relative overflow-hidden bg-[#050508]">
+        <div
+            className="h-[100dvh] w-full relative overflow-hidden"
+            style={{ background: 'var(--gradient-bg, #050508)' }}
+        >
             <ZenBackground />
             <Sidebar />
 

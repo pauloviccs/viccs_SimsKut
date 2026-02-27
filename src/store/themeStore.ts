@@ -24,8 +24,20 @@ const ALGOS: HarmonyAlgo[] = ['complement', 'triadic', 'analogous', 'split', 'te
 
 /** Normalizes raw JSON from DB (profile.zen_background) into ZenThemeConfig */
 export function normalizeZenThemeConfig(raw: unknown): ZenThemeConfig {
-    if (!raw || typeof raw !== 'object') return { ...DEFAULT_ZEN_THEME };
-    const o = raw as Record<string, unknown>;
+    if (raw == null) return { ...DEFAULT_ZEN_THEME };
+    let o: Record<string, unknown>;
+    if (typeof raw === 'string') {
+        try {
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            o = parsed;
+        } catch {
+            return { ...DEFAULT_ZEN_THEME };
+        }
+    } else if (typeof raw === 'object' && raw !== null) {
+        o = raw as Record<string, unknown>;
+    } else {
+        return { ...DEFAULT_ZEN_THEME };
+    }
     const dots = Array.isArray(o.dots)
         ? (o.dots as unknown[]).map((d, i) => {
             const dot = d as Record<string, unknown>;

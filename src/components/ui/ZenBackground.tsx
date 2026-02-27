@@ -1,5 +1,5 @@
 import { useThemeStore } from '@/store/themeStore';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 
 /** Build gradient string only when inputs change (stable deps to avoid redundant work). */
 function buildCompositeBackground(
@@ -25,8 +25,6 @@ function buildCompositeBackground(
 export function ZenBackground() {
     const theme = useThemeStore((s) => s.theme);
     const [noiseDataUrl, setNoiseDataUrl] = useState<string>('');
-    const rafIdRef = useRef<number | null>(null);
-
     const compositeBackground = useMemo(
         () => buildCompositeBackground(theme.enabled, theme.lightness, theme.dots),
         [theme.enabled, theme.lightness, theme.dots]
@@ -52,15 +50,11 @@ export function ZenBackground() {
         return () => clearTimeout(t);
     }, [theme.noiseAmount]);
 
-    // Throttle CSS variable write to next frame to avoid blocking main thread
-    useEffect(() => {
-        if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = requestAnimationFrame(() => {
-            rafIdRef.current = null;
-            document.documentElement.style.setProperty('--gradient-bg', compositeBackground);
-        });
+    // Set --gradient-bg on :root so AppShell container (and any consumer) shows the gradient.
+    // useLayoutEffect so it runs before paint and the container never flashes default bg.
+    useLayoutEffect(() => {
+        document.documentElement.style.setProperty('--gradient-bg', compositeBackground);
         return () => {
-            if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
             document.documentElement.style.removeProperty('--gradient-bg');
         };
     }, [compositeBackground]);
