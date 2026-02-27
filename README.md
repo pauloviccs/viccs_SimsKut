@@ -237,13 +237,13 @@ Phase 0 — Scaffold                         ███████████�
 ├── 9 rotas (3 públicas + 6 protegidas)
 └── TypeScript interfaces completas
 
-Phase 1 — Auth & Convites                   ░░░░░░░░░░░░░░░░░░░░   0%
+Phase 1 — Auth & Convites                   ██████████████████████ 100%
 ├── Supabase Auth (login/registro real)
 ├── Fluxo de convites conectado ao banco
 ├── SQL Migrations + RLS Policies
 └── Admin: aprovar/rejeitar convites
 
-Phase 2 — Social Core                      ░░░░░░░░░░░░░░░░░░░░   0%
+Phase 2 — Social Core                      ██████████████████████ 100%
 ├── Feed com posts reais (CRUD + scroll)
 ├── Upload de fotos (Supabase Storage)
 ├── Sistema de amizades
