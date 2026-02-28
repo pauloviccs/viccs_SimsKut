@@ -24,9 +24,9 @@
 
 ## 🌟 Visão Geral
 
-**SimsKut** (VICCS SimsKut) é uma rede social **privada e por convites** inspirada no antigo Orkut, com a estética do **Liquid Glass Design System** (Apple WWDC 2025) e fundo **Zen** (gradiente harmônico configurável). Cada usuário gerencia sua **Família Sims**, interage com a **galeria global**, publica no **feed** com menções e comentários, mantém **perfil** e rede de amizades — tudo dentro de uma comunidade fechada e segura.
+**SimsKut** (VICCS SimsKut) é uma rede social **privada e por convites** inspirada no antigo Orkut, com a estética do **Liquid Glass Design System** e fundo **Zen** (gradiente harmônico configurável). Cada usuário gerencia sua **Família Sims**, interage com a **galeria global** e **galeria privada**, publica no **feed** com menções (@username), GIFs e comentários, mantém **perfil** (estilo Twitter/X) e **rede de amizades** — tudo dentro de uma comunidade fechada e segura.
 
-Para visão técnica detalhada, WIP e TODOs, veja [.agent/overview/PROJECT_STATUS.md](.agent/overview/PROJECT_STATUS.md).
+Para visão técnica detalhada, estrutura de pastas, WIP e TODOs, veja [.agent/overview/PROJECT_STATUS.md](.agent/overview/PROJECT_STATUS.md).
 
 <br/>
 
@@ -35,20 +35,22 @@ Para visão técnica detalhada, WIP e TODOs, veja [.agent/overview/PROJECT_STATU
 | Status | Feature | Descrição |
 |:------:|---------|-----------|
 | ✅ | **Landing Page** | Entrada por código de convite com validação |
-| ✅ | **Auth Pages** | Registro, Login e OAuth com formulários glass |
-| ✅ | **Feed Social** | Timeline de posts, comentários, likes e menções |
-| ✅ | **Galeria Pública** | Galeria global com pastas, likes e comentários |
+| ✅ | **Auth Pages** | Registro, Login e OAuth (Google/Discord), aprovação pendente |
+| ✅ | **Feed Social** | Timeline em tempo real (Realtime), posts com texto, imagens, **GIFs** (até 5MB), comentários, likes, **menções** @username e **emoji picker** |
+| ✅ | **Anexar da Galeria** | No composer: seleção de fotos da galeria privada (sem re-upload) |
+| ✅ | **Galeria Pública** | Galeria global com pastas, likes e comentários; **PhotoLightbox** (fullscreen, likes/comentários) |
 | ✅ | **Galeria Privada** | Coleção pessoal com pastas e upload |
-| ✅ | **Família Sims** | Configuração da família e Sims |
-| ✅ | **Árvore Genealógica** | Visualização da árvore (WIP) |
-| ✅ | **Perfil** | Página pública por username, bio, amigos |
-| ✅ | **Configurações** | Avatar (crop), Zen gradient, Ruído, Retornar ao Dark Mode |
-| ✅ | **Zen Theme** | Gradiente harmônico (HarmonyEngine), Ruído (slider + preview), Retornar ao Dark Mode |
-| ✅ | **Admin Dashboard** | Stats, convites, moderação, feed admin |
-| ✅ | **Liquid Glass UI** | Componentes glass + ZenBackground, FluidBackground |
-| ✅ | **Layout Responsivo** | Sidebar desktop + Bottom Nav mobile |
-| ✅ | **Cookie Banner** | Consentimento de cookies |
-| ✅ | **Notificações** | Painel de notificações em tempo real |
+| ✅ | **Família Sims** | Configuração da família, convites link/código, árvore (WIP) |
+| ✅ | **Árvore Genealógica** | Visualização da árvore (refinamento em progresso) |
+| ✅ | **Perfil** | Página pública por @username (estilo Twitter/X), banner 3:1, bio, abas Posts/Respostas/Mídia/Família |
+| ✅ | **Sistema de Amizades** | Solicitações, aceitar/recusar, modal de lista de amigos, unfollow |
+| ✅ | **Configurações** | Avatar (crop 300×300), Zen gradient, Ruído (slider + preview), Retornar ao Dark Mode |
+| ✅ | **Zen Theme** | Gradiente harmônico (HarmonyEngine), Ruído, persistência em perfil (`zen_background`) |
+| ✅ | **Admin Dashboard** | Stats, convites, moderação, feed admin, avatares sincronizados |
+| ✅ | **Liquid Glass UI** | GlassCard, GlassButton, GlassInput, ZenBackground, FluidBackground, OAuthButton |
+| ✅ | **Layout Responsivo** | Sidebar colapsável (240px↔72px), Bottom Nav mobile, safe-area |
+| ✅ | **Cookie Banner** | Consentimento de cookies (localStorage) |
+| ✅ | **Notificações** | Painel (sino + badge): amizades, menções, likes e comentários em posts/fotos |
 | ✅ | **Rotas** | 5 públicas + 7 protegidas + `/admin/*` no AppShell |
 
 <br/>
