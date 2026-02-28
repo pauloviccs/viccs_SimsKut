@@ -41,7 +41,6 @@ Para visão técnica detalhada, estrutura de pastas, WIP e TODOs, veja [.agent/o
 | ✅ | **Galeria Pública** | Galeria global com pastas, likes e comentários; **PhotoLightbox** (fullscreen, likes/comentários) |
 | ✅ | **Galeria Privada** | Pastas e upload; botões deletar/visibilidade **sem** abrir lightbox; menu pasta (Renomear/Deletar) **glass-popup** legível, dropdown acima do card |
 | ✅ | **Família Sims** | Configuração da família, convites link/código, árvore (WIP) |
-| ✅ | **Árvore Genealógica** | Visualização da árvore (refinamento em progresso) |
 | ✅ | **Perfil** | Página por @username (estilo Twitter/X), banner 3:1, bio, abas Posts/Respostas/Mídia/Família, **post fixado** no topo, **Editar perfil** com **cropper** de avatar e banner (mesmo da Configurações) |
 | ✅ | **Sistema de Amizades** | Solicitações, aceitar/recusar, modal de lista de amigos, unfollow |
 | ✅ | **Configurações** | Avatar (AvatarCropper 300×300), Zen gradient, Ruído, Retornar ao Dark Mode; BannerCropper (3:1) usado também no Editar perfil |
@@ -125,7 +124,7 @@ viccs_SimsKut/
     ├── 📂 components/
     │   ├── 📂 admin/                # AdminDashboard, InviteManager, UserManager, AdminFeed, etc.
     │   ├── 📂 auth/                 # LandingPage, RegisterPage, LoginPage, PendingApproval, AuthCallback
-    │   ├── 📂 family/               # FamilyConfig, FamilyTree
+    │   ├── 📂 family/               # FamilyConfig
     │   ├── 📂 feed/                 # FeedPage, PostCard, PostComposer, CommentSection, GalleryPicker
     │   ├── 📂 gallery/              # GlobalGallery, PrivateGallery, PhotoUploadModal, PhotoLightbox
     │   ├── 📂 layout/               # AppShell, Sidebar, Navbar
@@ -257,7 +256,7 @@ Phase 2 — Social Core                      ███████████�
 └── Notificações em tempo real
 
 Phase 3 — Família & Sims                   ████░░░░░░░░░░░░░░░░   ~30%
-├── Configuração de Família e árvore (FamilyConfig, FamilyTree) ✅
+├── Configuração de Família (FamilyConfig) ✅
 ├── CRUD completo de Família/Sims (parcial)
 ├── Árvore Genealógica (refinamento visual/navegação — WIP)
 ├── Traits e habilidades dos Sims

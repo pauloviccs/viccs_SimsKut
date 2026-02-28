@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { LandingPage } from '@/components/auth/LandingPage';
 import { RegisterPage } from '@/components/auth/RegisterPage';
@@ -9,7 +9,6 @@ import { FeedPage } from '@/components/feed/FeedPage';
 import { GlobalGallery } from '@/components/gallery/GlobalGallery';
 import { PrivateGallery } from '@/components/gallery/PrivateGallery';
 import { FamilyConfig } from '@/components/family/FamilyConfig';
-import { FamilyTree } from '@/components/family/FamilyTree';
 import { AuthCallback } from '@/components/auth/AuthCallback';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { SettingsPage } from '@/components/settings/SettingsPage';
@@ -41,7 +40,7 @@ export default function App() {
                     <Route path="/gallery/global" element={<GlobalGallery />} />
                     <Route path="/gallery/private" element={<PrivateGallery />} />
                     <Route path="/family" element={<FamilyConfig />} />
-                    <Route path="/family-tree" element={<FamilyTree />} />
+                    <Route path="/family-tree" element={<Navigate to="/family" replace />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/profile/:username" element={<ProfilePage />} />
                 </Route>

@@ -4,7 +4,6 @@ import {
     Image,
     Camera,
     Users,
-    TreePine,
     Settings,
     Shield,
     LogOut,
@@ -24,7 +23,6 @@ const navItems = [
     { to: '/gallery/global', icon: Image, label: 'Galeria Global' },
     { to: '/gallery/private', icon: Camera, label: 'Minha Galeria' },
     { to: '/family', icon: Users, label: 'Minha Família' },
-    { to: '/family-tree', icon: TreePine, label: 'Árvore Genealógica' },
     { to: '/settings', icon: Settings, label: 'Configurações' },
 ];
 
