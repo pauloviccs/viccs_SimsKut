@@ -142,7 +142,7 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                 </p>
             )}
 
-            {/* Images — grid estilo X/Twitter: 1=full, 2=2 cols, 3=1 grande + 2 pequenas, 4=2x2 */}
+            {/* Images — grid estilo X/Twitter: 1=full, 2=2 cols, 3=1 grande + 2 pequenas, 4=2x2 igual */}
             {(() => {
                 const urls = getPostImageUrls(post);
                 if (urls.length === 0) return null;
@@ -160,28 +160,37 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                 }
                 if (urls.length === 2) {
                     return (
-                        <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden max-h-[400px]">
+                        <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-[2/1] w-full max-h-[400px]">
                             {urls.map((src, i) => (
-                                <img key={i} src={src} alt="" loading="lazy" className="w-full aspect-square object-cover" />
+                                <div key={i} className="relative min-h-0">
+                                    <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+                                </div>
                             ))}
                         </div>
                     );
                 }
                 if (urls.length === 3) {
                     return (
-                        <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden max-h-[400px]">
-                            <div className="row-span-2">
-                                <img src={urls[0]} alt="" loading="lazy" className="w-full h-full min-h-[200px] object-cover" />
+                        <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-[4/3] w-full max-h-[400px]">
+                            <div className="relative row-span-2 min-h-0">
+                                <img src={urls[0]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
                             </div>
-                            <img src={urls[1]} alt="" loading="lazy" className="w-full aspect-square object-cover" />
-                            <img src={urls[2]} alt="" loading="lazy" className="w-full aspect-square object-cover" />
+                            <div className="relative min-h-0">
+                                <img src={urls[1]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+                            </div>
+                            <div className="relative min-h-0">
+                                <img src={urls[2]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+                            </div>
                         </div>
                     );
                 }
+                // 4 imagens: 2x2 grid quadrada, células iguais (estilo X/Twitter)
                 return (
-                    <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden max-h-[450px]">
+                    <div className="grid grid-cols-2 grid-rows-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-square w-full max-h-[500px]">
                         {urls.map((src, i) => (
-                            <img key={i} src={src} alt="" loading="lazy" className="w-full aspect-square object-cover" />
+                            <div key={i} className="relative min-h-0 overflow-hidden">
+                                <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+                            </div>
                         ))}
                     </div>
                 );

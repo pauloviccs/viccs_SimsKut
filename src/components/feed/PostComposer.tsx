@@ -135,16 +135,16 @@ function MediaPreviewGrid({ items, onRemove }: { items: MediaItem[]; onRemove: (
         );
     }
 
-    // 4 images: 2x2
+    // 4 images: 2x2 grid quadrada (estilo X/Twitter)
     return (
-        <div className="grid grid-cols-2 gap-0.5 mt-2 rounded-[var(--radius-md)] overflow-hidden max-h-[350px]">
+        <div className="grid grid-cols-2 grid-rows-2 gap-0.5 mt-2 rounded-[var(--radius-md)] overflow-hidden aspect-square w-full max-h-[350px]">
             {items.map((item, i) => (
-                <div key={i} className="relative aspect-square">
-                    <img src={getPreview(item)} alt="" className="w-full h-full object-cover" />
+                <div key={i} className="relative min-h-0 overflow-hidden">
+                    <img src={getPreview(item)} alt="" className="absolute inset-0 w-full h-full object-cover" />
                     <button
                         type="button"
                         onClick={() => onRemove(i)}
-                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer z-10"
                     >
                         <X size={14} />
                     </button>
