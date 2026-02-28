@@ -7,7 +7,7 @@ import { MediaLightbox } from '@/components/ui/MediaLightbox';
 import { CommentSection } from './CommentSection';
 import { useAuthStore } from '@/store/authStore';
 import { toggleLike, deletePost } from '@/lib/feedService';
-import { renderMentions } from '@/lib/renderMentions';
+import { renderPostContent } from '@/lib/renderMentions';
 import { getPostImageUrls } from '@/types';
 import type { FeedPost } from '@/types';
 
@@ -140,7 +140,7 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
             {/* Content */}
             {post.content && (
                 <p className="text-sm text-white/80 mt-3 whitespace-pre-wrap break-words">
-                    {renderMentions(post.content)}
+                    {renderPostContent(post.content)}
                 </p>
             )}
 
