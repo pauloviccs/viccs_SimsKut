@@ -22,6 +22,7 @@ import { FriendsListModal } from './FriendsListModal';
 import { SimDetailsModal } from './SimDetailsModal';
 import { PhotoLightbox } from '@/components/gallery/PhotoLightbox';
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore, normalizeZenThemeConfig } from '@/store/themeStore';
 import {
     fetchProfileByUsername,
     getProfileStats,
@@ -64,6 +65,22 @@ export function ProfilePage() {
     const [tabLoading, setTabLoading] = useState(false);
 
     const isOwnProfile = user?.id === profile?.id;
+    const setTemporaryOverride = useThemeStore((s) => s.setTemporaryOverride);
+
+    // Apply visited profile's zen_background while viewing another user's profile; restore on leave.
+    useEffect(() => {
+        if (!profile) return;
+        if (profile.id === user?.id) {
+            setTemporaryOverride(null);
+            return;
+        }
+        if (profile.zen_background == null) {
+            setTemporaryOverride(null);
+            return;
+        }
+        setTemporaryOverride(normalizeZenThemeConfig(profile.zen_background));
+        return () => setTemporaryOverride(null);
+    }, [profile?.id, profile?.zen_background, user?.id, setTemporaryOverride]);
 
     // Fetch profile
     useEffect(() => {

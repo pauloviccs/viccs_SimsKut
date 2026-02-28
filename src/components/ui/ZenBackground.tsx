@@ -24,21 +24,23 @@ function buildCompositeBackground(
  */
 export function ZenBackground() {
     const theme = useThemeStore((s) => s.theme);
+    const temporaryOverride = useThemeStore((s) => s.temporaryOverride);
+    const effectiveTheme = temporaryOverride ?? theme;
     const [noiseDataUrl, setNoiseDataUrl] = useState<string>('');
     const compositeBackground = useMemo(
-        () => buildCompositeBackground(theme.enabled, theme.lightness, theme.dots),
-        [theme.enabled, theme.lightness, theme.dots]
+        () => buildCompositeBackground(effectiveTheme.enabled, effectiveTheme.lightness, effectiveTheme.dots),
+        [effectiveTheme.enabled, effectiveTheme.lightness, effectiveTheme.dots]
     );
 
     // Noise texture: opacity scales with theme.noiseAmount so the slider has clear effect.
     useEffect(() => {
-        if (theme.noiseAmount <= 0) {
+        if (effectiveTheme.noiseAmount <= 0) {
             setNoiseDataUrl('');
             return;
         }
         const t = setTimeout(() => {
             // Opacity 0.15–0.85 so the "Ruído" slider has a clearly visible effect
-            const opacity = (theme.noiseAmount / 100) * 0.7 + 0.15;
+            const opacity = (effectiveTheme.noiseAmount / 100) * 0.7 + 0.15;
             const svg = `
             <svg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'>
                 <filter id='n'>
@@ -50,14 +52,14 @@ export function ZenBackground() {
             setNoiseDataUrl(`url("data:image/svg+xml;base64,${btoa(svg)}")`);
         }, 80);
         return () => clearTimeout(t);
-    }, [theme.noiseAmount]);
+    }, [effectiveTheme.noiseAmount]);
 
     // Set --gradient-bg on :root so AppShell container (and any consumer) shows the gradient.
     // Set --zen-noise-bg so the same container can show noise on top (fix: noise was only in ZenBackground div and not visible).
     useLayoutEffect(() => {
         document.documentElement.style.setProperty('--gradient-bg', compositeBackground);
-        if (theme.enabled && theme.noiseAmount > 0 && noiseDataUrl) {
-            const opacity = (theme.noiseAmount / 100) * 0.7 + 0.15;
+        if (effectiveTheme.enabled && effectiveTheme.noiseAmount > 0 && noiseDataUrl) {
+            const opacity = (effectiveTheme.noiseAmount / 100) * 0.7 + 0.15;
             document.documentElement.style.setProperty('--zen-noise-bg', noiseDataUrl);
             document.documentElement.style.setProperty('--zen-noise-opacity', String(opacity * 0.9));
         } else {
@@ -69,15 +71,15 @@ export function ZenBackground() {
             document.documentElement.style.removeProperty('--zen-noise-bg');
             document.documentElement.style.removeProperty('--zen-noise-opacity');
         };
-    }, [compositeBackground, theme.enabled, theme.noiseAmount, noiseDataUrl]);
+    }, [compositeBackground, effectiveTheme.enabled, effectiveTheme.noiseAmount, noiseDataUrl]);
 
-    if (!theme.enabled) {
+    if (!effectiveTheme.enabled) {
         return (
             <div className="fixed inset-0 -z-10 bg-[#050508]" aria-hidden="true" />
         );
     }
 
-    const isLightMode = theme.lightness > 40;
+    const isLightMode = effectiveTheme.lightness > 40;
 
     // Gradient + noise are applied on the AppShell container via CSS vars (--gradient-bg, --zen-noise-bg).
     // Here we only render the optional contrast overlay for light mode.

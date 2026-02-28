@@ -76,9 +76,12 @@ export function normalizeZenThemeConfig(raw: unknown): ZenThemeConfig {
 
 interface ThemeStoreState {
     theme: ZenThemeConfig;
+    /** When set (e.g. viewing another user's profile), ZenBackground uses this instead of theme. Cleared on leave. */
+    temporaryOverride: ZenThemeConfig | null;
 
     // Actions
     setTheme: (config: ZenThemeConfig) => void;
+    setTemporaryOverride: (config: ZenThemeConfig | null) => void;
     updateLightness: (val: number) => void;
     updateNoise: (val: number) => void;
     updatePrimaryColor: (hsl: [number, number, number]) => void;
@@ -92,8 +95,10 @@ interface ThemeStoreState {
 
 export const useThemeStore = create<ThemeStoreState>((set, get) => ({
     theme: { ...DEFAULT_ZEN_THEME },
+    temporaryOverride: null,
 
     setTheme: (config) => set({ theme: config }),
+    setTemporaryOverride: (config) => set({ temporaryOverride: config }),
 
     updateLightness: (val) => set((state) => ({
         theme: { ...state.theme, lightness: val }

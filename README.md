@@ -127,11 +127,11 @@ viccs_SimsKut/
     │   ├── 📂 auth/                 # LandingPage, RegisterPage, LoginPage, PendingApproval, AuthCallback
     │   ├── 📂 family/               # FamilyConfig, FamilyTree
     │   ├── 📂 feed/                 # FeedPage, PostCard, PostComposer, CommentSection, GalleryPicker
-│   ├── 📂 gallery/              # GlobalGallery, PrivateGallery, PhotoUploadModal, PhotoLightbox
-│   ├── 📂 layout/               # AppShell, Sidebar, Navbar
-│   ├── 📂 profile/              # ProfilePage, ProfileEditModal (cropper avatar+banner), SimDetailsModal, FriendsListModal
-│   ├── 📂 settings/             # SettingsPage, ZenGradientPicker, AvatarCropper, BannerCropper
-│   └── 📂 ui/                   # Glass*, Avatar, ZenBackground, FluidBackground, MediaLightbox, etc.
+    │   ├── 📂 gallery/              # GlobalGallery, PrivateGallery, PhotoUploadModal, PhotoLightbox
+    │   ├── 📂 layout/               # AppShell, Sidebar, Navbar
+    │   ├── 📂 profile/              # ProfilePage, ProfileEditModal (cropper avatar+banner), SimDetailsModal, FriendsListModal
+    │   ├── 📂 settings/             # SettingsPage, ZenGradientPicker, AvatarCropper, BannerCropper
+    │   └── 📂 ui/                   # Glass*, Avatar, ZenBackground, FluidBackground, MediaLightbox, etc.
     │
     ├── 📂 lib/                      # Serviços e utilitários
     │   ├── supabaseClient.ts
