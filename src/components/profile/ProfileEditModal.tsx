@@ -1,8 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Camera, Loader2, LinkIcon } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { GlassInput } from '@/components/ui/GlassInput';
+import { AvatarCropper } from '@/components/settings/AvatarCropper';
+import { BannerCropper } from '@/components/settings/BannerCropper';
 import { useAuthStore } from '@/store/authStore';
 import { uploadAvatar, updateProfileAvatar } from '@/lib/avatarService';
 import { updateProfile, uploadBanner, updateProfileBanner } from '@/lib/profileService';
@@ -27,43 +29,67 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
 
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
-    const [avatarFile, setAvatarFile] = useState<File | null>(null);
-    const [bannerFile, setBannerFile] = useState<File | null>(null);
+    const avatarBlobUrlRef = useRef<string | null>(null);
+    const bannerBlobUrlRef = useRef<string | null>(null);
+
+    const [cropAvatarFile, setCropAvatarFile] = useState<File | null>(null);
+    const [cropBannerFile, setCropBannerFile] = useState<File | null>(null);
+    const [avatarBlob, setAvatarBlob] = useState<Blob | null>(null);
+    const [bannerBlob, setBannerBlob] = useState<Blob | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (avatarBlobUrlRef.current) URL.revokeObjectURL(avatarBlobUrlRef.current);
+            if (bannerBlobUrlRef.current) URL.revokeObjectURL(bannerBlobUrlRef.current);
+        };
+    }, []);
 
     const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
         if (!['image/jpeg', 'image/png'].includes(file.type)) {
             setError('Avatar: apenas JPG ou PNG');
             return;
         }
-        if (file.size > 2 * 1024 * 1024) {
-            setError('Avatar: máximo 2 MB');
+        if (file.size > 10 * 1024 * 1024) {
+            setError('Avatar: máximo 10 MB');
             return;
         }
-
-        setAvatarFile(file);
-        setAvatarPreview(URL.createObjectURL(file));
+        setCropAvatarFile(file);
         setError('');
+        e.target.value = '';
     };
 
     const handleBannerSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
         if (!['image/jpeg', 'image/png'].includes(file.type)) {
             setError('Banner: apenas JPG ou PNG');
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            setError('Banner: máximo 5 MB');
+        if (file.size > 10 * 1024 * 1024) {
+            setError('Banner: máximo 10 MB');
             return;
         }
-
-        setBannerFile(file);
-        setBannerPreview(URL.createObjectURL(file));
+        setCropBannerFile(file);
         setError('');
+        e.target.value = '';
+    };
+
+    const handleAvatarCrop = (blob: Blob) => {
+        if (avatarBlobUrlRef.current) URL.revokeObjectURL(avatarBlobUrlRef.current);
+        avatarBlobUrlRef.current = URL.createObjectURL(blob);
+        setAvatarPreview(avatarBlobUrlRef.current);
+        setAvatarBlob(blob);
+        setCropAvatarFile(null);
+    };
+
+    const handleBannerCrop = (blob: Blob) => {
+        if (bannerBlobUrlRef.current) URL.revokeObjectURL(bannerBlobUrlRef.current);
+        bannerBlobUrlRef.current = URL.createObjectURL(blob);
+        setBannerPreview(bannerBlobUrlRef.current);
+        setBannerBlob(blob);
+        setCropBannerFile(null);
     };
 
     const handleSave = async () => {
@@ -80,18 +106,18 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
 
             const updates: Partial<Profile> = {};
 
-            // Upload avatar se mudou
+            // Upload avatar se mudou (blob já recortado)
             let newAvatarUrl = profile.avatar_url;
-            if (avatarFile) {
-                newAvatarUrl = await uploadAvatar(user.id, avatarFile);
+            if (avatarBlob) {
+                newAvatarUrl = await uploadAvatar(user.id, avatarBlob);
                 await updateProfileAvatar(user.id, newAvatarUrl);
                 updates.avatar_url = newAvatarUrl;
             }
 
-            // Upload banner se mudou
+            // Upload banner se mudou (blob já recortado)
             let newBannerUrl = profile.banner_url;
-            if (bannerFile) {
-                newBannerUrl = await uploadBanner(user.id, bannerFile);
+            if (bannerBlob) {
+                newBannerUrl = await uploadBanner(user.id, bannerBlob);
                 await updateProfileBanner(user.id, newBannerUrl);
                 updates.banner_url = newBannerUrl;
             }
@@ -263,6 +289,24 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
                     </div>
                 </motion.div>
             </motion.div>
+
+            {/* Recorte de avatar (mesmo componente da página de configuração) */}
+            {cropAvatarFile && (
+                <AvatarCropper
+                    file={cropAvatarFile}
+                    onCrop={handleAvatarCrop}
+                    onCancel={() => setCropAvatarFile(null)}
+                />
+            )}
+
+            {/* Recorte de banner (3:1) */}
+            {cropBannerFile && (
+                <BannerCropper
+                    file={cropBannerFile}
+                    onCrop={handleBannerCrop}
+                    onCancel={() => setCropBannerFile(null)}
+                />
+            )}
         </AnimatePresence>
     );
 }
