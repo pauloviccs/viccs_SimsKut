@@ -191,14 +191,16 @@ export function PrivateGallery() {
                                     />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end justify-between p-2 opacity-0 group-hover:opacity-100">
                                         <button
-                                            onClick={() => handleToggleVisibility(photo)}
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); handleToggleVisibility(photo); }}
                                             className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
                                             title={photo.visibility === 'public' ? 'Tornar privada' : 'Tornar pública'}
                                         >
                                             {photo.visibility === 'public' ? <Globe size={14} /> : <EyeOff size={14} />}
                                         </button>
                                         <button
-                                            onClick={() => handleDeletePhoto(photo.id)}
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); handleDeletePhoto(photo.id); }}
                                             className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-[var(--accent-danger)] hover:text-[var(--accent-danger)] cursor-pointer"
                                             title="Deletar"
                                         >
@@ -315,13 +317,13 @@ export function PrivateGallery() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={spring}
-                            className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 overflow-hidden cursor-pointer hover:border-white/20 transition-colors group"
+                            className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 cursor-pointer hover:border-white/20 transition-colors group"
                             onClick={() => {
                                 if (editingFolder !== folder.id) setCurrentFolder(folder);
                             }}
                         >
-                            {/* Cover */}
-                            <div className="aspect-video bg-white/[0.02] flex items-center justify-center overflow-hidden">
+                            {/* Cover — overflow apenas na capa para manter cantos */}
+                            <div className="aspect-video bg-white/[0.02] flex items-center justify-center overflow-hidden rounded-t-[var(--radius-lg)]">
                                 {folder.cover_url ? (
                                     <img src={folder.cover_url} alt={folder.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -329,8 +331,8 @@ export function PrivateGallery() {
                                 )}
                             </div>
 
-                            {/* Info */}
-                            <div className="p-3 flex items-center gap-2">
+                            {/* Info — área do nome e menu (dropdown abre acima, fora do card) */}
+                            <div className="relative p-3 flex items-center gap-2 rounded-b-[var(--radius-lg)]">
                                 {editingFolder === folder.id ? (
                                     <input
                                         value={editName}
@@ -351,11 +353,13 @@ export function PrivateGallery() {
                                     </>
                                 )}
 
-                                {/* Menu */}
-                                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                {/* Menu: dropdown abre para cima (bottom-full) para não sobrepor o card */}
+                                <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
                                     <button
+                                        type="button"
                                         onClick={() => setMenuOpen(menuOpen === folder.id ? null : folder.id)}
                                         className="w-7 h-7 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-white/0 group-hover:text-white/30 transition-colors cursor-pointer"
+                                        aria-label="Abrir menu da pasta"
                                     >
                                         <MoreHorizontal size={14} />
                                     </button>
@@ -363,9 +367,10 @@ export function PrivateGallery() {
                                         <motion.div
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className="absolute right-0 top-full mt-1 glass-heavy rounded-[var(--radius-sm)] border border-white/10 py-1 z-10 min-w-[130px]"
+                                            className="absolute right-0 bottom-full mb-1 glass-heavy rounded-[var(--radius-sm)] border border-white/10 py-1 z-[100] min-w-[130px] shadow-xl"
                                         >
                                             <button
+                                                type="button"
                                                 onClick={() => {
                                                     setEditingFolder(folder.id);
                                                     setEditName(folder.name);
@@ -376,6 +381,7 @@ export function PrivateGallery() {
                                                 <Pencil size={12} /> Renomear
                                             </button>
                                             <button
+                                                type="button"
                                                 onClick={() => handleDeleteFolder(folder.id)}
                                                 className="w-full px-3 py-2 text-xs text-[var(--accent-danger)] hover:bg-white/[0.06] flex items-center gap-2 cursor-pointer"
                                             >
