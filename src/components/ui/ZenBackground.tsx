@@ -53,13 +53,23 @@ export function ZenBackground() {
     }, [theme.noiseAmount]);
 
     // Set --gradient-bg on :root so AppShell container (and any consumer) shows the gradient.
-    // useLayoutEffect so it runs before paint and the container never flashes default bg.
+    // Set --zen-noise-bg so the same container can show noise on top (fix: noise was only in ZenBackground div and not visible).
     useLayoutEffect(() => {
         document.documentElement.style.setProperty('--gradient-bg', compositeBackground);
+        if (theme.enabled && theme.noiseAmount > 0 && noiseDataUrl) {
+            const opacity = (theme.noiseAmount / 100) * 0.7 + 0.15;
+            document.documentElement.style.setProperty('--zen-noise-bg', noiseDataUrl);
+            document.documentElement.style.setProperty('--zen-noise-opacity', String(opacity * 0.9));
+        } else {
+            document.documentElement.style.removeProperty('--zen-noise-bg');
+            document.documentElement.style.removeProperty('--zen-noise-opacity');
+        }
         return () => {
             document.documentElement.style.removeProperty('--gradient-bg');
+            document.documentElement.style.removeProperty('--zen-noise-bg');
+            document.documentElement.style.removeProperty('--zen-noise-opacity');
         };
-    }, [compositeBackground]);
+    }, [compositeBackground, theme.enabled, theme.noiseAmount, noiseDataUrl]);
 
     if (!theme.enabled) {
         return (
@@ -69,34 +79,20 @@ export function ZenBackground() {
 
     const isLightMode = theme.lightness > 40;
 
+    // Gradient + noise are applied on the AppShell container via CSS vars (--gradient-bg, --zen-noise-bg).
+    // Here we only render the optional contrast overlay for light mode.
     return (
-        <div
-            className="fixed inset-0 -z-10 overflow-hidden md:block hidden transition-colors duration-500 ease-in-out"
-            style={{ background: compositeBackground }}
-            aria-hidden="true"
-        >
-            {/* Protective Contrast Layer — If the user sets a very bright background, 
-                we add a subtle dark wash to ensure GlassCards and Text remain readable 
-                since the app layout assumes a dark theme. */}
-            <div
-                className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
-                style={{
-                    backgroundColor: 'black',
-                    opacity: isLightMode ? 0.35 : 0
-                }}
-            />
-
-            {/* Noise Layer — overlay so slider "Ruído" has visible effect */}
-            {noiseDataUrl && (
+        <>
+            {isLightMode && (
                 <div
-                    className="absolute inset-0 pointer-events-none"
+                    className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-500"
                     style={{
-                        backgroundImage: noiseDataUrl,
-                        mixBlendMode: 'overlay',
-                        opacity: 0.9
+                        backgroundColor: 'black',
+                        opacity: 0.35
                     }}
+                    aria-hidden="true"
                 />
             )}
-        </div>
+        </>
     );
 }

@@ -42,8 +42,8 @@ Para visão técnica detalhada, WIP e TODOs, veja [.agent/overview/PROJECT_STATU
 | ✅ | **Família Sims** | Configuração da família e Sims |
 | ✅ | **Árvore Genealógica** | Visualização da árvore (WIP) |
 | ✅ | **Perfil** | Página pública por username, bio, amigos |
-| ✅ | **Configurações** | Avatar (crop), Zen gradient, preferências |
-| ✅ | **Zen Theme** | Fundo em gradiente harmônico (HarmonyEngine) |
+| ✅ | **Configurações** | Avatar (crop), Zen gradient, Ruído, Retornar ao Dark Mode |
+| ✅ | **Zen Theme** | Gradiente harmônico (HarmonyEngine), Ruído (slider + preview), Retornar ao Dark Mode |
 | ✅ | **Admin Dashboard** | Stats, convites, moderação, feed admin |
 | ✅ | **Liquid Glass UI** | Componentes glass + ZenBackground, FluidBackground |
 | ✅ | **Layout Responsivo** | Sidebar desktop + Bottom Nav mobile |
@@ -98,7 +98,7 @@ O design system é inspirado no **Apple Liquid Glass** com glassmorfismo, blur l
 
 ### Zen Theme (gradiente harmônico)
 
-O **HarmonyEngine** (`src/lib/zenTheme/HarmonyEngine.ts`) gera paletas a partir de uma cor primária usando algoritmos de harmonia: `complement`, `triadic`, `analogous`, `split`, `tetradic`. O usuário configura o fundo em **Configurações** (ZenGradientPicker): posição dos pontos, luminosidade, ruído e algoritmo. O estado fica em `themeStore` e pode ser persistido no perfil (`zen_background`).
+O **HarmonyEngine** (`src/lib/zenTheme/HarmonyEngine.ts`) gera paletas a partir de uma cor primária usando algoritmos de harmonia: `complement`, `triadic`, `analogous`, `split`, `tetradic`. O usuário configura o fundo em **Configurações** (ZenGradientPicker): posição dos pontos, luminosidade, **ruído** (slider com preview em tempo real no picker) e algoritmo. Botão **"Retornar ao Dark Mode"** restaura o fundo sólido (#050508); o usuário pode reativar e personalizar o Zen a qualquer momento. O estado fica em `themeStore` e pode ser persistido no perfil (`zen_background`).
 
 <br/>
 
@@ -258,8 +258,10 @@ Phase 3 — Família & Sims                   ████░░░░░░░�
 ├── Traits e habilidades dos Sims
 └── Galeria individual por Sim
 
-Phase 4 — Polish                           ████░░░░░░░░░░░░░░░░   ~20%
+Phase 4 — Polish                           ██████░░░░░░░░░░░░░░   ~30%
 ├── Zen theme (gradiente harmônico configurável) ✅
+├── Retornar ao Dark Mode (fundo sólido) + reativar Zen pelo picker ✅
+├── Slider Ruído com preview no picker ✅
 ├── Tema claro/escuro (lightness no Zen)
 ├── Favicon SVG personalizado
 ├── Performance + lazy loading

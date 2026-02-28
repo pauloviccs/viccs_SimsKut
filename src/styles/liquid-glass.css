@@ -17,6 +17,9 @@
 
   /* Zen Gradient (set by ZenBackground; fallback for mobile/SSR) */
   --gradient-bg: #050508;
+  /* Zen Noise (set by ZenBackground when noiseAmount > 0; applied on app-shell for correct stacking) */
+  --zen-noise-bg: none;
+  --zen-noise-opacity: 0;
 
   /* ── Cores de texto ───────────────────────── */
   --text-primary: rgba(255, 255, 255, 0.95);
@@ -53,6 +56,33 @@
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 400ms;
+}
+
+/* =============================================
+   APP SHELL — Zen gradient + noise na mesma camada
+   ============================================= */
+
+.app-shell-zen {
+  position: relative;
+  background: var(--gradient-bg, #050508);
+}
+
+.app-shell-zen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--zen-noise-bg, none);
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+  opacity: var(--zen-noise-opacity, 0);
+  pointer-events: none;
+}
+
+.app-shell-zen > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* =============================================
