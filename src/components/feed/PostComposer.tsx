@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { ImagePlus, Images, Send, X } from 'lucide-react';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { Avatar } from '@/components/ui/Avatar';
@@ -217,7 +216,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
             setError(`Máximo de ${MAX_IMAGES} imagens.`);
             return;
         }
-        setMediaItems((prev) => [...prev, { type: 'url', url }].slice(0, MAX_IMAGES));
+        setMediaItems((prev) => [...prev, { type: 'url' as const, url }].slice(0, MAX_IMAGES));
         setShowGalleryPicker(false);
         setError('');
     };
