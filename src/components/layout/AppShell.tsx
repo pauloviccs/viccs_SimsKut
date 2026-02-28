@@ -20,20 +20,22 @@ export function AppShell() {
         <div
             className="h-[100dvh] w-full relative overflow-hidden app-shell-zen"
         >
-            <ZenBackground />
-            <Sidebar />
+            <div className="app-shell-zen-content">
+                <ZenBackground />
+                <Sidebar />
 
-            {/* Main Content — ScrollContainer isolado */}
-            <main
-                id="main-scroll-container"
-                className={`h-full w-full overflow-y-auto overflow-x-hidden pb-16 md:pb-0 transition-all duration-300 ease-in-out ${collapsed ? 'md:pl-[72px] md:pr-0' : 'md:pl-[240px] md:pr-0'}`}
-            >
-                <div className="max-w-4xl mx-auto px-4 py-6 min-h-full">
-                    <Outlet />
-                </div>
-            </main>
+                {/* Main Content — ScrollContainer isolado */}
+                <main
+                    id="main-scroll-container"
+                    className={`h-full w-full overflow-y-auto overflow-x-hidden pb-16 md:pb-0 transition-all duration-300 ease-in-out ${collapsed ? 'md:pl-[72px] md:pr-0' : 'md:pl-[240px] md:pr-0'}`}
+                >
+                    <div className="max-w-4xl mx-auto px-4 py-6 min-h-full">
+                        <Outlet />
+                    </div>
+                </main>
 
-            <Navbar />
+                <Navbar />
+            </div>
         </div>
     );
 }

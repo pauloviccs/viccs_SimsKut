@@ -80,9 +80,13 @@
   pointer-events: none;
 }
 
-.app-shell-zen > * {
+/* Wrapper único com z-index acima do ::before — evita que o ruído cubra o conteúdo */
+.app-shell-zen-content {
   position: relative;
   z-index: 1;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 /* =============================================
