@@ -126,6 +126,23 @@ export async function createPost(
     };
 }
 
+/** Atualiza o conteúdo de um post (apenas autor). Retorna o post atualizado. */
+export async function updatePost(postId: string, content: string | null): Promise<Pick<FeedPost, 'id' | 'content' | 'updated_at'> | null> {
+    const trimmed = content?.trim() || null;
+    if (trimmed && trimmed.length > POST_MAX_LENGTH) {
+        throw new Error(`Post deve ter no máximo ${POST_MAX_LENGTH} caracteres`);
+    }
+    const { data, error } = await supabase
+        .from('feed_posts')
+        .update({ content: trimmed })
+        .eq('id', postId)
+        .select('id, content, updated_at')
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
 /** Deleta um post */
 export async function deletePost(postId: string): Promise<void> {
     const { error } = await supabase.from('feed_posts').delete().eq('id', postId);

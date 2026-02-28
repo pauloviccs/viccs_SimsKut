@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Trash2, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, MoreHorizontal, Pencil, Check, X, Pin, PinOff } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { MediaLightbox } from '@/components/ui/MediaLightbox';
 import { CommentSection } from './CommentSection';
 import { useAuthStore } from '@/store/authStore';
-import { toggleLike, deletePost } from '@/lib/feedService';
+import { toggleLike, deletePost, updatePost } from '@/lib/feedService';
 import { renderPostContent } from '@/lib/renderMentions';
 import { getPostImageUrls } from '@/types';
 import type { FeedPost } from '@/types';
@@ -14,7 +14,14 @@ import type { FeedPost } from '@/types';
 interface PostCardProps {
     post: FeedPost;
     onDelete?: (postId: string) => void;
+    onEdit?: (postId: string, updates: { content: string | null; updated_at: string }) => void;
     onLikeToggle?: (postId: string, liked: boolean) => void;
+    /** Exibir opção de fixar no perfil (apenas no próprio perfil) */
+    showPinOption?: boolean;
+    /** Este post está fixado no topo do perfil */
+    isPinned?: boolean;
+    /** Chamado ao fixar ou desfixar */
+    onTogglePin?: () => void;
 }
 
 function timeAgo(date: string): string {
@@ -29,7 +36,7 @@ function timeAgo(date: string): string {
     return new Date(date).toLocaleDateString('pt-BR');
 }
 
-export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
+export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, isPinned, onTogglePin }: PostCardProps) {
     const { user, isAdmin } = useAuthStore();
     const [liked, setLiked] = useState(post.liked_by_me ?? false);
     const [likesCount, setLikesCount] = useState(post.likes_count ?? 0);
@@ -38,6 +45,9 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
     const [showMenu, setShowMenu] = useState(false);
     const [liking, setLiking] = useState(false);
     const [lightbox, setLightbox] = useState<{ urls: string[]; index: number } | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(post.content ?? '');
+    const [saving, setSaving] = useState(false);
 
     const isAuthor = user?.id === post.author_id;
 
@@ -73,6 +83,37 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
         setShowMenu(false);
     };
 
+    const handleStartEdit = () => {
+        setEditContent(post.content ?? '');
+        setIsEditing(true);
+        setShowMenu(false);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditing(false);
+        setEditContent(post.content ?? '');
+    };
+
+    const handleSaveEdit = async () => {
+        if (editContent === (post.content ?? '')) {
+            setIsEditing(false);
+            return;
+        }
+        setSaving(true);
+        try {
+            const updated = await updatePost(post.id, editContent || null);
+            if (updated) {
+                onEdit?.(post.id, { content: updated.content, updated_at: updated.updated_at });
+                setIsEditing(false);
+            }
+        } catch (err) {
+            console.error(err);
+            alert(err instanceof Error ? err.message : 'Erro ao salvar.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     return (
         <motion.article
             initial={{ opacity: 0, y: 10 }}
@@ -80,6 +121,12 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
             exit={{ opacity: 0, y: -10 }}
             className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-4"
         >
+            {isPinned && (
+                <div className="flex items-center gap-1.5 text-xs text-white/50 mb-2">
+                    <Pin size={12} className="shrink-0" />
+                    <span>Fixado no perfil</span>
+                </div>
+            )}
             {/* Header */}
             <div className="flex items-start gap-3">
                 <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`}>
@@ -122,11 +169,41 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="absolute right-0 top-full mt-1 glass-heavy rounded-[var(--radius-sm)] border border-white/10 py-1 z-10 min-w-[120px]"
+                                className="absolute right-0 top-full mt-1 glass-popup rounded-[var(--radius-sm)] border border-white/10 py-1 z-10 min-w-[120px]"
                             >
+                                {isAuthor && (
+                                    <button
+                                        type="button"
+                                        onClick={handleStartEdit}
+                                        className="w-full px-3 py-2 text-sm text-white/80 hover:bg-white/10 flex items-center gap-2 cursor-pointer"
+                                    >
+                                        <Pencil size={14} />
+                                        Editar
+                                    </button>
+                                )}
+                                {showPinOption && isAuthor && onTogglePin && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { onTogglePin(); setShowMenu(false); }}
+                                        className="w-full px-3 py-2 text-sm text-white/80 hover:bg-white/10 flex items-center gap-2 cursor-pointer"
+                                    >
+                                        {isPinned ? (
+                                            <>
+                                                <PinOff size={14} />
+                                                Desfixar
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Pin size={14} />
+                                                Fixar no perfil
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                                 <button
+                                    type="button"
                                     onClick={handleDelete}
-                                    className="w-full px-3 py-2 text-sm text-[var(--accent-danger)] hover:bg-white/[0.06] flex items-center gap-2 cursor-pointer"
+                                    className="w-full px-3 py-2 text-sm text-[var(--accent-danger)] hover:bg-white/10 flex items-center gap-2 cursor-pointer"
                                 >
                                     <Trash2 size={14} />
                                     Deletar
@@ -137,11 +214,55 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                 )}
             </div>
 
-            {/* Content */}
-            {post.content && (
-                <p className="text-sm text-white/80 mt-3 whitespace-pre-wrap break-words">
-                    {renderPostContent(post.content)}
-                </p>
+            {/* Content — modo edição ou exibição */}
+            {isEditing ? (
+                <div className="mt-3 space-y-2">
+                    <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        placeholder="O que está acontecendo?"
+                        maxLength={280}
+                        rows={4}
+                        className="w-full rounded-[var(--radius-md)] bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:border-[var(--accent-primary)]/50 resize-y min-h-[80px]"
+                        disabled={saving}
+                        autoFocus
+                    />
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs text-white/40">{editContent.length}/280</span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={handleCancelEdit}
+                                disabled={saving}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-white/60 hover:bg-white/10 hover:text-white/80 transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                                <X size={14} />
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSaveEdit}
+                                disabled={saving || (editContent.trim() === (post.content ?? '').trim())}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {saving ? (
+                                    <span className="animate-pulse">Salvando…</span>
+                                ) : (
+                                    <>
+                                        <Check size={14} />
+                                        Salvar
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                post.content != null && post.content !== '' && (
+                    <p className="text-sm text-white/80 mt-3 whitespace-pre-wrap break-words">
+                        {renderPostContent(post.content)}
+                    </p>
+                )
             )}
 
             {/* Images — grid estilo X/Twitter; clicável para lightbox em tela cheia */}

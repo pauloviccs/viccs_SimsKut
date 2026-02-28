@@ -740,9 +740,10 @@ CREATE POLICY "posts_read" ON storage.objects FOR SELECT
 -- ║  PROFILE UPDATES — Colunas novas + RPC          ║
 -- ╚══════════════════════════════════════════════════════╝
 
--- Novas colunas do perfil (banner e website)
+-- Novas colunas do perfil (banner, website, post fixado)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS banner_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS website_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS pinned_post_id UUID REFERENCES public.feed_posts(id) ON DELETE SET NULL;
 
 -- Storage policy de UPDATE para avatars (banner reutiliza mesmo bucket)
 CREATE POLICY "avatars_update" ON storage.objects FOR UPDATE

@@ -118,6 +118,12 @@ export function FeedPage() {
         setPosts((prev) => prev.filter((p) => p.id !== postId));
     };
 
+    const handlePostEdited = (postId: string, updates: { content: string | null; updated_at: string }) => {
+        setPosts((prev) =>
+            prev.map((p) => (p.id === postId ? { ...p, content: updates.content, updated_at: updates.updated_at } : p))
+        );
+    };
+
     // Infinite scroll
     useEffect(() => {
         const scrollContainer = document.getElementById('main-scroll-container') || window;
@@ -202,6 +208,7 @@ export function FeedPage() {
                                 key={post.id}
                                 post={post}
                                 onDelete={handlePostDeleted}
+                                onEdit={handlePostEdited}
                             />
                         ))}
                     </AnimatePresence>

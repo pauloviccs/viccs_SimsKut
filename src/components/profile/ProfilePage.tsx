@@ -28,7 +28,8 @@ import {
     getUserPosts,
     getUserComments,
     getUserPhotos,
-    getUserFamiliesWithSims
+    getUserFamiliesWithSims,
+    setPinnedPost
 } from '@/lib/profileService';
 import type { Profile, ProfileStats, FeedPost, PostComment, Photo, Family } from '@/types';
 
@@ -128,6 +129,27 @@ export function ProfilePage() {
 
     const handlePostDeleted = (postId: string) => {
         setPosts((prev) => prev.filter((p) => p.id !== postId));
+        if (profile?.pinned_post_id === postId) {
+            setProfile((prev) => (prev ? { ...prev, pinned_post_id: null } : prev));
+        }
+    };
+
+    const handlePostEdited = (postId: string, updates: { content: string | null; updated_at: string }) => {
+        setPosts((prev) =>
+            prev.map((p) => (p.id === postId ? { ...p, content: updates.content, updated_at: updates.updated_at } : p))
+        );
+    };
+
+    const handleTogglePin = async (postId: string) => {
+        if (!profile) return;
+        const newPinnedId = profile.pinned_post_id === postId ? null : postId;
+        try {
+            await setPinnedPost(profile.id, newPinnedId);
+            setProfile((prev) => (prev ? { ...prev, pinned_post_id: newPinnedId } : prev));
+        } catch (err) {
+            console.error(err);
+            alert(err instanceof Error ? err.message : 'Não foi possível alterar o post fixado.');
+        }
     };
 
     const memberSince = profile?.created_at
@@ -305,13 +327,24 @@ export function ProfilePage() {
                                             <p className="text-sm text-white/40">Nenhum post ainda.</p>
                                         </GlassCard>
                                     ) : (
-                                        posts.map((post) => (
-                                            <PostCard
-                                                key={post.id}
-                                                post={post}
-                                                onDelete={handlePostDeleted}
-                                            />
-                                        ))
+                                        [...posts]
+                                            .sort((a, b) => {
+                                                const pinnedId = profile?.pinned_post_id;
+                                                if (a.id === pinnedId && b.id !== pinnedId) return -1;
+                                                if (a.id !== pinnedId && b.id === pinnedId) return 1;
+                                                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                                            })
+                                            .map((post) => (
+                                                <PostCard
+                                                    key={post.id}
+                                                    post={post}
+                                                    onDelete={handlePostDeleted}
+                                                    onEdit={handlePostEdited}
+                                                    showPinOption={isOwnProfile}
+                                                    isPinned={profile?.pinned_post_id === post.id}
+                                                    onTogglePin={isOwnProfile ? () => handleTogglePin(post.id) : undefined}
+                                                />
+                                            ))
                                     )}
                                 </div>
                             )}

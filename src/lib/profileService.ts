@@ -42,6 +42,27 @@ export async function updateProfile(
     if (error) throw error;
 }
 
+/** Fixa ou desfixa um post no topo do perfil. Só o autor do post pode fixar. */
+export async function setPinnedPost(userId: string, postId: string | null): Promise<void> {
+    if (postId) {
+        const { data: post } = await supabase
+            .from('feed_posts')
+            .select('author_id')
+            .eq('id', postId)
+            .single();
+        if (!post || post.author_id !== userId) {
+            throw new Error('Só é possível fixar um post seu.');
+        }
+    }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({ pinned_post_id: postId })
+        .eq('id', userId);
+
+    if (error) throw error;
+}
+
 // ======== BANNER ========
 
 /** Upload do banner para Supabase Storage → avatars/{userId}/banner.jpg */

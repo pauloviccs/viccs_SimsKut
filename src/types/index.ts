@@ -15,6 +15,7 @@ export interface Profile {
     is_admin: boolean;
     tag_changed: boolean;
     zen_background?: any; // JSONB object config
+    pinned_post_id?: string | null;
     created_at: string;
 }
 
