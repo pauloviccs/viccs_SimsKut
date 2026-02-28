@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Trash2, MoreHorizontal } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
+import { MediaLightbox } from '@/components/ui/MediaLightbox';
 import { CommentSection } from './CommentSection';
 import { useAuthStore } from '@/store/authStore';
 import { toggleLike, deletePost } from '@/lib/feedService';
@@ -36,6 +37,7 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
     const [showComments, setShowComments] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [liking, setLiking] = useState(false);
+    const [lightbox, setLightbox] = useState<{ urls: string[]; index: number } | null>(null);
 
     const isAuthor = user?.id === post.author_id;
 
@@ -142,29 +144,39 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                 </p>
             )}
 
-            {/* Images — grid estilo X/Twitter: 1=full, 2=2 cols, 3=1 grande + 2 pequenas, 4=2x2 igual */}
+            {/* Images — grid estilo X/Twitter; clicável para lightbox em tela cheia */}
             {(() => {
                 const urls = getPostImageUrls(post);
+                const openLightbox = (index: number) => setLightbox({ urls, index });
                 if (urls.length === 0) return null;
                 if (urls.length === 1) {
                     return (
-                        <div className="mt-3 rounded-[var(--radius-md)] overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => openLightbox(0)}
+                            className="mt-3 rounded-[var(--radius-md)] overflow-hidden w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/50"
+                        >
                             <img
                                 src={urls[0]}
                                 alt="Post"
                                 loading="lazy"
-                                className="w-full max-h-[500px] object-cover"
+                                className="w-full max-h-[500px] object-cover hover:opacity-95 transition-opacity"
                             />
-                        </div>
+                        </button>
                     );
                 }
                 if (urls.length === 2) {
                     return (
                         <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-[2/1] w-full max-h-[400px]">
                             {urls.map((src, i) => (
-                                <div key={i} className="relative min-h-0">
-                                    <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
-                                </div>
+                                <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => openLightbox(i)}
+                                    className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50"
+                                >
+                                    <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                                </button>
                             ))}
                         </div>
                     );
@@ -172,25 +184,30 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                 if (urls.length === 3) {
                     return (
                         <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-[4/3] w-full max-h-[400px]">
-                            <div className="relative row-span-2 min-h-0">
-                                <img src={urls[0]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
-                            </div>
-                            <div className="relative min-h-0">
-                                <img src={urls[1]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
-                            </div>
-                            <div className="relative min-h-0">
-                                <img src={urls[2]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
-                            </div>
+                            <button type="button" onClick={() => openLightbox(0)} className="relative row-span-2 min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
+                                <img src={urls[0]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                            </button>
+                            <button type="button" onClick={() => openLightbox(1)} className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
+                                <img src={urls[1]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                            </button>
+                            <button type="button" onClick={() => openLightbox(2)} className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
+                                <img src={urls[2]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                            </button>
                         </div>
                     );
                 }
-                // 4 imagens: 2x2 grid quadrada, células iguais (estilo X/Twitter)
+                // 4 imagens: 2x2 grid quadrada
                 return (
                     <div className="grid grid-cols-2 grid-rows-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-square w-full max-h-[500px]">
                         {urls.map((src, i) => (
-                            <div key={i} className="relative min-h-0 overflow-hidden">
-                                <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
-                            </div>
+                            <button
+                                key={i}
+                                type="button"
+                                onClick={() => openLightbox(i)}
+                                className="relative min-h-0 overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50"
+                            >
+                                <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                            </button>
                         ))}
                     </div>
                 );
@@ -225,6 +242,17 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                     onCommentCountChange={setCommentsCount}
                 />
             )}
+
+            {/* Lightbox em tela cheia para mídias do post */}
+            <AnimatePresence>
+                {lightbox && (
+                    <MediaLightbox
+                        urls={lightbox.urls}
+                        initialIndex={lightbox.index}
+                        onClose={() => setLightbox(null)}
+                    />
+                )}
+            </AnimatePresence>
         </motion.article>
     );
 }
