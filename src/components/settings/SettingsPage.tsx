@@ -24,6 +24,7 @@ export function SettingsPage() {
     const { user, profile, setProfile, logout } = useAuthStore();
     const theme = useThemeStore((s) => s.theme);
     const resetTheme = useThemeStore((s) => s.resetTheme);
+    const setTheme = useThemeStore((s) => s.setTheme);
     const navigate = useNavigate();
 
     // Form state
@@ -139,7 +140,10 @@ export function SettingsPage() {
         if (!user) return;
         setZenMessage(null);
         try {
-            await updateProfileInfo(user.id, { zen_background: theme });
+            // Sempre reativar o fundo Zen ao aplicar pelo picker (permite voltar do Dark Mode sólido)
+            const themeToSave = { ...theme, enabled: true };
+            setTheme(themeToSave);
+            await updateProfileInfo(user.id, { zen_background: themeToSave });
             const newProfile = await fetchProfile(user.id);
             if (newProfile) {
                 setProfile(newProfile);
