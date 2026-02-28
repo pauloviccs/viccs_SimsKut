@@ -118,6 +118,19 @@ export function ZenGradientPicker({ onSave }: { onSave: () => void }) {
                     backgroundSize: '20px 20px, 100% 100%'
                 }}
             >
+                {/* Noise preview so "Ruído" slider has visible feedback */}
+                {theme.noiseAmount > 0 && (
+                    <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml;base64,${btoa(
+                                `<svg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'><filter id='np'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(#np)' opacity='${((theme.noiseAmount / 100) * 0.7 + 0.15).toFixed(2)}'/></svg>`
+                            )}")`,
+                            mixBlendMode: 'overlay',
+                            opacity: 0.9
+                        }}
+                    />
+                )}
                 {displayDots.map(dot => (
                     <motion.div
                         key={dot.id}

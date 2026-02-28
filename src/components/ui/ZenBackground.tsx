@@ -30,23 +30,25 @@ export function ZenBackground() {
         [theme.enabled, theme.lightness, theme.dots]
     );
 
-    // Debounce noise texture update (avoids heavy btoa/setState on every slider tick)
+    // Noise texture: opacity scales with theme.noiseAmount so the slider has clear effect.
     useEffect(() => {
         if (theme.noiseAmount <= 0) {
             setNoiseDataUrl('');
             return;
         }
         const t = setTimeout(() => {
+            // Opacity 0.15–0.85 so the "Ruído" slider has a clearly visible effect
+            const opacity = (theme.noiseAmount / 100) * 0.7 + 0.15;
             const svg = `
             <svg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'>
-                <filter id='noise'>
-                    <feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/>
+                <filter id='n'>
+                    <feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/>
                 </filter>
-                <rect width='100%' height='100%' filter='url(#noise)' opacity='0.${Math.max(1, Math.floor(theme.noiseAmount / 2))}'/>
+                <rect width='100%' height='100%' filter='url(#n)' opacity='${opacity.toFixed(2)}'/>
             </svg>
         `;
             setNoiseDataUrl(`url("data:image/svg+xml;base64,${btoa(svg)}")`);
-        }, 120);
+        }, 80);
         return () => clearTimeout(t);
     }, [theme.noiseAmount]);
 
@@ -84,11 +86,15 @@ export function ZenBackground() {
                 }}
             />
 
-            {/* Noise Layer */}
+            {/* Noise Layer — overlay so slider "Ruído" has visible effect */}
             {noiseDataUrl && (
                 <div
-                    className="absolute inset-0 pointer-events-none mix-blend-overlay"
-                    style={{ backgroundImage: noiseDataUrl, opacity: 0.8 }}
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                        backgroundImage: noiseDataUrl,
+                        mixBlendMode: 'overlay',
+                        opacity: 0.9
+                    }}
                 />
             )}
         </div>
