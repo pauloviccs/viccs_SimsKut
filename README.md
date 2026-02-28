@@ -36,15 +36,15 @@ Para visão técnica detalhada, estrutura de pastas, WIP e TODOs, veja [.agent/o
 |:------:|---------|-----------|
 | ✅ | **Landing Page** | Entrada por código de convite com validação |
 | ✅ | **Auth Pages** | Registro, Login e OAuth (Google/Discord), aprovação pendente |
-| ✅ | **Feed Social** | Timeline em tempo real (Realtime), posts com texto, imagens, **GIFs** (até 5MB), comentários, likes, **menções** @username e **emoji picker** |
+| ✅ | **Feed Social** | Timeline em tempo real, posts com texto, imagens, **GIFs** (5MB), comentários, likes, **menções** @username, **emoji picker**, **links com spoiler** (clique para revelar), **edição de post** (autor), mídias **clicáveis → fullscreen** (MediaLightbox) |
 | ✅ | **Anexar da Galeria** | No composer: seleção de fotos da galeria privada (sem re-upload) |
 | ✅ | **Galeria Pública** | Galeria global com pastas, likes e comentários; **PhotoLightbox** (fullscreen, likes/comentários) |
-| ✅ | **Galeria Privada** | Coleção pessoal com pastas e upload |
+| ✅ | **Galeria Privada** | Pastas e upload; botões deletar/visibilidade **sem** abrir lightbox; menu pasta (Renomear/Deletar) **glass-popup** legível, dropdown acima do card |
 | ✅ | **Família Sims** | Configuração da família, convites link/código, árvore (WIP) |
 | ✅ | **Árvore Genealógica** | Visualização da árvore (refinamento em progresso) |
-| ✅ | **Perfil** | Página pública por @username (estilo Twitter/X), banner 3:1, bio, abas Posts/Respostas/Mídia/Família |
+| ✅ | **Perfil** | Página por @username (estilo Twitter/X), banner 3:1, bio, abas Posts/Respostas/Mídia/Família, **post fixado** no topo, **Editar perfil** com **cropper** de avatar e banner (mesmo da Configurações) |
 | ✅ | **Sistema de Amizades** | Solicitações, aceitar/recusar, modal de lista de amigos, unfollow |
-| ✅ | **Configurações** | Avatar (crop 300×300), Zen gradient, Ruído (slider + preview), Retornar ao Dark Mode |
+| ✅ | **Configurações** | Avatar (AvatarCropper 300×300), Zen gradient, Ruído, Retornar ao Dark Mode; BannerCropper (3:1) usado também no Editar perfil |
 | ✅ | **Zen Theme** | Gradiente harmônico (HarmonyEngine), Ruído, persistência em perfil (`zen_background`) |
 | ✅ | **Admin Dashboard** | Stats, convites, moderação, feed admin, avatares sincronizados |
 | ✅ | **Liquid Glass UI** | GlassCard, GlassButton, GlassInput, ZenBackground, FluidBackground, OAuthButton |
@@ -95,8 +95,11 @@ O design system é inspirado no **Apple Liquid Glass** com glassmorfismo, blur l
 ├── CookieBanner.tsx     →  Banner de consentimento de cookies
 ├── NotificationsPanel.tsx →  Painel de notificações
 ├── EmojiPicker.tsx      →  Seletor de emojis
+├── MediaLightbox.tsx    →  Lightbox fullscreen para mídias do feed (navegação múltiplas)
 └── MentionInput.tsx     →  Input com suporte a @menções
 ```
+
+**Settings (recorte):** `AvatarCropper.tsx` (300×300), `BannerCropper.tsx` (3:1) — usados em Configurações e no Editar perfil.
 
 ### Zen Theme (gradiente harmônico)
 
@@ -124,11 +127,11 @@ viccs_SimsKut/
     │   ├── 📂 auth/                 # LandingPage, RegisterPage, LoginPage, PendingApproval, AuthCallback
     │   ├── 📂 family/               # FamilyConfig, FamilyTree
     │   ├── 📂 feed/                 # FeedPage, PostCard, PostComposer, CommentSection, GalleryPicker
-    │   ├── 📂 gallery/              # GlobalGallery, PrivateGallery, PhotoUploadModal, PhotoLightbox
-    │   ├── 📂 layout/               # AppShell, Sidebar, Navbar
-    │   ├── 📂 profile/              # ProfilePage, ProfileEditModal, SimDetailsModal, FriendsListModal
-    │   ├── 📂 settings/            # SettingsPage, ZenGradientPicker, AvatarCropper
-    │   └── 📂 ui/                   # Glass*, Avatar, ZenBackground, FluidBackground, etc.
+│   ├── 📂 gallery/              # GlobalGallery, PrivateGallery, PhotoUploadModal, PhotoLightbox
+│   ├── 📂 layout/               # AppShell, Sidebar, Navbar
+│   ├── 📂 profile/              # ProfilePage, ProfileEditModal (cropper avatar+banner), SimDetailsModal, FriendsListModal
+│   ├── 📂 settings/             # SettingsPage, ZenGradientPicker, AvatarCropper, BannerCropper
+│   └── 📂 ui/                   # Glass*, Avatar, ZenBackground, FluidBackground, MediaLightbox, etc.
     │
     ├── 📂 lib/                      # Serviços e utilitários
     │   ├── supabaseClient.ts
@@ -150,7 +153,7 @@ viccs_SimsKut/
 O projeto define interfaces TypeScript que espelham o schema SQL do Supabase:
 
 ```typescript
-Profile        →  Perfil (username, avatar_url, banner_url, bio, zen_background, is_admin)
+Profile        →  Perfil (username, avatar_url, banner_url, bio, zen_background, pinned_post_id, is_admin)
 ProfileStats   →  Contagens (friends_count, posts_count, photos_count)
 InviteCode     →  Código de convite (status: pending → approved → used / rejected)
 Friendship     →  Relacionamento (pending → accepted / blocked)
@@ -260,10 +263,13 @@ Phase 3 — Família & Sims                   ████░░░░░░░�
 ├── Traits e habilidades dos Sims
 └── Galeria individual por Sim
 
-Phase 4 — Polish                           ██████░░░░░░░░░░░░░░   ~30%
+Phase 4 — Polish                           ██████████░░░░░░░░░░   ~50%
 ├── Zen theme (gradiente harmônico configurável) ✅
-├── Retornar ao Dark Mode (fundo sólido) + reativar Zen pelo picker ✅
+├── Retornar ao Dark Mode + reativar Zen pelo picker ✅
 ├── Slider Ruído com preview no picker ✅
+├── Feed: mídia fullscreen (MediaLightbox), links spoiler, editar post ✅
+├── Perfil: post fixado no topo, cropper avatar/banner no Editar perfil ✅
+├── Galeria privada: menu pasta legível (glass-popup), botões sem abrir lightbox ✅
 ├── Tema claro/escuro (lightness no Zen)
 ├── Favicon SVG personalizado
 ├── Performance + lazy loading
