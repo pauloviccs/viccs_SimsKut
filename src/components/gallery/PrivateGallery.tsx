@@ -367,7 +367,7 @@ export function PrivateGallery() {
                                         <motion.div
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className="absolute right-0 bottom-full mb-1 glass-heavy rounded-[var(--radius-sm)] border border-white/10 py-1 z-[100] min-w-[130px] shadow-xl"
+                                            className="absolute right-0 bottom-full mb-1 glass-popup rounded-[var(--radius-sm)] border border-white/10 py-1 z-[100] min-w-[130px] shadow-xl"
                                         >
                                             <button
                                                 type="button"
@@ -376,14 +376,14 @@ export function PrivateGallery() {
                                                     setEditName(folder.name);
                                                     setMenuOpen(null);
                                                 }}
-                                                className="w-full px-3 py-2 text-xs text-white/70 hover:bg-white/[0.06] flex items-center gap-2 cursor-pointer"
+                                                className="w-full px-3 py-2 text-xs text-white/90 hover:bg-white/10 flex items-center gap-2 cursor-pointer"
                                             >
                                                 <Pencil size={12} /> Renomear
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => handleDeleteFolder(folder.id)}
-                                                className="w-full px-3 py-2 text-xs text-[var(--accent-danger)] hover:bg-white/[0.06] flex items-center gap-2 cursor-pointer"
+                                                className="w-full px-3 py-2 text-xs text-[var(--accent-danger)] hover:bg-white/10 flex items-center gap-2 cursor-pointer"
                                             >
                                                 <Trash2 size={12} /> Deletar
                                             </button>
