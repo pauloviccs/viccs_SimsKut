@@ -14,6 +14,12 @@ const DEFAULTS = {
     thumbQuality: 0.60,  // qualidade do thumbnail
 };
 
+/** Parâmetros para imagens do feed: compressão forte sem perda visível de qualidade */
+export const FEED_IMAGE_DEFAULTS = {
+    maxSize: 1100,
+    quality: 0.85,
+};
+
 /** Comprime uma imagem para WebP redimensionado */
 export function compressImage(
     file: Blob,
@@ -113,6 +119,17 @@ export async function processAndUpload(
     ]);
 
     return { url, thumbnailUrl };
+}
+
+/** Upload para feed: apenas uma URL (comprimida), sem thumbnail, para economizar armazenamento em posts com múltiplas imagens. */
+export async function processAndUploadFeedImage(
+    file: File | Blob,
+    bucket: string,
+    path: string
+): Promise<string> {
+    const { maxSize, quality } = FEED_IMAGE_DEFAULTS;
+    const compressed = await compressImage(file, maxSize, quality);
+    return uploadImage(bucket, path, compressed);
 }
 
 /** Deleta imagem do Storage */

@@ -50,7 +50,7 @@ export interface FeedPost {
     id: string;
     author_id: string;
     content: string | null;
-    image_url: string | null;
+    image_url: string | null;  // single URL ou JSON array de até 4 URLs
     created_at: string;
     updated_at: string;
     // Joined
@@ -59,6 +59,21 @@ export interface FeedPost {
     likes_count?: number;
     comments_count?: number;
     liked_by_me?: boolean;
+}
+
+/** Retorna sempre um array de URLs de imagem do post (1–4). image_url pode ser string única ou JSON stringified array. */
+export function getPostImageUrls(post: { image_url: string | null }): string[] {
+    if (!post?.image_url) return [];
+    const v = post.image_url.trim();
+    if (v.startsWith('[')) {
+        try {
+            const arr = JSON.parse(v) as unknown;
+            return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string').slice(0, 4) : [];
+        } catch {
+            return [v];
+        }
+    }
+    return [v];
 }
 
 export interface PostLike {

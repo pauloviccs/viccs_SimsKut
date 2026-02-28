@@ -87,15 +87,23 @@ export async function getSinglePost(postId: string): Promise<FeedPost | null> {
     };
 }
 
-/** Cria um novo post */
+/** Cria um novo post. imageUrls: 1–4 URLs (uma única ou várias). Armazenado em image_url como string ou JSON array. */
 export async function createPost(
     authorId: string,
     content: string | null,
-    imageUrl: string | null
+    imageUrls: string[]
 ): Promise<FeedPost> {
     if (content && content.length > POST_MAX_LENGTH) {
         throw new Error(`Post deve ter no máximo ${POST_MAX_LENGTH} caracteres`);
     }
+    if (imageUrls.length > 4) {
+        throw new Error('Máximo de 4 imagens por post');
+    }
+    const imageUrl = imageUrls.length === 0
+        ? null
+        : imageUrls.length === 1
+            ? imageUrls[0]
+            : JSON.stringify(imageUrls);
 
     const { data, error } = await supabase
         .from('feed_posts')

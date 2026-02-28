@@ -7,6 +7,7 @@ import { CommentSection } from './CommentSection';
 import { useAuthStore } from '@/store/authStore';
 import { toggleLike, deletePost } from '@/lib/feedService';
 import { renderMentions } from '@/lib/renderMentions';
+import { getPostImageUrls } from '@/types';
 import type { FeedPost } from '@/types';
 
 interface PostCardProps {
@@ -141,17 +142,50 @@ export function PostCard({ post, onDelete, onLikeToggle }: PostCardProps) {
                 </p>
             )}
 
-            {/* Image */}
-            {post.image_url && (
-                <div className="mt-3 rounded-[var(--radius-md)] overflow-hidden">
-                    <img
-                        src={post.image_url}
-                        alt="Post image"
-                        loading="lazy"
-                        className="w-full max-h-[500px] object-cover"
-                    />
-                </div>
-            )}
+            {/* Images — grid estilo X/Twitter: 1=full, 2=2 cols, 3=1 grande + 2 pequenas, 4=2x2 */}
+            {(() => {
+                const urls = getPostImageUrls(post);
+                if (urls.length === 0) return null;
+                if (urls.length === 1) {
+                    return (
+                        <div className="mt-3 rounded-[var(--radius-md)] overflow-hidden">
+                            <img
+                                src={urls[0]}
+                                alt="Post"
+                                loading="lazy"
+                                className="w-full max-h-[500px] object-cover"
+                            />
+                        </div>
+                    );
+                }
+                if (urls.length === 2) {
+                    return (
+                        <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden max-h-[400px]">
+                            {urls.map((src, i) => (
+                                <img key={i} src={src} alt="" loading="lazy" className="w-full aspect-square object-cover" />
+                            ))}
+                        </div>
+                    );
+                }
+                if (urls.length === 3) {
+                    return (
+                        <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden max-h-[400px]">
+                            <div className="row-span-2">
+                                <img src={urls[0]} alt="" loading="lazy" className="w-full h-full min-h-[200px] object-cover" />
+                            </div>
+                            <img src={urls[1]} alt="" loading="lazy" className="w-full aspect-square object-cover" />
+                            <img src={urls[2]} alt="" loading="lazy" className="w-full aspect-square object-cover" />
+                        </div>
+                    );
+                }
+                return (
+                    <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden max-h-[450px]">
+                        {urls.map((src, i) => (
+                            <img key={i} src={src} alt="" loading="lazy" className="w-full aspect-square object-cover" />
+                        ))}
+                    </div>
+                );
+            })()}
 
             {/* Actions */}
             <div className="flex items-center gap-6 mt-3 pt-3 border-t border-white/[0.06]">

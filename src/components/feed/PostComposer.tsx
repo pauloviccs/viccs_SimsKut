@@ -8,7 +8,7 @@ import { MentionInput } from '@/components/ui/MentionInput';
 import { useAuthStore } from '@/store/authStore';
 import { createPost } from '@/lib/feedService';
 import { processMentions } from '@/lib/notificationService';
-import { processAndUpload, uploadRawFile } from '@/lib/imageService';
+import { processAndUploadFeedImage, uploadRawFile } from '@/lib/imageService';
 import type { FeedPost } from '@/types';
 import { GalleryPicker } from './GalleryPicker';
 
@@ -17,6 +17,11 @@ interface PostComposerProps {
 }
 
 const MAX_CHARS = 280;
+const MAX_IMAGES = 4;
+
+type MediaItem =
+    | { type: 'file'; file: File; preview: string }
+    | { type: 'url'; url: string };
 
 const PLACEHOLDER_PHRASES = [
     "O que está acontecendo nos Sims? 🎮",
@@ -52,18 +57,114 @@ const PLACEHOLDER_PHRASES = [
 ];
 
 /**
- * PostComposer — Campo de criação de posts.
- * Imagina como o "What's happening?" do Twitter: texto + foto opcional.
+ * Grid de preview no estilo X/Twitter: 1=full, 2=2 cols, 3=1 grande + 2 pequenas, 4=2x2
+ */
+function MediaPreviewGrid({ items, onRemove }: { items: MediaItem[]; onRemove: (index: number) => void }) {
+    const n = items.length;
+    const getPreview = (item: MediaItem) => item.type === 'file' ? item.preview : item.url;
+
+    if (n === 0) return null;
+
+    if (n === 1) {
+        return (
+            <div className="relative mt-2 rounded-[var(--radius-md)] overflow-hidden max-h-[400px]">
+                <img
+                    src={getPreview(items[0])}
+                    alt="Preview"
+                    className="w-full max-h-[400px] object-cover rounded-[var(--radius-md)]"
+                />
+                <button
+                    type="button"
+                    onClick={() => onRemove(0)}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
+                >
+                    <X size={16} />
+                </button>
+            </div>
+        );
+    }
+
+    if (n === 2) {
+        return (
+            <div className="grid grid-cols-2 gap-0.5 mt-2 rounded-[var(--radius-md)] overflow-hidden max-h-[300px]">
+                {items.map((item, i) => (
+                    <div key={i} className="relative aspect-square">
+                        <img src={getPreview(item)} alt="" className="w-full h-full object-cover" />
+                        <button
+                            type="button"
+                            onClick={() => onRemove(i)}
+                            className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
+                        >
+                            <X size={14} />
+                        </button>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    if (n === 3) {
+        return (
+            <div className="grid grid-cols-2 gap-0.5 mt-2 rounded-[var(--radius-md)] overflow-hidden max-h-[300px]">
+                <div className="row-span-2 relative">
+                    <img
+                        src={getPreview(items[0])}
+                        alt=""
+                        className="w-full h-full min-h-[200px] object-cover"
+                    />
+                    <button
+                        type="button"
+                        onClick={() => onRemove(0)}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
+                <div className="relative aspect-square">
+                    <img src={getPreview(items[1])} alt="" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => onRemove(1)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer">
+                        <X size={14} />
+                    </button>
+                </div>
+                <div className="relative aspect-square">
+                    <img src={getPreview(items[2])} alt="" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => onRemove(2)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer">
+                        <X size={14} />
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // 4 images: 2x2
+    return (
+        <div className="grid grid-cols-2 gap-0.5 mt-2 rounded-[var(--radius-md)] overflow-hidden max-h-[350px]">
+            {items.map((item, i) => (
+                <div key={i} className="relative aspect-square">
+                    <img src={getPreview(item)} alt="" className="w-full h-full object-cover" />
+                    <button
+                        type="button"
+                        onClick={() => onRemove(i)}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white cursor-pointer"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+/**
+ * PostComposer — Campo de criação de posts com até 4 imagens (grid estilo X/Twitter).
  */
 export function PostComposer({ onPostCreated }: PostComposerProps) {
     const { user, profile } = useAuthStore();
     const [content, setContent] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
     const [posting, setPosting] = useState(false);
     const [error, setError] = useState('');
     const [showGalleryPicker, setShowGalleryPicker] = useState(false);
-    const [galleryImageUrl, setGalleryImageUrl] = useState<string | null>(null);
     const [placeholder, setPlaceholder] = useState(PLACEHOLDER_PHRASES[0]);
     const fileRef = useRef<HTMLInputElement>(null);
 
@@ -73,41 +174,50 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
     }, []);
 
     const charsLeft = MAX_CHARS - content.length;
-    const canPost = (content.trim().length > 0 || imageFile || galleryImageUrl) && charsLeft >= 0;
+    const canPost = (content.trim().length > 0 || mediaItems.length > 0) && charsLeft >= 0;
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = e.target.files;
+        if (!files?.length) return;
 
-        if (!file.type.startsWith('image/')) {
-            setError('Selecione um arquivo de imagem.');
-            return;
+        const isGif = (f: File) => f.type === 'image/gif';
+        const maxSize = (f: File) => (isGif(f) ? 5 * 1024 * 1024 : 15 * 1024 * 1024);
+
+        const toAdd: MediaItem[] = [];
+        for (let i = 0; i < files.length && mediaItems.length + toAdd.length < MAX_IMAGES; i++) {
+            const file = files[i];
+            if (!file.type.startsWith('image/')) {
+                setError('Apenas imagens são permitidas.');
+                e.target.value = '';
+                return;
+            }
+            if (file.size > maxSize(file)) {
+                setError(isGif(file) ? 'GIF muito grande. Máximo 5MB.' : 'Imagem muito grande. Máximo 15MB.');
+                e.target.value = '';
+                return;
+            }
+            toAdd.push({ type: 'file', file, preview: URL.createObjectURL(file) });
         }
 
-        const isGif = file.type === 'image/gif';
-        const maxSize = isGif ? 5 * 1024 * 1024 : 15 * 1024 * 1024;
-        if (file.size > maxSize) {
-            setError(isGif ? 'GIF muito grande. Máximo 5MB.' : 'Imagem muito grande. Máximo 15MB.');
-            return;
-        }
-
-        setImageFile(file);
-        setImagePreview(URL.createObjectURL(file));
+        setMediaItems((prev) => [...prev, ...toAdd].slice(0, MAX_IMAGES));
         setError('');
         e.target.value = '';
     };
 
-    const removeImage = () => {
-        if (imagePreview && !galleryImageUrl) URL.revokeObjectURL(imagePreview);
-        setImageFile(null);
-        setImagePreview(null);
-        setGalleryImageUrl(null);
+    const removeMedia = (index: number) => {
+        setMediaItems((prev) => {
+            const item = prev[index];
+            if (item?.type === 'file' && item.preview) URL.revokeObjectURL(item.preview);
+            return prev.filter((_, i) => i !== index);
+        });
     };
 
     const handleGallerySelect = (url: string) => {
-        removeImage();
-        setGalleryImageUrl(url);
-        setImagePreview(url);
+        if (mediaItems.length >= MAX_IMAGES) {
+            setError(`Máximo de ${MAX_IMAGES} imagens.`);
+            return;
+        }
+        setMediaItems((prev) => [...prev, { type: 'url', url }].slice(0, MAX_IMAGES));
         setShowGalleryPicker(false);
         setError('');
     };
@@ -118,36 +228,43 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
         setError('');
 
         try {
-            let imageUrl: string | null = null;
+            const imageUrls: string[] = [];
+            const ts = Date.now();
 
-            if (imageFile) {
-                const ts = Date.now();
-                const isGif = imageFile.type === 'image/gif';
+            for (let i = 0; i < mediaItems.length; i++) {
+                const item = mediaItems[i];
+                if (item.type === 'url') {
+                    imageUrls.push(item.url);
+                    continue;
+                }
+                const file = item.file;
+                const isGif = file.type === 'image/gif';
+                const ext = isGif ? 'gif' : 'webp';
+                const path = `${user.id}/${ts}_${i}.${ext}`;
 
                 if (isGif) {
-                    const path = `${user.id}/${ts}.gif`;
-                    const result = await uploadRawFile(imageFile, 'feed-images', path, 'image/gif');
-                    imageUrl = result.url;
+                    const result = await uploadRawFile(file, 'feed-images', path, 'image/gif');
+                    imageUrls.push(result.url);
                 } else {
-                    const path = `${user.id}/${ts}.webp`;
-                    const result = await processAndUpload(imageFile, 'feed-images', path);
-                    imageUrl = result.url;
+                    const url = await processAndUploadFeedImage(file, 'feed-images', path);
+                    imageUrls.push(url);
                 }
-            } else if (galleryImageUrl) {
-                imageUrl = galleryImageUrl;
             }
 
-            const post = await createPost(user.id, content.trim() || null, imageUrl);
+            const post = await createPost(user.id, content.trim() || null, imageUrls);
             onPostCreated(post);
 
-            // Processar menções (@) e notificar
             if (content.trim()) {
                 processMentions(content.trim(), user.id, 'mention_post', post.id).catch(console.error);
             }
 
-            // Reset
             setContent('');
-            removeImage();
+            setMediaItems((prev) => {
+                prev.forEach((item) => {
+                    if (item.type === 'file' && item.preview) URL.revokeObjectURL(item.preview);
+                });
+                return [];
+            });
         } catch (err) {
             console.error('Post error:', err);
             setError('Erro ao publicar. Tente novamente.');
@@ -177,44 +294,28 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                             maxLength={MAX_CHARS + 10}
                         />
 
-                        {/* Image Preview */}
-                        {imagePreview && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="relative mt-2 rounded-[var(--radius-md)] overflow-hidden max-h-[300px]"
-                            >
-                                <img
-                                    src={imagePreview}
-                                    alt="Preview"
-                                    className="w-full max-h-[300px] object-cover rounded-[var(--radius-md)]"
-                                />
-                                <button
-                                    onClick={removeImage}
-                                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
-                                >
-                                    <X size={16} />
-                                </button>
-                            </motion.div>
-                        )}
+                        <MediaPreviewGrid items={mediaItems} onRemove={removeMedia} />
 
                         {error && (
                             <p className="text-xs text-[var(--accent-danger)] mt-2">{error}</p>
                         )}
 
-                        {/* Actions Bar */}
                         <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06]">
                             <div className="flex items-center gap-1">
                                 <button
+                                    type="button"
                                     onClick={() => fileRef.current?.click()}
-                                    className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-[var(--accent-primary)] transition-colors cursor-pointer"
-                                    title="Enviar imagem"
+                                    disabled={mediaItems.length >= MAX_IMAGES}
+                                    className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-[var(--accent-primary)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                    title={`Enviar imagem (até ${MAX_IMAGES})`}
                                 >
                                     <ImagePlus size={18} />
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => setShowGalleryPicker(true)}
-                                    className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-[var(--accent-primary)] transition-colors cursor-pointer"
+                                    disabled={mediaItems.length >= MAX_IMAGES}
+                                    className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-[var(--accent-primary)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                                     title="Da minha galeria"
                                 >
                                     <Images size={18} />
@@ -252,12 +353,12 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                     ref={fileRef}
                     type="file"
                     accept="image/*,.gif"
+                    multiple
                     onChange={handleImageSelect}
                     className="hidden"
                 />
             </div>
 
-            {/* Gallery Picker Modal */}
             {showGalleryPicker && (
                 <GalleryPicker
                     onSelect={handleGallerySelect}
