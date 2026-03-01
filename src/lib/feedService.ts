@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import type { FeedPost, PostComment } from '@/types';
+import type { FeedPost, PostComment, PostReactionAggregate } from '@/types';
 import { createInteractionNotification } from './notificationService';
 
 /**
@@ -41,12 +41,19 @@ export async function getPosts(limit = 20, offset = 0): Promise<FeedPost[]> {
         myLikes = new Set((likes || []).map((l: any) => l.post_id));
     }
 
+    // Reações agregadas por post (uma query para todos os posts da página)
+    const postIds = data.map((p: any) => p.id);
+    const reactionsMap = postIds.length > 0
+        ? await getReactionsAggregateForPosts(postIds, userId ?? undefined)
+        : new Map<string, PostReactionAggregate[]>();
+
     return data.map((p: any) => ({
         ...p,
         author: Array.isArray(p.author) ? p.author[0] : p.author,
         likes_count: p.post_likes?.[0]?.count ?? 0,
         comments_count: p.post_comments?.[0]?.count ?? 0,
         liked_by_me: myLikes.has(p.id),
+        reactions: reactionsMap.get(p.id) ?? [],
     }));
 }
 
@@ -78,12 +85,15 @@ export async function getSinglePost(postId: string): Promise<FeedPost | null> {
         liked_by_me = !!likeData;
     }
 
+    const reactions = await getReactionsAggregateForPosts([postId], userId ?? undefined);
+
     return {
         ...data,
         author: Array.isArray(data.author) ? data.author[0] : data.author,
         likes_count: data.post_likes?.[0]?.count ?? 0,
         comments_count: data.post_comments?.[0]?.count ?? 0,
         liked_by_me,
+        reactions: reactions.get(postId) ?? [],
     };
 }
 
@@ -235,4 +245,84 @@ export async function addComment(
 export async function deleteComment(commentId: string): Promise<void> {
     const { error } = await supabase.from('post_comments').delete().eq('id', commentId);
     if (error) throw error;
+}
+
+// ======== REACTIONS (estilo Discord) ========
+
+/**
+ * Agrega reações por post: para cada post_id retorna lista de { emoji, count, reacted_by_me }.
+ * Uma única query para todos os postIds — otimizado.
+ */
+export async function getReactionsAggregateForPosts(
+    postIds: string[],
+    currentUserId?: string
+): Promise<Map<string, PostReactionAggregate[]>> {
+    if (postIds.length === 0) return new Map();
+
+    const { data: rows, error } = await supabase
+        .from('post_reactions')
+        .select('post_id, emoji, user_id')
+        .in('post_id', postIds);
+
+    if (error) throw error;
+
+    const map = new Map<string, PostReactionAggregate[]>();
+    for (const postId of postIds) {
+        map.set(postId, []);
+    }
+
+    const byPostEmoji = new Map<string, { count: number; userIds: Set<string> }>();
+    for (const r of rows || []) {
+        const key = `${r.post_id}:${r.emoji}`;
+        const cur = byPostEmoji.get(key);
+        if (cur) {
+            cur.count += 1;
+            cur.userIds.add(r.user_id);
+        } else {
+            byPostEmoji.set(key, { count: 1, userIds: new Set([r.user_id]) });
+        }
+    }
+
+    for (const [key, { count, userIds }] of byPostEmoji) {
+        const sep = key.indexOf(':');
+        const postId = key.slice(0, sep);
+        const emoji = key.slice(sep + 1);
+        const reacted_by_me = currentUserId ? userIds.has(currentUserId) : false;
+        const list = map.get(postId)!;
+        list.push({ emoji, count, reacted_by_me });
+    }
+
+    // Ordenar por count desc, depois emoji
+    for (const list of map.values()) {
+        list.sort((a, b) => b.count - a.count || a.emoji.localeCompare(b.emoji));
+    }
+
+    return map;
+}
+
+/** Adiciona ou remove reação (toggle). Retorna true se adicionou, false se removeu. */
+export async function toggleReaction(
+    postId: string,
+    userId: string,
+    emoji: string
+): Promise<boolean> {
+    const { data: existing } = await supabase
+        .from('post_reactions')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', userId)
+        .eq('emoji', emoji)
+        .maybeSingle();
+
+    if (existing) {
+        await supabase.from('post_reactions').delete().eq('id', existing.id);
+        return false;
+    }
+
+    const { error } = await supabase
+        .from('post_reactions')
+        .insert({ post_id: postId, user_id: userId, emoji });
+
+    if (error) throw error;
+    return true;
 }

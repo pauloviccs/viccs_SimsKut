@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { getReactionsAggregateForPosts } from './feedService';
 import type { Profile, ProfileStats, FeedPost, PostComment, Photo } from '@/types';
 
 /**
@@ -140,8 +141,8 @@ export async function getUserPosts(
 
     // Buscar meus likes
     let myLikes: Set<string> = new Set();
-    if (currentUserId && data.length > 0) {
-        const postIds = data.map((p: any) => p.id);
+    const postIds = data.map((p: any) => p.id);
+    if (currentUserId && postIds.length > 0) {
         const { data: likes } = await supabase
             .from('post_likes')
             .select('post_id')
@@ -151,12 +152,17 @@ export async function getUserPosts(
         myLikes = new Set((likes || []).map((l: any) => l.post_id));
     }
 
+    const reactionsMap = postIds.length > 0
+        ? await getReactionsAggregateForPosts(postIds, currentUserId ?? undefined)
+        : new Map();
+
     return data.map((p: any) => ({
         ...p,
         author: Array.isArray(p.author) ? p.author[0] : p.author,
         likes_count: p.post_likes?.[0]?.count ?? 0,
         comments_count: p.post_comments?.[0]?.count ?? 0,
         liked_by_me: myLikes.has(p.id),
+        reactions: reactionsMap.get(p.id) ?? [],
     }));
 }
 

@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Trash2, MoreHorizontal, Pencil, Check, X, Pin, PinOff } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { MediaLightbox } from '@/components/ui/MediaLightbox';
 import { CommentSection } from './CommentSection';
+import { PostReactions } from './PostReactions';
 import { useAuthStore } from '@/store/authStore';
 import { toggleLike, deletePost, updatePost } from '@/lib/feedService';
 import { renderPostContent } from '@/lib/renderMentions';
 import { getPostImageUrls } from '@/types';
-import type { FeedPost } from '@/types';
+import type { FeedPost, PostReactionAggregate } from '@/types';
 
 interface PostCardProps {
     post: FeedPost;
@@ -48,6 +49,11 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content ?? '');
     const [saving, setSaving] = useState(false);
+    const [reactions, setReactions] = useState<PostReactionAggregate[]>(post.reactions ?? []);
+
+    useEffect(() => {
+        setReactions(post.reactions ?? []);
+    }, [post.id, post.reactions]);
 
     const isAuthor = user?.id === post.author_id;
 
@@ -334,11 +340,11 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
                 );
             })()}
 
-            {/* Actions */}
-            <div className="flex items-center gap-6 mt-3 pt-3 border-t border-white/[0.06]">
+            {/* Actions — Like, Comment, Reactions (Discord-style) */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-3 pt-3 border-t border-white/[0.06]">
                 <button
                     onClick={handleLike}
-                    className={`flex items-center gap-1.5 text-sm transition-colors cursor-pointer ${liked
+                    className={`flex items-center gap-1.5 text-sm transition-colors cursor-pointer shrink-0 ${liked
                         ? 'text-[var(--accent-danger)]'
                         : 'text-white/40 hover:text-[var(--accent-danger)]'
                         }`}
@@ -349,11 +355,19 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
 
                 <button
                     onClick={() => setShowComments(!showComments)}
-                    className="flex items-center gap-1.5 text-sm text-white/40 hover:text-[var(--accent-primary)] transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 text-sm text-white/40 hover:text-[var(--accent-primary)] transition-colors cursor-pointer shrink-0"
                 >
                     <MessageCircle size={16} />
                     <span>{commentsCount > 0 ? commentsCount : ''}</span>
                 </button>
+
+                <PostReactions
+                    postId={post.id}
+                    reactions={reactions}
+                    currentUserId={user?.id}
+                    onReactionsChange={setReactions}
+                    compact
+                />
             </div>
 
             {/* Comments */}

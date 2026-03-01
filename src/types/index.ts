@@ -60,6 +60,8 @@ export interface FeedPost {
     likes_count?: number;
     comments_count?: number;
     liked_by_me?: boolean;
+    /** Reações por emoji (estilo Discord) */
+    reactions?: PostReactionAggregate[];
 }
 
 /** Retorna sempre um array de URLs de imagem do post (1–4). image_url pode ser string única ou JSON stringified array. */
@@ -92,6 +94,21 @@ export interface PostComment {
     created_at: string;
     // Joined
     author?: Profile;
+}
+
+/** Reação (emoji) em um post — estilo Discord. Agregado: emoji, count, reacted_by_me */
+export interface PostReactionAggregate {
+    emoji: string;
+    count: number;
+    reacted_by_me: boolean;
+}
+
+export interface PostReaction {
+    id: string;
+    post_id: string;
+    user_id: string;
+    emoji: string;
+    created_at: string;
 }
 
 // ======== GALERIA ========
