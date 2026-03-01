@@ -3,6 +3,7 @@ import {
     Home,
     Image,
     Camera,
+    GalleryVerticalEnd,
     Users,
     Settings,
     Shield,
@@ -22,6 +23,7 @@ const navItems = [
     { to: '/feed', icon: Home, label: 'Feed' },
     { to: '/gallery/global', icon: Image, label: 'Galeria Global' },
     { to: '/gallery/private', icon: Camera, label: 'Minha Galeria' },
+    { to: '/gallery/sims4', icon: GalleryVerticalEnd, label: 'Galeria' },
     { to: '/family', icon: Users, label: 'Minha Família' },
     { to: '/settings', icon: Settings, label: 'Configurações' },
 ];

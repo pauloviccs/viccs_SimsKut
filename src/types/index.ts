@@ -159,6 +159,22 @@ export interface PhotoComment {
     author?: Profile;
 }
 
+// ======== SIMS 4 GALLERY SHOWCASE (EA) ========
+
+export interface EaShowcaseItem {
+    id: string;
+    user_id: string;
+    ea_original_id: string;
+    title: string;
+    thumbnail_url: string | null;
+    packs_needed: any;
+    original_comments: any;
+    download_count: number | null;
+    favorite_count: number | null;
+    is_published: boolean;
+    created_at: string;
+}
+
 // ======== FAMÍLIA ========
 
 export interface Family {

@@ -14,6 +14,7 @@ import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { SettingsPage } from '@/components/settings/SettingsPage';
 import { ProfilePage } from '@/components/profile/ProfilePage';
 import { CookieBanner } from '@/components/ui/CookieBanner';
+import { Sims4GalleryPage } from '@/components/gallery-sync/Sims4GalleryPage';
 
 export default function App() {
     return (
@@ -39,6 +40,7 @@ export default function App() {
                     <Route path="/feed" element={<FeedPage />} />
                     <Route path="/gallery/global" element={<GlobalGallery />} />
                     <Route path="/gallery/private" element={<PrivateGallery />} />
+                    <Route path="/gallery/sims4" element={<Sims4GalleryPage />} />
                     <Route path="/family" element={<FamilyConfig />} />
                     <Route path="/family-tree" element={<Navigate to="/family" replace />} />
                     <Route path="/settings" element={<SettingsPage />} />
