@@ -12,8 +12,8 @@ const corsHeaders: HeadersInit = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-// Base aproximada — substitua pelos endpoints reais da EA Gallery.
-const EA_GALLERY_BASE_URL = "https://gallery.services.ea.com/api";
+// Base real da API da Sims 4 Gallery (descoberta via DevTools).
+const EA_GALLERY_BASE_URL = "https://thesims-api.ea.com";
 
 type NormalizedEaItem = {
   ea_original_id: string;
@@ -59,8 +59,9 @@ async function getSupabaseUser(req: Request) {
 }
 
 async function fetchEaList(eaId: string): Promise<NormalizedEaItem[]> {
-  // TODO: ajuste a URL e o shape do JSON conforme a API real.
-  const url = `${EA_GALLERY_BASE_URL}/search?eaId=${encodeURIComponent(eaId)}`;
+  // Por enquanto usamos o feed público de destaques (staff-picks).
+  // O parâmetro eaId é ignorado até mapeamos o endpoint oficial de busca por EA ID.
+  const url = `${EA_GALLERY_BASE_URL}/pt_BR/api/gallery/v1/feeds/staff-picks`;
   const res = await fetch(url, {
     headers: {
       "User-Agent":
@@ -74,19 +75,33 @@ async function fetchEaList(eaId: string): Promise<NormalizedEaItem[]> {
     throw new Error("EA list request failed");
   }
 
-  const json = await res.json();
-  const items: any[] = Array.isArray(json?.items) ? json.items : [];
-  return items.map(normalizeEaItem);
+  const outer = await res.json();
+
+  let payload: any;
+  try {
+    payload =
+      typeof outer?.data === "string" ? JSON.parse(outer.data) : outer?.data ?? {};
+  } catch (e) {
+    console.error("[ea-sync] Falha ao fazer JSON.parse do campo data do feed:", e);
+    throw new Error("EA list payload parse failed");
+  }
+
+  const results: any[] =
+    payload?.exchange?.getlistmsg?.results && Array.isArray(payload.exchange.getlistmsg.results)
+      ? payload.exchange.getlistmsg.results
+      : [];
+
+  return results.map((entry) => normalizeEaItem(entry?.metadata ?? entry));
 }
 
 async function fetchEaDetails(
   eaId: string,
   itemId: string
 ): Promise<NormalizedEaItem> {
-  // TODO: ajuste a URL de detalhes conforme a API real.
-  const url = `${EA_GALLERY_BASE_URL}/items/${encodeURIComponent(
+  // Endpoint real de detalhes por remoteId (household/sim/blueprint).
+  const url = `${EA_GALLERY_BASE_URL}/pt_BR/api/gallery/v1/sims/${encodeURIComponent(
     itemId
-  )}?eaId=${encodeURIComponent(eaId)}`;
+  )}`;
   const res = await fetch(url, {
     headers: {
       "User-Agent":
@@ -108,63 +123,77 @@ async function fetchEaDetails(
   return normalizeEaItem(json);
 }
 
+function buildEaThumbnailUrl(
+  remoteId: string | undefined,
+  thumbnailInfo: unknown,
+  imageUriType: string | undefined
+): string | null {
+  if (!remoteId) return null;
+
+  // A API expõe apenas remoteId + thumbnailInfo + imageUriType, mas o
+  // padrão exato de URL pública não é documentado. Mantemos nulo por ora.
+  return null;
+}
+
 function normalizeEaItem(raw: any): NormalizedEaItem {
-  // Tenta mapear campos comuns; ajuste conforme o shape real do JSON da EA.
+  // A metadata vinda dos feeds fica em entry.metadata; no endpoint de detalhes,
+  // o objeto já é diretamente a metadata.
+  const meta = raw?.metadata ?? raw ?? {};
+
   const id =
-    raw?.id ??
-    raw?.itemId ??
-    raw?.item_id ??
-    raw?.gallery_id ??
+    meta.remoteId ??
+    meta.remote_id ??
+    meta.id ??
+    meta.uuid ??
     crypto.randomUUID();
 
-  const title =
-    raw?.title ??
-    raw?.name ??
-    raw?.lotName ??
-    raw?.displayName ??
-    "Sem título";
+  const title = meta.name ?? meta.title ?? "Sem título";
 
-  const thumb =
-    raw?.thumbnailUrl ??
-    raw?.thumbnail_url ??
-    raw?.images?.[0]?.url ??
+  const downloadsStr =
+    typeof meta.downloads === "string"
+      ? meta.downloads
+      : typeof meta.downloadCount === "string"
+      ? meta.downloadCount
+      : meta.downloads ?? meta.downloadCount;
+
+  const favoritesStr =
+    typeof meta.favorites === "string"
+      ? meta.favorites
+      : typeof meta.favoriteCount === "string"
+      ? meta.favoriteCount
+      : meta.favorites ?? meta.favoriteCount;
+
+  const download_count =
+    downloadsStr == null || downloadsStr === ""
+      ? null
+      : Number(downloadsStr);
+
+  const favorite_count =
+    favoritesStr == null || favoritesStr === ""
+      ? null
+      : Number(favoritesStr);
+
+  const packs_needed = meta.metadata?.skuBits ?? null;
+
+  const original_comments =
+    meta.description ??
+    meta.metadata?.descriptionHashtags ??
     null;
 
-  const packs =
-    raw?.packs ??
-    raw?.packs_needed ??
-    raw?.dlcs ??
-    raw?.expansions ??
-    null;
-
-  const comments =
-    raw?.comments ??
-    raw?.original_comments ??
-    raw?.commentThread ??
-    null;
-
-  const downloads =
-    typeof raw?.downloadCount === "number"
-      ? raw.downloadCount
-      : typeof raw?.downloads === "number"
-      ? raw.downloads
-      : null;
-
-  const favorites =
-    typeof raw?.favoriteCount === "number"
-      ? raw.favoriteCount
-      : typeof raw?.favorites === "number"
-      ? raw.favorites
-      : null;
+  const thumbnail_url = buildEaThumbnailUrl(
+    meta.remoteId,
+    meta.metadata?.xti?.thumbnailInfo,
+    meta.imageUriType
+  );
 
   return {
     ea_original_id: String(id),
     title,
-    thumbnail_url: thumb,
-    packs_needed: packs,
-    original_comments: comments,
-    download_count: downloads,
-    favorite_count: favorites,
+    thumbnail_url,
+    packs_needed,
+    original_comments,
+    download_count,
+    favorite_count,
   };
 }
 
