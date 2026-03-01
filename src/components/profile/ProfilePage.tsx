@@ -518,7 +518,7 @@ export function ProfilePage() {
                                         <GlassCard className="text-center py-10">
                                             <ImageIcon size={32} className="mx-auto mb-3 text-white/20" />
                                             <p className="text-sm text-white/40">
-                                                Nenhuma criação da The Sims 4 Gallery foi exibida neste perfil ainda.
+                                                Nenhuma criação da galeria do The Sims 4 foi exibida neste perfil ainda.
                                             </p>
                                         </GlassCard>
                                     ) : (

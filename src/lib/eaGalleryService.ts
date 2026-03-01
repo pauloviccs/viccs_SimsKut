@@ -68,7 +68,14 @@ export async function fetchEaItems(eaId: string): Promise<EaGalleryItem[]> {
     const headers = await getAuthHeaders();
     const url = `${EA_SYNC_URL}?eaId=${encodeURIComponent(eaId.trim())}`;
 
-    const res = await fetch(url, { method: 'GET', headers });
+    let res: Response;
+    try {
+        res = await fetch(url, { method: 'GET', headers });
+    } catch (err) {
+        console.error('[eaGalleryService] Erro de rede ao buscar lista da EA:', err);
+        throw new Error('Não foi possível conectar à EA Gallery agora. Tente novamente em alguns minutos.');
+    }
+
     if (!res.ok) {
         const text = await res.text().catch(() => '');
         console.error('[eaGalleryService] Erro ao buscar lista da EA:', res.status, text);
@@ -137,14 +144,20 @@ export async function saveShowcaseSelection(
 
     const headers = await getAuthHeaders();
 
-    const res = await fetch(`${EA_SYNC_URL}/deep-fetch`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-            eaId: trimmedEaId,
-            itemIds,
-        }),
-    });
+    let res: Response;
+    try {
+        res = await fetch(`${EA_SYNC_URL}/deep-fetch`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                eaId: trimmedEaId,
+                itemIds,
+            }),
+        });
+    } catch (err) {
+        console.error('[eaGalleryService] Erro de rede no deep-fetch da EA:', err);
+        throw new Error('Não foi possível conectar à EA Gallery agora. Tente novamente em alguns minutos.');
+    }
 
     if (!res.ok) {
         const text = await res.text().catch(() => '');
