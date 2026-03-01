@@ -54,8 +54,15 @@ function QuickReactionPopover({
                 return;
             onClose();
         };
+        const handleScrollOrResize = () => onClose();
         document.addEventListener('mousedown', handleClick);
-        return () => document.removeEventListener('mousedown', handleClick);
+        document.addEventListener('scroll', handleScrollOrResize, true);
+        window.addEventListener('resize', handleScrollOrResize);
+        return () => {
+            document.removeEventListener('mousedown', handleClick);
+            document.removeEventListener('scroll', handleScrollOrResize, true);
+            window.removeEventListener('resize', handleScrollOrResize);
+        };
     }, [open, onClose, anchorRef]);
 
     if (!open || position === null) return null;
@@ -172,8 +179,30 @@ export function PostReactions({
 
     return (
         <div className="flex items-center gap-1 min-w-0">
-            {/* Pills em uma única linha, scroll horizontal se precisar — evita “cápsula” vertical sobre a imagem */}
-            <div className="flex items-center gap-1 min-w-0 overflow-x-auto overflow-y-hidden scrollbar-hide flex-shrink-0 max-w-64">
+            {/* Botão de reação primeiro: mantém espaçamento igual ao Like e Comment */}
+            {currentUserId && (
+                <div className="relative inline-flex shrink-0" ref={addButtonRef}>
+                    <button
+                        type="button"
+                        onClick={() => setPickerOpen(!pickerOpen)}
+                        disabled={reacting !== null}
+                        className="flex items-center justify-center rounded-full text-white/40 hover:text-[var(--accent-primary)] hover:bg-white/[0.06] transition-colors cursor-pointer disabled:opacity-50 w-8 h-8 min-w-8 min-h-8"
+                        title="Adicionar reação"
+                    >
+                        <SmilePlus size={16} />
+                    </button>
+                    {pickerOpen && (
+                        <QuickReactionPopover
+                            onSelect={handleAddReaction}
+                            onClose={() => setPickerOpen(false)}
+                            anchorRef={addButtonRef}
+                            open={pickerOpen}
+                        />
+                    )}
+                </div>
+            )}
+            {/* Pills em uma única linha, scroll horizontal se precisar */}
+            <div className="flex items-center gap-1 min-w-0 overflow-x-auto overflow-y-hidden scrollbar-hide max-w-48 sm:max-w-64">
                 <AnimatePresence mode="popLayout">
                     {reactions.map((r) => (
                         <motion.button
@@ -204,28 +233,6 @@ export function PostReactions({
                     ))}
                 </AnimatePresence>
             </div>
-
-            {currentUserId && (
-                <div className="relative inline-flex shrink-0" ref={addButtonRef}>
-                    <button
-                        type="button"
-                        onClick={() => setPickerOpen(!pickerOpen)}
-                        disabled={reacting !== null}
-                        className="flex items-center justify-center rounded-full text-white/40 hover:text-[var(--accent-primary)] hover:bg-white/[0.06] transition-colors cursor-pointer disabled:opacity-50 w-8 h-8 min-w-8 min-h-8"
-                        title="Adicionar reação"
-                    >
-                        <SmilePlus size={16} />
-                    </button>
-                    {pickerOpen && (
-                        <QuickReactionPopover
-                            onSelect={handleAddReaction}
-                            onClose={() => setPickerOpen(false)}
-                            anchorRef={addButtonRef}
-                            open={pickerOpen}
-                        />
-                    )}
-                </div>
-            )}
         </div>
     );
 }
