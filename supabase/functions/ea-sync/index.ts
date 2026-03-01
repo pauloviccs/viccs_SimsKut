@@ -147,31 +147,55 @@ function normalizeEaItem(raw: any): NormalizedEaItem {
     meta.uuid ??
     crypto.randomUUID();
 
-  const title = meta.name ?? meta.title ?? "Sem título";
+  // Usa nome da criação quando disponível; caso contrário tenta cair para a descrição
+  // ou hashtags para evitar "Sem título" genérico sempre.
+  const descriptionText =
+    (typeof meta.description === "string" && meta.description.trim().length > 0
+      ? meta.description
+      : typeof meta.metadata?.descriptionHashtags === "string"
+      ? meta.metadata.descriptionHashtags
+      : "") ?? "";
 
-  const downloadsStr =
-    typeof meta.downloads === "string"
-      ? meta.downloads
-      : typeof meta.downloadCount === "string"
-      ? meta.downloadCount
-      : meta.downloads ?? meta.downloadCount;
+  const titleCandidate =
+    (typeof meta.name === "string" && meta.name.trim().length > 0
+      ? meta.name
+      : typeof meta.title === "string" && meta.title.trim().length > 0
+      ? meta.title
+      : "") || "";
 
-  const favoritesStr =
-    typeof meta.favorites === "string"
-      ? meta.favorites
-      : typeof meta.favoriteCount === "string"
-      ? meta.favoriteCount
-      : meta.favorites ?? meta.favoriteCount;
+  const fallbackFromDescription =
+    descriptionText
+      .split(/[.#,\n]/)[0]
+      .trim() || "";
 
-  const download_count =
-    downloadsStr == null || downloadsStr === ""
-      ? null
-      : Number(downloadsStr);
+  const title =
+    titleCandidate ||
+    fallbackFromDescription ||
+    "Criação da The Sims 4 Gallery";
 
-  const favorite_count =
-    favoritesStr == null || favoritesStr === ""
-      ? null
-      : Number(favoritesStr);
+  const rawDownloads =
+    meta.downloads ??
+    meta.downloadCount ??
+    meta.metadata?.downloads ??
+    meta.metadata?.downloadCount;
+
+  const rawFavorites =
+    meta.favorites ??
+    meta.favoriteCount ??
+    meta.metadata?.favorites ??
+    meta.metadata?.favoriteCount;
+
+  const download_count = (() => {
+    if (rawDownloads == null || rawDownloads === "") return null;
+    const n = Number(rawDownloads);
+    return Number.isFinite(n) ? n : null;
+  })();
+
+  const favorite_count = (() => {
+    if (rawFavorites == null || rawFavorites === "") return null;
+    const n = Number(rawFavorites);
+    return Number.isFinite(n) ? n : null;
+  })();
 
   const packs_needed = meta.metadata?.skuBits ?? null;
 
