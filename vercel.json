@@ -1,7 +1,35 @@
 {
+    "headers": [
+        {
+            "source": "/sw.js",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/javascript"
+                },
+                {
+                    "key": "Service-Worker-Allowed",
+                    "value": "/"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache, no-store, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/manifest.webmanifest",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/manifest+json"
+                }
+            ]
+        }
+    ],
     "rewrites": [
         {
-            "source": "/(.*)",
+            "source": "/((?!sw\\.js|manifest\\.webmanifest|favicon|android-chrome|apple-touch).*)",
             "destination": "/"
         }
     ]
