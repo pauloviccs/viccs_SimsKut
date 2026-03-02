@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Save, AlertTriangle, User, Hash, Palette, RotateCcw, Bell } from 'lucide-react';
+import { Camera, Save, AlertTriangle, User, Hash, Palette, RotateCcw, Bell, Shield, LogOut } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
@@ -22,7 +22,7 @@ const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
  * Imagina como o vestiário do jogo: onde você customiza seu avatar e nome.
  */
 export function SettingsPage() {
-    const { user, profile, setProfile, logout } = useAuthStore();
+    const { user, profile, setProfile, logout, isAdmin } = useAuthStore();
     const theme = useThemeStore((s) => s.theme);
     const resetTheme = useThemeStore((s) => s.resetTheme);
     const setTheme = useThemeStore((s) => s.setTheme);
@@ -478,14 +478,24 @@ export function SettingsPage() {
                 />
             )}
 
-            {/* === Mobile Logout Button === */}
-            <div className="md:hidden mt-8">
+            {/* === Mobile Actions (Admin + Logout) === */}
+            <div className="md:hidden mt-8 space-y-3">
+                {isAdmin && (
+                    <GlassButton
+                        variant="secondary"
+                        onClick={() => navigate('/admin/dashboard')}
+                        className="w-full flex items-center justify-center gap-2 !bg-[var(--accent-warning)]/10 !text-[var(--accent-warning)] hover:!bg-[var(--accent-warning)]/20 border border-[var(--accent-warning)]/20"
+                    >
+                        <Shield size={18} />
+                        Painel Admin
+                    </GlassButton>
+                )}
                 <GlassButton
                     variant="danger"
                     onClick={handleLogout}
                     className="w-full flex items-center justify-center gap-2"
                 >
-                    <AlertTriangle size={18} />
+                    <LogOut size={18} />
                     Sair da Conta
                 </GlassButton>
             </div>
