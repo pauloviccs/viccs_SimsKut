@@ -204,7 +204,7 @@ const ShowcaseSection = () => {
                 { icon: Bell, text: "Notificações e mensagens diretas" },
               ].map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-center gap-3 text-sm text-foreground/80">
-                  <span className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <span className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 transition-all duration-300 hover:bg-primary/20 hover:border-primary/40 hover:scale-110 hover:shadow-[0_0_12px_hsl(217_91%_60%/0.3)] cursor-default">
                     <Icon className="w-3.5 h-3.5 text-primary" />
                   </span>
                   {text}
