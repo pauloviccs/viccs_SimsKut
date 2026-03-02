@@ -211,6 +211,7 @@ export interface News {
     id: string;
     title: string;
     excerpt: string;
+    image_url?: string | null;
     category: 'Patch Note' | 'Evento' | 'Novidade' | 'Aviso' | 'Desafio';
     category_color: string | null;
     created_by: string;

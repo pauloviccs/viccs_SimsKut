@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, ImagePlus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +29,9 @@ interface NewsModalProps {
 
 export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.image_url || null);
+
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
@@ -54,16 +57,31 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                 excerpt: '',
                 category: 'Novidade',
             });
+            setPreviewUrl(null);
+            setImageFile(null);
         }
     }, [initialData, reset, isOpen]);
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImageFile(null);
+        setPreviewUrl(null);
+    };
+
     const mutation = useMutation({
-        mutationFn: (data: NewsFormData) => {
+        mutationFn: ({ data, file }: { data: NewsFormData, file: File | null | 'remove' }) => {
             const payload = { ...data, category_color: null };
             if (initialData) {
-                return newsService.updateNews(initialData.id, payload);
+                return newsService.updateNews(initialData.id, payload, file);
             }
-            return newsService.createNews(payload);
+            return newsService.createNews(payload, file === 'remove' ? null : file);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-news'] });
@@ -89,7 +107,12 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
 
     const onSubmit = (data: NewsFormData) => {
         setIsSubmitting(true);
-        mutation.mutate(data);
+        let fileAction: File | null | 'remove' = imageFile;
+        // Se tinha imagem antes e agora não tem nem URL nem File, foi removida
+        if (initialData?.image_url && !previewUrl && !imageFile) {
+            fileAction = 'remove';
+        }
+        mutation.mutate({ data, file: fileAction });
     };
 
     return (
@@ -157,6 +180,39 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                         placeholder="Conte o que há de novo..."
                                     />
                                     {errors.excerpt && <p className="text-xs text-destructive mt-1">{errors.excerpt.message}</p>}
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-white/80">Imagem (Opcional)</label>
+                                    <div className="mt-1">
+                                        {previewUrl ? (
+                                            <div className="relative w-full h-32 rounded-xl overflow-hidden border border-white/10 group bg-black/20 flex items-center justify-center">
+                                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover opacity-80" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveImage}
+                                                        className="bg-destructive/80 hover:bg-destructive text-white p-2 rounded-full transition-colors"
+                                                        title="Remover Imagem"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <label className="flex flex-col items-center justify-center w-full h-32 rounded-xl border border-dashed border-white/20 bg-black/10 hover:bg-white/5 transition-colors cursor-pointer text-white/50 hover:text-white/80">
+                                                <ImagePlus size={24} className="mb-2 opacity-50" />
+                                                <span className="text-xs font-medium">Clique para selecionar</span>
+                                                <span className="text-[10px] opacity-50 mt-1">Recomendado: 1200x800px (16:9)</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={handleImageChange}
+                                                />
+                                            </label>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="pt-4 flex items-center justify-end gap-3">

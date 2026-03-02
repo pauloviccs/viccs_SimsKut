@@ -20,7 +20,7 @@ export function AdminNews() {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: newsService.deleteNews,
+        mutationFn: ({ id, imageUrl }: { id: string, imageUrl?: string | null }) => newsService.deleteNews(id, imageUrl),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-news'] });
             queryClient.invalidateQueries({ queryKey: ['public-news'] });
@@ -44,9 +44,9 @@ export function AdminNews() {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = (id: string, imageUrl?: string | null) => {
         if (confirm('Tem certeza que deseja apagar esta notícia?')) {
-            deleteMutation.mutate(id);
+            deleteMutation.mutate({ id, imageUrl });
         }
     };
 
@@ -128,7 +128,7 @@ export function AdminNews() {
                                                     <Edit size={14} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(item.id)}
+                                                    onClick={() => handleDelete(item.id, item.image_url)}
                                                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-destructive/10 text-destructive/80 hover:text-destructive"
                                                     title="Apagar"
                                                 >

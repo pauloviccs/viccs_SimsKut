@@ -57,9 +57,20 @@ const NewsSection = () => {
               <GlassCard
                 key={item.id}
                 glow
-                className={`cursor-pointer group ${isVisible ? 'animate-scroll-reveal' : 'opacity-0'}`}
+                className={`cursor-pointer group flex flex-col ${isVisible ? 'animate-scroll-reveal' : 'opacity-0'}`}
                 style={{ animationDelay: `${(i + 1) * 150}ms` }}
               >
+                {item.image_url && (
+                  <div className="-mt-6 -mx-6 mb-6 h-48 overflow-hidden rounded-t-2xl relative">
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mb-3">
                   <span className={`text-xs px-3 py-1 rounded-full font-medium ${categoryColors[item.category] || 'bg-white/10 text-white'}`}>
                     {item.category}

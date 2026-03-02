@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { News } from '../types';
+import { processAndUploadFeedImage, deleteImage } from './imageService';
 
 export const newsService = {
     /**
@@ -23,14 +24,26 @@ export const newsService = {
     /**
      * Creates a new news item. Admin only.
      */
-    createNews: async (news: Omit<News, 'id' | 'created_at' | 'created_by' | 'author'>) => {
+    createNews: async (news: Omit<News, 'id' | 'created_at' | 'created_by' | 'author'>, imageFile?: File | Blob | null) => {
         const { data: userData } = await supabase.auth.getUser();
         if (!userData.user) throw new Error("User not authenticated.");
+
+        let uploadedImageUrl = null;
+        if (imageFile) {
+            const path = `${userData.user.id}/${Date.now()}_news.webp`;
+            try {
+                uploadedImageUrl = await processAndUploadFeedImage(imageFile, 'news', path);
+            } catch (e) {
+                console.error("Failed to upload image:", e);
+                throw new Error("Falha ao fazer upload da imagem");
+            }
+        }
 
         const { data, error } = await supabase
             .from('news')
             .insert({
                 ...news,
+                image_url: uploadedImageUrl,
                 created_by: userData.user.id
             })
             .select()
@@ -47,10 +60,28 @@ export const newsService = {
     /**
      * Updates an existing news item. Admin only.
      */
-    updateNews: async (id: string, updates: Partial<Omit<News, 'id' | 'created_at' | 'created_by' | 'author'>>) => {
+    updateNews: async (id: string, updates: Partial<Omit<News, 'id' | 'created_at' | 'created_by' | 'author'>>, imageFile?: File | Blob | null | 'remove') => {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) throw new Error("User not authenticated.");
+
+        let finalUpdates = { ...updates };
+
+        if (imageFile === 'remove') {
+            finalUpdates.image_url = null;
+        } else if (imageFile) {
+            const path = `${userData.user.id}/${Date.now()}_news.webp`;
+            try {
+                const url = await processAndUploadFeedImage(imageFile, 'news', path);
+                finalUpdates.image_url = url;
+            } catch (e) {
+                console.error("Failed to upload image:", e);
+                throw new Error("Falha ao fazer upload da imagem");
+            }
+        }
+
         const { data, error } = await supabase
             .from('news')
-            .update(updates)
+            .update(finalUpdates)
             .eq('id', id)
             .select()
             .single();
@@ -66,7 +97,20 @@ export const newsService = {
     /**
      * Deletes a news item. Admin only.
      */
-    deleteNews: async (id: string) => {
+    deleteNews: async (id: string, imageUrl?: string | null) => {
+        // Optionally delete image from storage if it exists
+        if (imageUrl) {
+            try {
+                const pathParts = imageUrl.split('/news/');
+                if (pathParts.length > 1) {
+                    const path = pathParts[1].split('?')[0]; // remove query params if any
+                    await deleteImage('news', path);
+                }
+            } catch (e) {
+                console.error('Failed to delete image from storage', e);
+            }
+        }
+
         const { error } = await supabase
             .from('news')
             .delete()

@@ -710,6 +710,10 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('posts', 'posts', true)
 ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('news', 'news', true)
+ON CONFLICT (id) DO NOTHING;
+
 -- Políticas de storage: qualquer autenticado pode fazer upload na própria pasta
 CREATE POLICY "avatars_upload" ON storage.objects FOR INSERT
     TO authenticated
@@ -735,6 +739,18 @@ CREATE POLICY "posts_read" ON storage.objects FOR SELECT
     TO public
     USING (bucket_id = 'posts');
 
+CREATE POLICY "news_upload" ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (bucket_id = 'news' AND (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE profiles.id = auth.uid() AND profiles.is_admin = true
+        )
+    ));
+
+CREATE POLICY "news_read" ON storage.objects FOR SELECT
+    TO public
+    USING (bucket_id = 'news');
 
 -- ╔══════════════════════════════════════════════════╗
 -- ║  PROFILE UPDATES — Colunas novas + RPC          ║
@@ -834,6 +850,7 @@ CREATE TABLE IF NOT EXISTS public.news (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     excerpt TEXT NOT NULL,
+    image_url TEXT,
     category TEXT NOT NULL CHECK (category IN ('Patch Note', 'Evento', 'Novidade', 'Aviso', 'Desafio')),
     category_color TEXT,
     created_by UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
