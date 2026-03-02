@@ -60,28 +60,48 @@ export function AdminDashboard() {
         <>
             <FluidBackground />
 
-            <div className="min-h-screen flex relative z-10">
-                {/* Sidebar */}
+            <div className="h-[100dvh] flex flex-col md:flex-row relative z-10 w-full overflow-hidden">
+                {/* Sidebar -> Navbar on Mobile */}
                 <motion.aside
                     initial={{ x: -280, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    className="w-64 min-h-screen glass-card rounded-none border-l-0 border-t-0 border-b-0 flex flex-col p-4"
-                    style={{ borderRadius: '0 var(--radius-lg) var(--radius-lg) 0' }}
+                    className="w-full md:w-64 pt-[calc(1rem+env(safe-area-inset-top))] md:pt-4 p-4 md:min-h-[100dvh] glass-card rounded-none border-l-0 border-t-0 border-r-0 md:border-r border-b md:border-b-0 border-white/10 flex flex-col shrink-0 z-20"
+                    style={{ borderRadius: '0' }}
                 >
-                    {/* Logo */}
-                    <div className="flex items-center gap-3 px-3 py-4 mb-4">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-success)] flex items-center justify-center">
-                            <Sparkles size={18} className="text-white" />
+                    {/* Logo & Mobile Actions */}
+                    <div className="flex items-center justify-between px-1 mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-success)] flex items-center justify-center shrink-0">
+                                <Sparkles size={18} className="text-white" />
+                            </div>
+                            <div>
+                                <p className="font-bold text-sm">SimsKut</p>
+                                <p className="text-[10px] text-white/35">Painel Admin</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="font-bold text-sm">SimsKut</p>
-                            <p className="text-[10px] text-white/35">Painel Admin</p>
+
+                        {/* Mobile Actions */}
+                        <div className="flex md:hidden items-center gap-2">
+                            <button
+                                onClick={() => navigate('/feed')}
+                                className="w-9 h-9 flex items-center justify-center rounded-[var(--radius-sm)] bg-white/5 text-white/60 hover:text-white"
+                                title="Voltar ao Feed"
+                            >
+                                <ArrowLeft size={16} />
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="w-9 h-9 flex items-center justify-center rounded-[var(--radius-sm)] bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]/80 hover:text-[var(--accent-danger)]"
+                                title="Sair"
+                            >
+                                <LogOut size={16} />
+                            </button>
                         </div>
                     </div>
 
                     {/* Nav Items */}
-                    <nav className="flex-1 flex flex-col gap-1">
+                    <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 px-1 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {tabs.map((tab) => {
                             const isActive = activeTab === tab.id;
                             const Icon = tab.icon;
@@ -90,8 +110,8 @@ export function AdminDashboard() {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`
-                                        flex items-center gap-3 px-3 py-2.5
-                                        rounded-[var(--radius-sm)] text-sm font-medium
+                                        flex items-center gap-2 md:gap-3 px-3 md:px-3 py-2.5
+                                        rounded-[var(--radius-sm)] text-sm font-medium shrink-0 whitespace-nowrap
                                         transition-all duration-200 cursor-pointer
                                         ${isActive
                                             ? 'bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]'
@@ -104,7 +124,7 @@ export function AdminDashboard() {
                                     {isActive && (
                                         <motion.div
                                             layoutId="admin-tab-indicator"
-                                            className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"
+                                            className="hidden md:block ml-auto w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"
                                         />
                                     )}
                                 </button>
@@ -112,8 +132,8 @@ export function AdminDashboard() {
                         })}
                     </nav>
 
-                    {/* User Info + Logout */}
-                    <div className="border-t border-white/10 pt-4 mt-4">
+                    {/* User Info + Logout (Desktop) */}
+                    <div className="hidden md:block border-t border-white/10 pt-4 mt-auto">
                         <div className="flex items-center gap-3 px-3 mb-3">
                             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">
                                 {profile?.display_name?.[0]?.toUpperCase() ||
@@ -151,7 +171,7 @@ export function AdminDashboard() {
                 </motion.aside>
 
                 {/* Main Content */}
-                <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full pb-[calc(2rem+env(safe-area-inset-bottom))] md:pb-8">
                     <motion.div
                         key={activeTab}
                         initial={{ opacity: 0, y: 10 }}

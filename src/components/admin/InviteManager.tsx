@@ -73,10 +73,10 @@ export function InviteManager() {
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <h1 className="text-2xl font-bold">Gerenciar Convites</h1>
-                <div className="flex items-center gap-1">
-                    <Filter size={14} className="text-white/30 mr-1" />
+                <div className="flex flex-wrap items-center gap-2">
+                    <Filter size={14} className="text-white/30 mr-1 hidden sm:block" />
                     {filters.map((f) => (
                         <button
                             key={f.id}
