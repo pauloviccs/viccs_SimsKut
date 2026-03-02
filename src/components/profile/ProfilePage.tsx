@@ -1,18 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    CalendarDays,
-    LinkIcon,
-    Loader2,
-    Camera,
-    ImageIcon,
-    MessageCircle,
-    Users as UsersIcon,
-    Briefcase,
-    Zap,
-    Star
-} from 'lucide-react';
+import { CalendarDays, LinkIcon, Loader2, Camera, ImageIcon, MessageCircle, Users as UsersIcon, Briefcase, Zap, Star } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
 import { PostCard } from '@/components/feed/PostCard';
@@ -30,12 +19,11 @@ import {
     getUserComments,
     getUserPhotos,
     getUserFamiliesWithSims,
-    setPinnedPost
+    setPinnedPost,
 } from '@/lib/profileService';
-import { getUserShowcase } from '@/lib/eaGalleryService';
-import type { Profile, ProfileStats, FeedPost, PostComment, Photo, Family, EaShowcaseItem } from '@/types';
+import type { Profile, ProfileStats, FeedPost, PostComment, Photo, Family } from '@/types';
 
-type ProfileTab = 'posts' | 'replies' | 'media' | 'family' | 'sims4';
+type ProfileTab = 'posts' | 'replies' | 'media' | 'family';
 
 const tabs: { key: ProfileTab; label: string; icon: any }[] = [
     { key: 'posts', label: 'Posts', icon: MessageCircle },
@@ -64,7 +52,6 @@ export function ProfilePage() {
     const [comments, setComments] = useState<(PostComment & { post?: FeedPost })[]>([]);
     const [photos, setPhotos] = useState<Photo[]>([]);
     const [families, setFamilies] = useState<Family[]>([]);
-    const [eaShowcase, setEaShowcase] = useState<EaShowcaseItem[]>([]);
     const [tabLoading, setTabLoading] = useState(false);
 
     const isOwnProfile = user?.id === profile?.id;
@@ -131,9 +118,6 @@ export function ProfilePage() {
                 } else if (activeTab === 'family') {
                     const data = await getUserFamiliesWithSims(profile.id);
                     if (mounted) setFamilies(data);
-                } else if (activeTab === 'sims4') {
-                    const data = await getUserShowcase(profile.id);
-                    if (mounted) setEaShowcase(data);
                 }
             } catch (err) {
                 console.error(err);
@@ -512,48 +496,6 @@ export function ProfilePage() {
                                 </div>
                             )}
 
-                            {activeTab === 'sims4' && (
-                                <div className="space-y-4">
-                                    {eaShowcase.length === 0 ? (
-                                        <GlassCard className="text-center py-10">
-                                            <ImageIcon size={32} className="mx-auto mb-3 text-white/20" />
-                                            <p className="text-sm text-white/40">
-                                                Nenhuma criação da galeria do The Sims 4 foi exibida neste perfil ainda.
-                                            </p>
-                                        </GlassCard>
-                                    ) : (
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                            {eaShowcase.map((item) => (
-                                                <div
-                                                    key={item.id}
-                                                    className="rounded-2xl overflow-hidden glass-heavy border border-white/12"
-                                                >
-                                                    {item.thumbnail_url ? (
-                                                        <img
-                                                            src={item.thumbnail_url}
-                                                            alt={item.title}
-                                                            className="w-full h-32 sm:h-40 object-cover"
-                                                            loading="lazy"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-[#007AFF]/40 via-[#5865F2]/30 to-[#34C759]/40" />
-                                                    )}
-                                                    <div className="p-2">
-                                                        <p className="text-xs font-medium text-white/90 truncate">
-                                                            {item.title}
-                                                        </p>
-                                                        {item.download_count != null && (
-                                                            <p className="text-[10px] text-white/45">
-                                                                {item.download_count} downloads
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
                         </motion.div>
                     </AnimatePresence>
                 )}
