@@ -83,23 +83,23 @@ export async function getSims(familyId: string): Promise<Sim[]> {
 
 export async function createSim(
     familyId: string,
-    sim: { name: string; photo_url?: string; profession?: string; bio?: string }
+    simInput: { name: string; photo_url?: string; profession?: string; bio?: string }
 ): Promise<Sim> {
     const { data, error } = await supabase
         .from('sims')
         .insert({
             family_id: familyId,
-            name: sim.name.trim(),
-            photo_url: sim.photo_url || null,
-            profession: sim.profession?.trim() || null,
-            bio: sim.bio?.trim() || null,
+            name: simInput.name.trim(),
+            photo_url: simInput.photo_url || null,
+            profession: simInput.profession?.trim() || null,
+            bio: simInput.bio?.trim() || null,
         })
         .select()
         .single();
 
     if (error) throw error;
 
-    const sim: Sim = { ...data, traits: [] };
+    const createdSim: Sim = { ...data, traits: [] };
 
     // Notifica amigos de que a família recebeu um novo Sim
     try {
@@ -114,14 +114,14 @@ export async function createSim(
                 family.owner_id,
                 'family_update',
                 family.id,
-                `Adicionou o Sim ${sim.name} à família ${family.family_name}`
+                `Adicionou o Sim ${createdSim.name} à família ${family.family_name}`
             );
         }
     } catch (err) {
         console.error('Erro ao notificar amigos sobre novo Sim:', err);
     }
 
-    return sim;
+    return createdSim;
 }
 
 export async function updateSim(

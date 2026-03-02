@@ -1,7 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { AppNotification } from './notificationService';
 
-const SW_PATH = '/sw.js';
 const VAPID_PUBLIC = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
 function getNotificationTitleAndBody(type: AppNotification['type'], content: string | null): {
@@ -68,14 +67,15 @@ export async function ensureNotificationPermission(): Promise<NotificationPermis
     return await Notification.requestPermission();
 }
 
-/** Converte base64url em Uint8Array para a Push API */
-function urlBase64ToUint8Array(base64: string): Uint8Array {
+/** Converte base64url em ArrayBuffer para a Push API */
+function urlBase64ToArrayBuffer(base64: string): ArrayBuffer {
     const padding = '='.repeat((4 - (base64.length % 4)) % 4);
     const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
     const raw = atob(b64);
-    const arr = new Uint8Array(raw.length);
+    const buffer = new ArrayBuffer(raw.length);
+    const arr = new Uint8Array(buffer);
     for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-    return arr;
+    return buffer;
 }
 
 /**
@@ -100,7 +100,7 @@ export async function subscribeToPush(): Promise<boolean> {
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC),
+            applicationServerKey: urlBase64ToArrayBuffer(VAPID_PUBLIC),
         });
 
         const json = sub.toJSON();
