@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @source "../";
 @import "./liquid-glass.css";
-
+@import "./tokens-landing-v2.css";
 /* =============================================
    GLOBAL STYLES — SimsKut V2
    ============================================= */

@@ -1,0 +1,107 @@
+﻿Listagem de caminhos de pasta para o volume Chernobyl
+O n·mero de sÚrie do volume Ú A822-242D
+G:\GITHUB\VIBECODING\VICCS_GIT\VICCS_WEBSITES\VICCS_SIMSKUT\SRC
+|   App.tsx
+|   main.tsx
+|   vite-env.d.ts
+|   
++---components
+|   +---admin
+|   |       AdminDashboard.tsx
+|   |       AdminFeed.tsx
+|   |       AdminOverview.tsx
+|   |       AdminProfile.tsx
+|   |       InviteManager.tsx
+|   |       UserManager.tsx
+|   |       
+|   +---auth
+|   |       AuthCallback.tsx
+|   |       LandingPage.tsx
+|   |       LoginPage.tsx
+|   |       PendingApproval.tsx
+|   |       ProtectedRoute.tsx
+|   |       RegisterPage.tsx
+|   |       
+|   +---family
+|   |       FamilyConfig.tsx
+|   |       
+|   +---feed
+|   |       CommentSection.tsx
+|   |       FeedPage.tsx
+|   |       GalleryPicker.tsx
+|   |       PostCard.tsx
+|   |       PostComposer.tsx
+|   |       PostReactions.tsx
+|   |       
+|   +---gallery
+|   |       GlobalGallery.tsx
+|   |       PhotoLightbox.tsx
+|   |       PhotoUploadModal.tsx
+|   |       PrivateGallery.tsx
+|   |       
+|   +---gallery-sync
+|   +---layout
+|   |       AppShell.tsx
+|   |       Navbar.tsx
+|   |       Sidebar.tsx
+|   |       
+|   +---profile
+|   |       FriendshipButton.tsx
+|   |       FriendsListModal.tsx
+|   |       ProfileEditModal.tsx
+|   |       ProfilePage.tsx
+|   |       SimDetailsModal.tsx
+|   |       
+|   +---settings
+|   |       AvatarCropper.tsx
+|   |       BannerCropper.tsx
+|   |       SettingsPage.tsx
+|   |       ZenGradientPicker.tsx
+|   |       
+|   \---ui
+|           Avatar.tsx
+|           CookieBanner.tsx
+|           EmojiPicker.tsx
+|           FluidBackground.tsx
+|           GlassButton.tsx
+|           GlassCard.tsx
+|           GlassDivider.tsx
+|           GlassInput.tsx
+|           MediaLightbox.tsx
+|           MentionInput.tsx
+|           NotificationsPanel.tsx
+|           OAuthButton.tsx
+|           ZenBackground.tsx
+|           
++---lib
+|   |   authService.ts
+|   |   avatarService.ts
+|   |   familyService.ts
+|   |   feedService.ts
+|   |   friendshipService.ts
+|   |   galleryService.ts
+|   |   imageService.ts
+|   |   inviteService.ts
+|   |   inviteUtils.ts
+|   |   notificationService.ts
+|   |   profileService.ts
+|   |   pushClient.ts
+|   |   renderMentions.tsx
+|   |   supabaseClient.ts
+|   |   
+|   \---zenTheme
+|           HarmonyEngine.ts
+|           
++---store
+|       authStore.ts
+|       cookieStore.ts
+|       sidebarStore.ts
+|       themeStore.ts
+|       
++---styles
+|       global.css
+|       liquid-glass.css
+|       
+\---types
+        index.ts
+        
