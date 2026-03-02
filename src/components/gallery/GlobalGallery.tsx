@@ -44,7 +44,7 @@ export function GlobalGallery() {
                     </p>
                 </GlassCard>
             ) : (
-                <div className="columns-2 sm:columns-3 gap-3 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {photos.map((photo) => (
                         <motion.div
                             key={photo.id}
