@@ -120,5 +120,123 @@ export const newsService = {
             console.error('Error deleting news:', error);
             throw error;
         }
+    },
+
+    /**
+     * Gets comments for a specific news item
+     */
+    getNewsComments: async (newsId: string) => {
+        const { data, error } = await supabase
+            .from('news_comments')
+            .select(`
+                id,
+                content,
+                created_at,
+                author_id,
+                author:profiles!news_comments_author_id_fkey(username, display_name, avatar_url)
+            `)
+            .eq('news_id', newsId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Posts a new comment to a news item
+     */
+    postNewsComment: async (newsId: string, content: string) => {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) throw new Error("Must be logged in to comment");
+
+        const { data, error } = await supabase
+            .from('news_comments')
+            .insert({
+                news_id: newsId,
+                author_id: userData.user.id,
+                content
+            })
+            .select(`
+                id,
+                content,
+                created_at,
+                author_id,
+                author:profiles!news_comments_author_id_fkey(username, display_name, avatar_url)
+            `)
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Deletes a news comment
+     */
+    deleteNewsComment: async (commentId: string) => {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) throw new Error("Must be logged in");
+
+        const { error } = await supabase
+            .from('news_comments')
+            .delete()
+            .eq('id', commentId);
+
+        if (error) throw error;
+    },
+
+    /**
+     * Gets the like status (count and if liked by current user) for a news item
+     */
+    getNewsLikeStatus: async (newsId: string) => {
+        const { data: userData } = await supabase.auth.getUser();
+
+        // Obter total de likes
+        const { count, error: countError } = await supabase
+            .from('news_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('news_id', newsId);
+
+        if (countError) throw countError;
+
+        let likedByMe = false;
+        if (userData?.user) {
+            const { data, error } = await supabase
+                .from('news_likes')
+                .select('id')
+                .eq('news_id', newsId)
+                .eq('user_id', userData.user.id)
+                .single();
+
+            if (data && !error) {
+                likedByMe = true;
+            }
+        }
+
+        return { likesCount: count || 0, likedByMe };
+    },
+
+    /**
+     * Toggles a like on a news item (like/unlike)
+     */
+    toggleNewsLike: async (newsId: string, currentlyLiked: boolean) => {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) throw new Error("Must be logged in to like");
+
+        if (currentlyLiked) {
+            const { error } = await supabase
+                .from('news_likes')
+                .delete()
+                .eq('news_id', newsId)
+                .eq('user_id', userData.user.id);
+            if (error) throw error;
+        } else {
+            const { error } = await supabase
+                .from('news_likes')
+                .insert({
+                    news_id: newsId,
+                    user_id: userData.user.id
+                });
+            if (error) throw error;
+        }
     }
 };

@@ -1,9 +1,12 @@
+import { useState } from "react";
 import GlassCard from "./GlassCard";
 import { useScrollReveal } from "./useScrollReveal";
 import { useQuery } from "@tanstack/react-query";
 import { newsService } from "@/lib/newsService";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import type { News } from "@/types";
+import { ReadNewsModal } from "./ReadNewsModal";
 
 const categoryColors: Record<string, string> = {
   "Patch Note": "bg-primary/20 text-primary",
@@ -15,6 +18,7 @@ const categoryColors: Record<string, string> = {
 
 const NewsSection = () => {
   const { ref, isVisible } = useScrollReveal();
+  const [selectedNews, setSelectedNews] = useState<News | null>(null);
 
   const { data: newsItems = [], isLoading } = useQuery({
     queryKey: ['public-news'],
@@ -57,6 +61,7 @@ const NewsSection = () => {
               <GlassCard
                 key={item.id}
                 glow
+                onClick={() => setSelectedNews(item)}
                 className={`cursor-pointer group flex flex-col ${isVisible ? 'animate-scroll-reveal' : 'opacity-0'}`}
                 style={{ animationDelay: `${(i + 1) * 150}ms` }}
               >
@@ -91,6 +96,12 @@ const NewsSection = () => {
           )}
         </div>
       </div>
+
+      <ReadNewsModal
+        isOpen={!!selectedNews}
+        onClose={() => setSelectedNews(null)}
+        news={selectedNews}
+      />
     </section>
   );
 };

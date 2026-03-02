@@ -218,4 +218,25 @@ export interface News {
     created_at: string;
     // Joined
     author?: Profile;
+    // Aggregated
+    likes_count?: number;
+    comments_count?: number;
+    liked_by_me?: boolean;
+}
+
+export interface NewsLike {
+    id: string;
+    news_id: string;
+    user_id: string;
+    created_at: string;
+}
+
+export interface NewsComment {
+    id: string;
+    news_id: string;
+    author_id: string;
+    content: string;
+    created_at: string;
+    // Joined
+    author?: Profile;
 }

@@ -893,3 +893,69 @@ CREATE POLICY "news_delete_admin"
     );
 
 CREATE INDEX IF NOT EXISTS idx_news_created_at ON public.news(created_at DESC);
+
+
+-- ╔══════════════════════════════════════════════╗
+-- ║  12. TABELA: news_likes                     ║
+-- ║  Likes nas Notícias                         ║
+-- ╚══════════════════════════════════════════════╝
+
+CREATE TABLE IF NOT EXISTS public.news_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    news_id UUID NOT NULL REFERENCES public.news(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE (news_id, user_id)
+);
+
+ALTER TABLE public.news_likes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "news_likes_select_public"
+    ON public.news_likes FOR SELECT
+    USING (true);
+
+CREATE POLICY "news_likes_insert_own"
+    ON public.news_likes FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "news_likes_delete_own"
+    ON public.news_likes FOR DELETE
+    USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_news_likes_news_id ON public.news_likes(news_id);
+
+
+-- ╔══════════════════════════════════════════════╗
+-- ║  13. TABELA: news_comments                  ║
+-- ║  Comentários em Notícias                    ║
+-- ╚══════════════════════════════════════════════╝
+
+CREATE TABLE IF NOT EXISTS public.news_comments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    news_id UUID NOT NULL REFERENCES public.news(id) ON DELETE CASCADE,
+    author_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.news_comments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "news_comments_select_public"
+    ON public.news_comments FOR SELECT
+    USING (true);
+
+CREATE POLICY "news_comments_insert_own"
+    ON public.news_comments FOR INSERT
+    WITH CHECK (auth.uid() = author_id);
+
+CREATE POLICY "news_comments_delete_own_or_admin"
+    ON public.news_comments FOR DELETE
+    USING (
+        auth.uid() = author_id
+        OR EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND is_admin = true
+        )
+    );
+
+CREATE INDEX IF NOT EXISTS idx_news_comments_news_id ON public.news_comments(news_id);
