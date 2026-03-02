@@ -1,39 +1,25 @@
 import GlassCard from "./GlassCard";
 import { useScrollReveal } from "./useScrollReveal";
+import { useQuery } from "@tanstack/react-query";
+import { newsService } from "@/lib/newsService";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-const newsItems = [
-  {
-    title: "SimsKut v2.0 — Liquid Glass Update",
-    date: "28 Fev 2026",
-    category: "Patch Note",
-    categoryColor: "bg-primary/20 text-primary",
-    excerpt: "Nova interface completa com design Liquid Glass, animações fluidas e performance otimizada. A maior atualização visual da história do SimsKut.",
-  },
-  {
-    title: "Evento: Concurso de Builds — Março 2026",
-    date: "25 Fev 2026",
-    category: "Evento",
-    categoryColor: "bg-accent/20 text-accent",
-    excerpt: "Participe do concurso mensal de construções! Tema: 'Casa dos Sonhos'. Prêmios exclusivos para os 3 primeiros colocados.",
-  },
-  {
-    title: "Novas Famílias: Sistema de Linhagens",
-    date: "20 Fev 2026",
-    category: "Novidade",
-    categoryColor: "bg-secondary/20 text-secondary",
-    excerpt: "Agora você pode criar árvores genealógicas completas e acompanhar a linhagem da sua família Sim através de gerações.",
-  },
-  {
-    title: "Manutenção Programada — 5 de Março",
-    date: "18 Fev 2026",
-    category: "Aviso",
-    categoryColor: "bg-destructive/20 text-destructive",
-    excerpt: "O SimsKut ficará em manutenção das 02h às 06h (BRT) para migração de servidores e melhorias de infraestrutura.",
-  },
-];
+const categoryColors: Record<string, string> = {
+  "Patch Note": "bg-primary/20 text-primary",
+  "Evento": "bg-accent/20 text-accent",
+  "Novidade": "bg-secondary/20 text-secondary",
+  "Aviso": "bg-destructive/20 text-destructive",
+  "Desafio": "bg-orange-500/20 text-orange-500"
+};
 
 const NewsSection = () => {
   const { ref, isVisible } = useScrollReveal();
+
+  const { data: newsItems = [], isLoading } = useQuery({
+    queryKey: ['public-news'],
+    queryFn: () => newsService.getNews(4),
+  });
 
   return (
     <section className="relative py-24 px-4" id="news" ref={ref}>
@@ -50,27 +36,47 @@ const NewsSection = () => {
 
         {/* News grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {newsItems.map((item, i) => (
-            <GlassCard
-              key={item.title}
-              glow
-              className={`cursor-pointer group ${isVisible ? 'animate-scroll-reveal' : 'opacity-0'}`}
-              style={{ animationDelay: `${(i + 1) * 150}ms` }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span className={`text-xs px-3 py-1 rounded-full font-medium ${item.categoryColor}`}>
-                  {item.category}
-                </span>
-                <span className="text-xs text-muted-foreground">{item.date}</span>
-              </div>
-              <h3 className="font-display text-lg font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
-                {item.title}
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {item.excerpt}
-              </p>
-            </GlassCard>
-          ))}
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <GlassCard key={i} className="animate-pulse h-[140px]">
+                <div className="flex justify-between mb-3">
+                  <div className="h-6 w-20 bg-white/10 rounded-full"></div>
+                  <div className="h-4 w-24 bg-white/5 rounded-full mt-1"></div>
+                </div>
+                <div className="h-6 w-3/4 bg-white/10 rounded-full mb-3"></div>
+                <div className="h-4 w-full bg-white/5 rounded-full mb-1"></div>
+                <div className="h-4 w-2/3 bg-white/5 rounded-full"></div>
+              </GlassCard>
+            ))
+          ) : newsItems.length === 0 ? (
+            <div className="col-span-full py-12 text-center text-white/50">
+              Nenhuma novidade no momento. Logo traremos atualizações!
+            </div>
+          ) : (
+            newsItems.map((item, i) => (
+              <GlassCard
+                key={item.id}
+                glow
+                className={`cursor-pointer group ${isVisible ? 'animate-scroll-reveal' : 'opacity-0'}`}
+                style={{ animationDelay: `${(i + 1) * 150}ms` }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`text-xs px-3 py-1 rounded-full font-medium ${categoryColors[item.category] || 'bg-white/10 text-white'}`}>
+                    {item.category}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(item.created_at), "dd MMM yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+                <h3 className="font-display text-lg font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {item.excerpt}
+                </p>
+              </GlassCard>
+            ))
+          )}
         </div>
       </div>
     </section>

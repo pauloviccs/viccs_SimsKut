@@ -204,3 +204,17 @@ export interface SimPhoto {
     caption: string | null;
     created_at: string;
 }
+
+// ======== NEWS ========
+
+export interface News {
+    id: string;
+    title: string;
+    excerpt: string;
+    category: 'Patch Note' | 'Evento' | 'Novidade' | 'Aviso' | 'Desafio';
+    category_color: string | null;
+    created_by: string;
+    created_at: string;
+    // Joined
+    author?: Profile;
+}

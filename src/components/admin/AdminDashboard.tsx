@@ -10,22 +10,25 @@ import {
     LogOut,
     ArrowLeft,
     Sparkles,
+    Newspaper,
 } from 'lucide-react';
 import { FluidBackground } from '@/components/ui/FluidBackground';
 import { AdminOverview } from './AdminOverview';
 import { InviteManager } from './InviteManager';
 import { UserManager } from './UserManager';
 import { AdminFeed } from './AdminFeed';
+import { AdminNews } from './AdminNews';
 import { AdminProfile } from './AdminProfile';
 import { signOut } from '@/lib/authService';
 import { useAuthStore } from '@/store/authStore';
 
-type AdminTab = 'overview' | 'invites' | 'users' | 'feed' | 'profile';
+type AdminTab = 'overview' | 'invites' | 'users' | 'news' | 'feed' | 'profile';
 
 const tabs: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'overview', label: 'Visão Geral', icon: LayoutDashboard },
     { id: 'invites', label: 'Convites', icon: Ticket },
     { id: 'users', label: 'Usuários', icon: Users },
+    { id: 'news', label: 'Notícias', icon: Newspaper },
     { id: 'feed', label: 'Feed Geral', icon: MessageSquare },
     { id: 'profile', label: 'Meu Perfil', icon: UserCog },
 ];
@@ -49,6 +52,8 @@ export function AdminDashboard() {
                 return <InviteManager />;
             case 'users':
                 return <UserManager />;
+            case 'news':
+                return <AdminNews />;
             case 'feed':
                 return <AdminFeed />;
             case 'profile':

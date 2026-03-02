@@ -824,3 +824,55 @@ CREATE POLICY "notifications_delete_own"
     TO authenticated
     USING (user_id = auth.uid());
 
+
+-- ╔══════════════════════════════════════════════╗
+-- ║  11. TABELA: news                           ║
+-- ║  Notícias e Atualizações (Admins)           ║
+-- ╚══════════════════════════════════════════════╝
+
+CREATE TABLE IF NOT EXISTS public.news (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    excerpt TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('Patch Note', 'Evento', 'Novidade', 'Aviso', 'Desafio')),
+    category_color TEXT,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.news ENABLE ROW LEVEL SECURITY;
+
+-- Leitura: Pública
+CREATE POLICY "news_select_public"
+    ON public.news FOR SELECT
+    USING (true);
+
+-- Escrita/Edição/Delação: Apenas Admins
+CREATE POLICY "news_insert_admin"
+    ON public.news FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE profiles.id = auth.uid() AND profiles.is_admin = true
+        )
+    );
+
+CREATE POLICY "news_update_admin"
+    ON public.news FOR UPDATE
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE profiles.id = auth.uid() AND profiles.is_admin = true
+        )
+    );
+
+CREATE POLICY "news_delete_admin"
+    ON public.news FOR DELETE
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE profiles.id = auth.uid() AND profiles.is_admin = true
+        )
+    );
+
+CREATE INDEX IF NOT EXISTS idx_news_created_at ON public.news(created_at DESC);
