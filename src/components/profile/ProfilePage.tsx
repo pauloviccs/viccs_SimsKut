@@ -30,7 +30,6 @@ const tabs: { key: ProfileTab; label: string; icon: any }[] = [
     { key: 'replies', label: 'Respostas', icon: MessageCircle },
     { key: 'media', label: 'Mídia', icon: ImageIcon },
     { key: 'family', label: 'Família', icon: UsersIcon },
-    { key: 'sims4', label: 'Galeria', icon: ImageIcon },
 ];
 
 export function ProfilePage() {
