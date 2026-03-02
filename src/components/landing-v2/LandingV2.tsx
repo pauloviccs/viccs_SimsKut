@@ -13,7 +13,7 @@ export const LandingV2 = () => {
     const { user } = useAuthStore();
 
     return (
-        <div className="relative min-h-screen noise-overlay bg-[#050508]">
+        <div className="relative min-h-screen noise-overlay bg-[#050508] select-none">
             <FluidBackground />
             <div className="relative z-10 w-full max-w-full overflow-hidden">
                 <HeroSection

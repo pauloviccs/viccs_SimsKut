@@ -38,11 +38,8 @@ export function Sidebar() {
         >
             {/* === Top: Logo + Toggle === */}
             <div className="flex items-center gap-3 px-4 py-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#007AFF] to-[#34C759] flex items-center justify-center text-lg font-bold shrink-0">
-                    S
-                </div>
                 {!collapsed && (
-                    <span className="text-lg font-semibold tracking-tight text-white/90 whitespace-nowrap overflow-hidden">
+                    <span className="text-lg font-semibold tracking-tight text-white/90 whitespace-nowrap overflow-hidden flex-1">
                         SimsKut
                     </span>
                 )}

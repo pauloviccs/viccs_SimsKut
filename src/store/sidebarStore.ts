@@ -14,9 +14,11 @@ const STORAGE_KEY = 'sidebar-collapsed';
 
 function getInitialState(): boolean {
     try {
-        return localStorage.getItem(STORAGE_KEY) === 'true';
+        const stored = localStorage.getItem(STORAGE_KEY);
+        // Se o usuário nunca configurou, começa colapsado por padrão
+        return stored === null ? true : stored === 'true';
     } catch {
-        return false;
+        return true;
     }
 }
 

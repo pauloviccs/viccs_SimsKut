@@ -1,4 +1,4 @@
-import { Sparkles, LogIn, UserPlus, LayoutDashboard } from "lucide-react";
+import { LogIn, UserPlus, LayoutDashboard } from "lucide-react";
 import GlassButton from "./GlassButton";
 
 interface HeroSectionProps {
@@ -12,10 +12,15 @@ const HeroSection = ({ onRegister, onLogin, onDashboard, isLoggedIn }: HeroSecti
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 py-20">
       <div className="text-center max-w-3xl mx-auto relative z-10">
-        {/* Logo Icon */}
+        {/* Logo Icon — usa o ícone real do SimsKut */}
         <div className="animate-logo-enter mb-8 inline-flex">
-          <div className="gradient-box w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg animate-pulse-glow">
-            <Sparkles className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg animate-pulse-glow">
+            <img
+              src="/android-chrome-512x512.png"
+              alt="SimsKut"
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
           </div>
         </div>
 
