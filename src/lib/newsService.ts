@@ -205,7 +205,7 @@ export const newsService = {
                 .select('id')
                 .eq('news_id', newsId)
                 .eq('user_id', userData.user.id)
-                .single();
+                .maybeSingle();
 
             if (data && !error) {
                 likedByMe = true;

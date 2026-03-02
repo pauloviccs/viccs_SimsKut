@@ -214,11 +214,12 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                         <div className="flex-1 border border-white/10 rounded-xl overflow-hidden bg-black/20 flex flex-col">
                                             {/* Toolbar */}
                                             <div className="flex items-center flex-wrap gap-1 p-2 border-b border-white/10 bg-white/5">
-                                                <button type="button" onClick={() => document.execCommand('bold', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Negrito"><Bold size={16} /></button>
-                                                <button type="button" onClick={() => document.execCommand('italic', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Itálico"><Italic size={16} /></button>
-                                                <button type="button" onClick={() => document.execCommand('underline', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Sublinhado"><Underline size={16} /></button>
-                                                <button type="button" onClick={() => document.execCommand('strikeThrough', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Tachado"><Strikethrough size={16} /></button>
-                                                <button type="button" onClick={() => {
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('bold', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Negrito"><Bold size={16} /></button>
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('italic', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Itálico"><Italic size={16} /></button>
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('underline', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Sublinhado"><Underline size={16} /></button>
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('strikeThrough', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Tachado"><Strikethrough size={16} /></button>
+                                                <button type="button" onMouseDown={(e) => {
+                                                    e.preventDefault();
                                                     const selection = window.getSelection()?.toString();
                                                     if (selection) {
                                                         document.execCommand('insertHTML', false, `<code>${selection}</code>`);
@@ -227,18 +228,19 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                     }
                                                 }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Código"><Code size={16} /></button>
                                                 <div className="w-px h-4 bg-white/10 mx-1"></div>
-                                                <button type="button" onClick={() => {
+                                                <button type="button" onMouseDown={(e) => {
+                                                    e.preventDefault();
                                                     const url = prompt('Cole o link:');
                                                     if (url) document.execCommand('createLink', false, url);
                                                 }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Adicionar Link"><Link size={16} /></button>
                                                 <div className="w-px h-4 bg-white/10 mx-1"></div>
-                                                <button type="button" onClick={() => document.execCommand('insertUnorderedList', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista com Marcadores"><List size={16} /></button>
-                                                <button type="button" onClick={() => document.execCommand('insertOrderedList', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista Numerada"><ListOrdered size={16} /></button>
-                                                <button type="button" onClick={() => document.execCommand('formatBlock', false, 'BLOCKQUOTE')} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Citação"><Quote size={16} /></button>
-                                                <button type="button" onClick={() => document.execCommand('insertHorizontalRule', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Linha Divisória"><Minus size={16} /></button>
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertUnorderedList', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista com Marcadores"><List size={16} /></button>
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertOrderedList', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista Numerada"><ListOrdered size={16} /></button>
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('formatBlock', false, 'BLOCKQUOTE'); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Citação"><Quote size={16} /></button>
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertHorizontalRule', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Linha Divisória"><Minus size={16} /></button>
 
                                                 <div className="w-px h-4 bg-white/10 mx-1 hidden sm:block"></div>
-                                                <button type="button" onClick={() => document.execCommand('removeFormat', false)} className="p-1.5 rounded hover:bg-destructive/20 text-white/70 hover:text-destructive transition-colors ml-auto flex items-center gap-1" title="Limpar todas as formatações">
+                                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('removeFormat', false); }} className="p-1.5 rounded hover:bg-destructive/20 text-white/70 hover:text-destructive transition-colors ml-auto flex items-center gap-1" title="Limpar todas as formatações">
                                                     <Eraser size={16} />
                                                     <span className="text-xs font-medium pr-1 hidden sm:inline-block">Limpar</span>
                                                 </button>
@@ -251,7 +253,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                 id="hidden-excerpt"
                                             />
                                             <div
-                                                className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed"
+                                                className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed prose-ul:list-disc prose-ul:ml-4 prose-ol:list-decimal prose-ol:ml-4 prose-blockquote:border-l-4 prose-blockquote:border-primary/50 prose-blockquote:pl-4 prose-blockquote:italic"
                                                 contentEditable
                                                 onInput={(e) => {
                                                     const value = e.currentTarget.innerHTML;
