@@ -179,7 +179,10 @@ export function SettingsPage() {
                 if (ok) {
                     setNotifMessage({ type: 'success', text: 'Notificações ativadas! Você receberá avisos mesmo com o app fechado.' });
                 } else {
-                    setNotifMessage({ type: 'success', text: 'Notificações ativadas para esta aba.' });
+                    setNotifMessage({
+                        type: 'error',
+                        text: 'Permissão concedida, mas não foi possível registrar push offline. No iPhone, abra pelo app da Tela de Início e tente novamente.',
+                    });
                 }
             } else if (perm === 'denied') {
                 setNotifMessage({ type: 'error', text: 'Permissão negada. Habilite nas configurações do navegador.' });
