@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { LogIn, UserPlus, LayoutDashboard } from "lucide-react";
 import GlassButton from "./GlassButton";
 
@@ -37,8 +38,7 @@ const HeroSection = ({ onRegister, onLogin, onDashboard, isLoggedIn }: HeroSecti
         {/* Badge */}
         <div className="animate-hero-fade-up delay-400 mb-10">
           <span className="glass inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs text-muted-foreground tracking-wide uppercase">
-            🔒 Acesso exclusivo por convite • Aprovação manual
-          </span>
+            🔒 Acesso exclusivo por convite</span>
         </div>
 
         {/* CTA Buttons — estado condicional */}
@@ -64,12 +64,20 @@ const HeroSection = ({ onRegister, onLogin, onDashboard, isLoggedIn }: HeroSecti
           )}
         </div>
 
-        {/* Scroll hint */}
-        <div className="animate-hero-fade-up delay-800 mt-16">
+        {/* Scroll hint — animação contínua */}
+        <motion.div
+          className="animate-hero-fade-up delay-800 mt-16 flex flex-col items-center gap-2"
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        >
           <div className="w-6 h-10 rounded-full border border-muted-foreground/30 mx-auto flex justify-center pt-2">
-            <div className="w-1 h-2 rounded-full bg-muted-foreground/50 animate-bounce" />
+            <motion.div
+              className="w-1 h-2 rounded-full bg-muted-foreground/60"
+              animate={{ opacity: [1, 0.2, 1], y: [0, 10, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            />
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import GlassCard from "./GlassCard";
 import { useScrollReveal } from "./useScrollReveal";
-import { Heart } from "lucide-react";
+import { Heart, Zap, User, Users, Bell } from "lucide-react";
 import { useShowcasePosts } from "@/hooks/useShowcasePosts";
 
 // Converte created_at em "há X horas/min" sem dependência adicional
@@ -196,16 +196,18 @@ const ShowcaseSection = () => {
               Feed social, perfis personalizados, galerias de screenshots e muito mais.
               Tudo com o visual Liquid Glass que torna cada interação única.
             </p>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {[
-                "Feed em tempo real com posts, reações e comentários",
-                "Perfis personalizáveis com avatar e bio",
-                "Sistema de famílias e comunidades",
-                "Notificações e mensagens diretas",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm text-foreground/80">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                  {item}
+                { icon: Zap, text: "Feed em tempo real com posts, reações e comentários" },
+                { icon: User, text: "Perfis personalizáveis com avatar e bio" },
+                { icon: Users, text: "Sistema de famílias e comunidades" },
+                { icon: Bell, text: "Notificações e mensagens diretas" },
+              ].map(({ icon: Icon, text }) => (
+                <li key={text} className="flex items-center gap-3 text-sm text-foreground/80">
+                  <span className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <Icon className="w-3.5 h-3.5 text-primary" />
+                  </span>
+                  {text}
                 </li>
               ))}
             </ul>
