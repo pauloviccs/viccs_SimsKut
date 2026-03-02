@@ -79,6 +79,15 @@ function urlBase64ToArrayBuffer(base64: string): ArrayBuffer {
     return buffer;
 }
 
+/** Converte chave binária em base64url (compatível com Web Push payload keys). */
+function arrayBufferToBase64Url(input: ArrayBuffer | null): string {
+    if (!input) return '';
+    const bytes = new Uint8Array(input);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 /**
  * Subscreve ao Web Push e armazena no backend.
  * Requer: permissão granted, service worker registrado, VITE_VAPID_PUBLIC_KEY configurada.
@@ -122,12 +131,20 @@ export async function subscribeToPush(): Promise<boolean> {
         });
 
         const json = sub.toJSON();
+        const p256dh = json.keys?.p256dh ?? arrayBufferToBase64Url(sub.getKey('p256dh'));
+        const auth = json.keys?.auth ?? arrayBufferToBase64Url(sub.getKey('auth'));
+
+        if (!json.endpoint || !p256dh || !auth) {
+            console.error('[Push] Subscrição sem endpoint/keys válidas.');
+            return false;
+        }
+
         const { error } = await supabase.from('push_subscriptions').upsert(
             {
                 user_id: userId,
-                endpoint: json.endpoint!,
-                p256dh: json.keys?.p256dh ?? '',
-                auth: json.keys?.auth ?? '',
+                endpoint: json.endpoint,
+                p256dh,
+                auth,
                 user_agent: navigator.userAgent.slice(0, 500),
             },
             { onConflict: 'user_id,endpoint' }
