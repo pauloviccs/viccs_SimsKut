@@ -82,9 +82,10 @@ const NewsSection = () => {
                 <h3 className="font-display text-lg font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
                   {item.title}
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {item.excerpt}
-                </p>
+                <div
+                  className="text-sm text-muted-foreground leading-relaxed line-clamp-4 prose prose-invert prose-p:my-1 prose-a:text-primary hover:prose-a:underline prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: item.excerpt }}
+                />
               </GlassCard>
             ))
           )}

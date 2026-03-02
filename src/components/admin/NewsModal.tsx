@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Loader2, ImagePlus, Trash2 } from 'lucide-react';
+import { X, Loader2, ImagePlus, Trash2, Bold, Italic, Underline, Link } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -13,7 +13,7 @@ const Categories = ['Patch Note', 'Evento', 'Novidade', 'Aviso', 'Desafio'] as c
 
 const newsSchema = z.object({
     title: z.string().min(5, 'Título deve ter no mínimo 5 caracteres').max(100, 'Título muito longo'),
-    excerpt: z.string().min(10, 'Resumo deve ter no mínimo 10 caracteres').max(200, 'Resumo muito longo'),
+    excerpt: z.string().min(10, 'Conteúdo deve ter no mínimo 10 caracteres'), // removed max limitation
     category: z.enum(Categories, {
         errorMap: () => ({ message: 'Escolha uma categoria válida' }),
     }),
@@ -35,7 +35,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<NewsFormData>({
+    const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<NewsFormData>({
         resolver: zodResolver(newsSchema),
         defaultValues: {
             title: initialData?.title || '',
@@ -131,9 +131,9 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="glass-card w-full max-w-lg rounded-[var(--radius-lg)] border border-white/10 shadow-2xl overflow-hidden"
+                            className="glass-card w-full max-w-5xl rounded-[var(--radius-lg)] border border-white/10 shadow-2xl flex flex-col max-h-[90vh]"
                         >
-                            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                            <div className="p-6 border-b border-white/5 flex items-center justify-between shrink-0">
                                 <h3 className="text-xl font-display font-semibold">
                                     {initialData ? 'Editar Notícia' : 'Nova Notícia'}
                                 </h3>
@@ -145,94 +145,160 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                 </button>
                             </div>
 
-                            <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-                                <div className="space-y-1">
-                                    <label className="text-sm font-medium text-white/80">Título</label>
-                                    <input
-                                        {...register('title')}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
-                                        placeholder="Ex: SimsKut v2.0 lançado"
-                                    />
-                                    {errors.title && <p className="text-xs text-destructive mt-1">{errors.title.message}</p>}
-                                </div>
+                            <form onSubmit={handleSubmit(onSubmit)} className="p-6 flex flex-col md:grid md:grid-cols-[1fr_2fr] gap-6 overflow-y-auto">
+                                {/* Coluna Esquerda: Meta Dados */}
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium text-white/80">Título</label>
+                                        <input
+                                            {...register('title')}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+                                            placeholder="Ex: SimsKut v2.0 lançado"
+                                        />
+                                        {errors.title && <p className="text-xs text-destructive mt-1">{errors.title.message}</p>}
+                                    </div>
 
-                                <div className="space-y-1">
-                                    <label className="text-sm font-medium text-white/80">Categoria</label>
-                                    <select
-                                        {...register('category')}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
-                                    >
-                                        {Categories.map((cat) => (
-                                            <option key={cat} value={cat} className="bg-slate-900 text-white">
-                                                {cat}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.category && <p className="text-xs text-destructive mt-1">{errors.category.message}</p>}
-                                </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium text-white/80">Categoria</label>
+                                        <select
+                                            {...register('category')}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
+                                        >
+                                            {Categories.map((cat) => (
+                                                <option key={cat} value={cat} className="bg-slate-900 text-white">
+                                                    {cat}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.category && <p className="text-xs text-destructive mt-1">{errors.category.message}</p>}
+                                    </div>
 
-                                <div className="space-y-1">
-                                    <label className="text-sm font-medium text-white/80">Resumo</label>
-                                    <textarea
-                                        {...register('excerpt')}
-                                        rows={4}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all resize-none"
-                                        placeholder="Conte o que há de novo..."
-                                    />
-                                    {errors.excerpt && <p className="text-xs text-destructive mt-1">{errors.excerpt.message}</p>}
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label className="text-sm font-medium text-white/80">Imagem (Opcional)</label>
-                                    <div className="mt-1">
-                                        {previewUrl ? (
-                                            <div className="relative w-full h-32 rounded-xl overflow-hidden border border-white/10 group bg-black/20 flex items-center justify-center">
-                                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover opacity-80" />
-                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleRemoveImage}
-                                                        className="bg-destructive/80 hover:bg-destructive text-white p-2 rounded-full transition-colors"
-                                                        title="Remover Imagem"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium text-white/80">Imagem (Opcional)</label>
+                                        <div className="mt-1">
+                                            {previewUrl ? (
+                                                <div className="relative w-full h-32 rounded-xl overflow-hidden border border-white/10 group bg-black/20 flex items-center justify-center">
+                                                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover opacity-80" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleRemoveImage}
+                                                            className="bg-destructive/80 hover:bg-destructive text-white p-2 rounded-full transition-colors"
+                                                            title="Remover Imagem"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <label className="flex flex-col items-center justify-center w-full h-32 rounded-xl border border-dashed border-white/20 bg-black/10 hover:bg-white/5 transition-colors cursor-pointer text-white/50 hover:text-white/80">
-                                                <ImagePlus size={24} className="mb-2 opacity-50" />
-                                                <span className="text-xs font-medium">Clique para selecionar</span>
-                                                <span className="text-[10px] opacity-50 mt-1">Recomendado: 1200x800px (16:9)</span>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={handleImageChange}
-                                                />
-                                            </label>
-                                        )}
+                                            ) : (
+                                                <label className="flex flex-col items-center justify-center w-full h-32 rounded-xl border border-dashed border-white/20 bg-black/10 hover:bg-white/5 transition-colors cursor-pointer text-white/50 hover:text-white/80">
+                                                    <ImagePlus size={24} className="mb-2 opacity-50" />
+                                                    <span className="text-xs font-medium">Clique para selecionar</span>
+                                                    <span className="text-[10px] opacity-50 mt-1">Recomendado: 1200x800px (16:9)</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={handleImageChange}
+                                                    />
+                                                </label>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-4 flex items-center justify-end gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={onClose}
-                                        className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/5 transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center"
-                                    >
-                                        {isSubmitting && <Loader2 size={16} className="mr-2 animate-spin" />}
-                                        {initialData ? 'Salvar Alterações' : 'Criar Notícia'}
-                                    </button>
+                                {/* Coluna Direita: Editor e Ações */}
+                                <div className="space-y-4 flex flex-col justify-between">
+                                    <div className="space-y-2 h-full flex flex-col">
+                                        <label className="text-sm font-medium text-white/80">Conteúdo da Notícia</label>
+                                        <div className="flex-1 border border-white/10 rounded-xl overflow-hidden bg-black/20 flex flex-col">
+                                            {/* Toolbar */}
+                                            <div className="flex items-center gap-1 p-2 border-b border-white/10 bg-white/5">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => document.execCommand('bold', false)}
+                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                                                    title="Negrito"
+                                                >
+                                                    <Bold size={16} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => document.execCommand('italic', false)}
+                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                                                    title="Itálico"
+                                                >
+                                                    <Italic size={16} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => document.execCommand('underline', false)}
+                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                                                    title="Sublinhado"
+                                                >
+                                                    <Underline size={16} />
+                                                </button>
+                                                <div className="w-px h-4 bg-white/10 mx-1"></div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const url = prompt('Cole o link:');
+                                                        if (url) document.execCommand('createLink', false, url);
+                                                    }}
+                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                                                    title="Link"
+                                                >
+                                                    <Link size={16} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => document.execCommand('removeFormat', false)}
+                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors text-xs font-medium ml-auto"
+                                                    title="Limpar formatação"
+                                                >
+                                                    Limpar Formatação
+                                                </button>
+                                            </div>
+
+                                            {/* Content Area */}
+                                            <textarea
+                                                {...register('excerpt')}
+                                                className="hidden"
+                                                id="hidden-excerpt"
+                                            />
+                                            <div
+                                                className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed"
+                                                contentEditable
+                                                onInput={(e) => {
+                                                    const value = e.currentTarget.innerHTML;
+                                                    setValue('excerpt', value, { shouldValidate: true });
+                                                }}
+                                                dangerouslySetInnerHTML={{ __html: initialData?.excerpt || '' }}
+                                            />
+                                        </div>
+                                        {errors.excerpt && <p className="text-xs text-destructive mt-1">{errors.excerpt.message}</p>}
+                                    </div>
+
+                                    <div className="pt-4 flex items-center justify-end gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={onClose}
+                                            className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/5 transition-colors"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center"
+                                        >
+                                            {isSubmitting && <Loader2 size={16} className="mr-2 animate-spin" />}
+                                            {initialData ? 'Salvar Alterações' : 'Criar Notícia'}
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
+
                         </motion.div>
                     </motion.div>
                 </>
