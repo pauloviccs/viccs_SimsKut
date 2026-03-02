@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Loader2, ImagePlus, Trash2, Bold, Italic, Underline, Link } from 'lucide-react';
+import { X, Loader2, ImagePlus, Trash2, Bold, Italic, Underline, Link, Strikethrough, Code, List, ListOrdered, Quote, Minus, Eraser } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -213,50 +213,34 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                         <label className="text-sm font-medium text-white/80">Conteúdo da Notícia</label>
                                         <div className="flex-1 border border-white/10 rounded-xl overflow-hidden bg-black/20 flex flex-col">
                                             {/* Toolbar */}
-                                            <div className="flex items-center gap-1 p-2 border-b border-white/10 bg-white/5">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => document.execCommand('bold', false)}
-                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors"
-                                                    title="Negrito"
-                                                >
-                                                    <Bold size={16} />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => document.execCommand('italic', false)}
-                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors"
-                                                    title="Itálico"
-                                                >
-                                                    <Italic size={16} />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => document.execCommand('underline', false)}
-                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors"
-                                                    title="Sublinhado"
-                                                >
-                                                    <Underline size={16} />
-                                                </button>
+                                            <div className="flex items-center flex-wrap gap-1 p-2 border-b border-white/10 bg-white/5">
+                                                <button type="button" onClick={() => document.execCommand('bold', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Negrito"><Bold size={16} /></button>
+                                                <button type="button" onClick={() => document.execCommand('italic', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Itálico"><Italic size={16} /></button>
+                                                <button type="button" onClick={() => document.execCommand('underline', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Sublinhado"><Underline size={16} /></button>
+                                                <button type="button" onClick={() => document.execCommand('strikeThrough', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Tachado"><Strikethrough size={16} /></button>
+                                                <button type="button" onClick={() => {
+                                                    const selection = window.getSelection()?.toString();
+                                                    if (selection) {
+                                                        document.execCommand('insertHTML', false, `<code>${selection}</code>`);
+                                                    } else {
+                                                        document.execCommand('formatBlock', false, 'PRE');
+                                                    }
+                                                }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Código"><Code size={16} /></button>
                                                 <div className="w-px h-4 bg-white/10 mx-1"></div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const url = prompt('Cole o link:');
-                                                        if (url) document.execCommand('createLink', false, url);
-                                                    }}
-                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors"
-                                                    title="Link"
-                                                >
-                                                    <Link size={16} />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => document.execCommand('removeFormat', false)}
-                                                    className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors text-xs font-medium ml-auto"
-                                                    title="Limpar formatação"
-                                                >
-                                                    Limpar Formatação
+                                                <button type="button" onClick={() => {
+                                                    const url = prompt('Cole o link:');
+                                                    if (url) document.execCommand('createLink', false, url);
+                                                }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Adicionar Link"><Link size={16} /></button>
+                                                <div className="w-px h-4 bg-white/10 mx-1"></div>
+                                                <button type="button" onClick={() => document.execCommand('insertUnorderedList', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista com Marcadores"><List size={16} /></button>
+                                                <button type="button" onClick={() => document.execCommand('insertOrderedList', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista Numerada"><ListOrdered size={16} /></button>
+                                                <button type="button" onClick={() => document.execCommand('formatBlock', false, 'BLOCKQUOTE')} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Citação"><Quote size={16} /></button>
+                                                <button type="button" onClick={() => document.execCommand('insertHorizontalRule', false)} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Linha Divisória"><Minus size={16} /></button>
+
+                                                <div className="w-px h-4 bg-white/10 mx-1 hidden sm:block"></div>
+                                                <button type="button" onClick={() => document.execCommand('removeFormat', false)} className="p-1.5 rounded hover:bg-destructive/20 text-white/70 hover:text-destructive transition-colors ml-auto flex items-center gap-1" title="Limpar todas as formatações">
+                                                    <Eraser size={16} />
+                                                    <span className="text-xs font-medium pr-1 hidden sm:inline-block">Limpar</span>
                                                 </button>
                                             </div>
 
