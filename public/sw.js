@@ -11,12 +11,15 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-    if (!event.data) return;
+    // NUNCA retornar aqui — sem event.waitUntil o browser mata o SW
+    // antes de showNotification completar. Usar fallback quando sem dados.
     let payload = { title: 'SimsKut', body: 'Nova atividade' };
-    try {
-        payload = event.data.json();
-    } catch {
-        payload.body = event.data.text() || payload.body;
+    if (event.data) {
+        try {
+            payload = event.data.json();
+        } catch {
+            payload.body = event.data.text() || payload.body;
+        }
     }
     const options = {
         body: payload.body || undefined,
@@ -28,6 +31,7 @@ self.addEventListener('push', (event) => {
     };
     event.waitUntil(self.registration.showNotification(payload.title, options));
 });
+
 
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
