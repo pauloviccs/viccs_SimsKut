@@ -5,14 +5,11 @@ import { Sparkles, LogOut, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { signOut } from '@/lib/authService';
 
-import { LandingV1 } from "../landing-v1/LandingV1";
 import { LandingV2 } from "../landing-v2";
 
 export function LandingPage() {
     const navigate = useNavigate();
     const { user, profile, isLoading, logout } = useAuthStore();
-    // Tornando a V2 o padrão. Só vai renderizar a V1 se a variável for explicitamente 'false'
-    const useNewLanding = import.meta.env.VITE_NEW_LANDING !== 'false';
 
     const handleLogout = async () => {
         try {
@@ -72,8 +69,8 @@ export function LandingPage() {
                 </motion.header>
             )}
 
-            {/* Conditionally Render V1 vs V2 Core Views. V2 uses separate viewport wrapping for max-width overflow behavior while V1 depends on the app container natively. */}
-            {useNewLanding ? <LandingV2 /> : <LandingV1 />}
+            {/* Renderizar diretamente a nova versão V2 da página */}
+            <LandingV2 />
         </>
     );
 }
