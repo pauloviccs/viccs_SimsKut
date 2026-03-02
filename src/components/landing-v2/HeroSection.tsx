@@ -1,7 +1,12 @@
 import { Sparkles, LogIn, UserPlus } from "lucide-react";
 import GlassButton from "./GlassButton";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onRegister?: () => void;
+  onLogin?: () => void;
+}
+
+const HeroSection = ({ onRegister, onLogin }: HeroSectionProps) => {
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 py-20">
       <div className="text-center max-w-3xl mx-auto relative z-10">
@@ -31,11 +36,11 @@ const HeroSection = () => {
 
         {/* CTA Buttons */}
         <div className="animate-hero-fade-up delay-500 flex flex-col sm:flex-row gap-4 justify-center">
-          <GlassButton variant="primary" size="lg">
+          <GlassButton variant="primary" size="lg" onClick={onRegister}>
             <UserPlus className="w-5 h-5" />
             Criar Conta
           </GlassButton>
-          <GlassButton variant="secondary" size="lg">
+          <GlassButton variant="secondary" size="lg" onClick={onLogin}>
             <LogIn className="w-5 h-5" />
             Entrar
           </GlassButton>
