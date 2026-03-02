@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient';
 import type { AppNotification } from './notificationService';
 
 const VAPID_PUBLIC = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+const SW_PATH = '/sw.js';
 
 function getNotificationTitleAndBody(type: AppNotification['type'], content: string | null): {
     title: string;
@@ -97,7 +98,24 @@ export async function subscribeToPush(): Promise<boolean> {
     }
 
     try {
-        const reg = await navigator.serviceWorker.ready;
+        let reg = await navigator.serviceWorker.getRegistration(SW_PATH);
+        if (!reg) {
+            reg = await navigator.serviceWorker.register(SW_PATH);
+        }
+
+        // Garante worker ativo antes de manipular subscription
+        reg = await navigator.serviceWorker.ready;
+
+        // Recria inscrição para alinhar com a VAPID key atual (evita token stale em iOS após updates)
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) {
+            try {
+                await existing.unsubscribe();
+            } catch {
+                // Segue fluxo e tenta inscrever novamente
+            }
+        }
+
         const sub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToArrayBuffer(VAPID_PUBLIC),

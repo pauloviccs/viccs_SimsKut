@@ -8,17 +8,18 @@ import { ZenBackground } from '@/components/ui/ZenBackground';
 export function AppShell() {
     const { collapsed } = useSidebarStore();
 
-    // Fix iOS scroll detaching on mobile browsers
+    // Mantém o scroll isolado no container principal sem fixar o body no iOS.
+    // Fixar o body com 100dvh pode criar faixa preta em modo standalone.
     useEffect(() => {
-        document.body.classList.add('overflow-hidden', 'fixed', 'inset-0', 'w-full', 'h-[100dvh]');
+        document.body.classList.add('overflow-hidden');
         return () => {
-            document.body.classList.remove('overflow-hidden', 'fixed', 'inset-0', 'w-full', 'h-[100dvh]');
+            document.body.classList.remove('overflow-hidden');
         };
     }, []);
 
     return (
         <div
-            className="h-[100dvh] w-full relative overflow-hidden app-shell-zen"
+            className="h-[100svh] w-full relative overflow-hidden app-shell-zen"
         >
             <div className="app-shell-zen-content">
                 <ZenBackground />
