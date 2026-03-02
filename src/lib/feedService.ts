@@ -127,13 +127,48 @@ export async function createPost(
 
     if (error) throw error;
 
-    return {
+    const post: FeedPost = {
         ...data,
         author: Array.isArray(data.author) ? data.author[0] : data.author,
         likes_count: 0,
         comments_count: 0,
         liked_by_me: false,
     };
+
+    // Notificações para amigos/seguidores (novo post)
+    try {
+        const { data: friendships, error: friendsError } = await supabase
+            .from('friendships')
+            .select('requester_id, addressee_id')
+            .eq('status', 'accepted')
+            .or(`requester_id.eq.${authorId},addressee_id.eq.${authorId}`);
+
+        if (!friendsError && friendships) {
+            const targetIds = new Set<string>();
+            for (const f of friendships) {
+                if (f.requester_id === authorId && f.addressee_id !== authorId) {
+                    targetIds.add(f.addressee_id);
+                } else if (f.addressee_id === authorId && f.requester_id !== authorId) {
+                    targetIds.add(f.requester_id);
+                }
+            }
+
+            if (targetIds.size > 0) {
+                const rows = Array.from(targetIds).map((id) => ({
+                    user_id: id,
+                    actor_id: authorId,
+                    type: 'new_post_friend' as const,
+                    reference_id: post.id,
+                    content: content ? content.substring(0, 100) : null,
+                }));
+                await supabase.from('notifications').insert(rows);
+            }
+        }
+    } catch (err) {
+        console.error('Erro ao criar notificações de novo post para amigos:', err);
+    }
+
+    return post;
 }
 
 /** Atualiza o conteúdo de um post (apenas autor). Retorna o post atualizado. */
@@ -203,17 +238,37 @@ export async function toggleLike(postId: string, userId: string): Promise<boolea
 
 /** Busca comentários de um post */
 export async function getComments(postId: string): Promise<PostComment[]> {
+    const userId = (await supabase.auth.getUser()).data.user?.id;
+
     const { data, error } = await supabase
         .from('post_comments')
-        .select('*, author:profiles!author_id(*)')
+        .select('*, author:profiles!author_id(*), post_comment_likes(count)')
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
 
     if (error) throw error;
 
-    return (data || []).map((c: any) => ({
+    const rows = data || [];
+
+    let likedByMeIds = new Set<string>();
+    if (userId && rows.length > 0) {
+        const commentIds = rows.map((c: any) => c.id);
+        const { data: likesData, error: likesError } = await supabase
+            .from('post_comment_likes')
+            .select('comment_id')
+            .eq('user_id', userId)
+            .in('comment_id', commentIds);
+
+        if (!likesError && likesData) {
+            likedByMeIds = new Set(likesData.map((l: any) => l.comment_id));
+        }
+    }
+
+    return rows.map((c: any) => ({
         ...c,
         author: Array.isArray(c.author) ? c.author[0] : c.author,
+        likes_count: c.post_comment_likes?.[0]?.count ?? 0,
+        liked_by_me: likedByMeIds.has(c.id),
     }));
 }
 
@@ -235,16 +290,87 @@ export async function addComment(
 
     if (error) throw error;
 
-    return {
+    const comment: PostComment = {
         ...data,
         author: Array.isArray(data.author) ? data.author[0] : data.author,
+        likes_count: 0,
+        liked_by_me: false,
     };
+
+    // Notificação para o autor do post (novo comentário)
+    try {
+        const { data: postData } = await supabase
+            .from('feed_posts')
+            .select('author_id, content')
+            .eq('id', postId)
+            .single();
+
+        if (postData && postData.author_id !== authorId) {
+            await createInteractionNotification(
+                postData.author_id,
+                authorId,
+                'comment_post',
+                postId,
+                content
+            );
+        }
+    } catch (err) {
+        console.error('Erro ao criar notificação de comentário em post:', err);
+    }
+
+    return comment;
 }
 
 /** Deleta um comentário */
 export async function deleteComment(commentId: string): Promise<void> {
     const { error } = await supabase.from('post_comments').delete().eq('id', commentId);
     if (error) throw error;
+}
+
+// ======== COMMENT LIKES ========
+
+/** Toggle like em um comentário de post. Retorna true se liked, false se unliked. */
+export async function toggleCommentLike(commentId: string, userId: string): Promise<boolean> {
+    const { data: existing } = await supabase
+        .from('post_comment_likes')
+        .select('id')
+        .eq('comment_id', commentId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (existing) {
+        await supabase.from('post_comment_likes').delete().eq('id', existing.id);
+        return false;
+    }
+
+    const { error } = await supabase
+        .from('post_comment_likes')
+        .insert({ comment_id: commentId, user_id: userId });
+
+    if (error) throw error;
+
+    // Notificação para o autor do comentário
+    try {
+        const { data: commentData } = await supabase
+            .from('post_comments')
+            .select('author_id, content')
+            .eq('id', commentId)
+            .single();
+
+        if (commentData && commentData.author_id !== userId) {
+            await createInteractionNotification(
+                commentData.author_id,
+                userId,
+                'like_comment',
+                commentId,
+                commentData.content
+            );
+        }
+    } catch (err) {
+        console.error('Erro ao criar notificação de like em comentário:', err);
+    }
+
+    return true;
 }
 
 // ======== REACTIONS (estilo Discord) ========
@@ -324,5 +450,27 @@ export async function toggleReaction(
         .insert({ post_id: postId, user_id: userId, emoji });
 
     if (error) throw error;
+
+    // Notificação para o autor do post (reação)
+    try {
+        const { data: postData } = await supabase
+            .from('feed_posts')
+            .select('author_id, content')
+            .eq('id', postId)
+            .single();
+
+        if (postData && postData.author_id !== userId) {
+            await createInteractionNotification(
+                postData.author_id,
+                userId,
+                'reaction_post',
+                postId,
+                postData.content
+            );
+        }
+    } catch (err) {
+        console.error('Erro ao criar notificação de reação em post:', err);
+    }
+
     return true;
 }

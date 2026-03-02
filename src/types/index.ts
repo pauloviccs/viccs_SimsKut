@@ -94,6 +94,9 @@ export interface PostComment {
     created_at: string;
     // Joined
     author?: Profile;
+    // Aggregated
+    likes_count?: number;
+    liked_by_me?: boolean;
 }
 
 /** Reação (emoji) em um post — estilo Discord. Agregado: emoji, count, reacted_by_me */

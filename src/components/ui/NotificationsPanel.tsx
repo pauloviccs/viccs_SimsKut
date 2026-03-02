@@ -13,6 +13,8 @@ import {
     deleteNotification,
     type AppNotification,
 } from '@/lib/notificationService';
+import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabaseClient';
 
 /**
  * NotificationsPanel — Centro de notificações unificado.
@@ -43,6 +45,7 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
     const [loading, setLoading] = useState(false);
     const [actingOn, setActingOn] = useState<string | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { user } = useAuthStore();
 
     const fetchAll = useCallback(async () => {
         setLoading(true);
@@ -62,6 +65,43 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
     useEffect(() => { if (open) fetchAll(); }, [open, fetchAll]);
+
+    // Realtime: ouve novas notificações e solicitações de amizade
+    useEffect(() => {
+        if (!user) return;
+
+        const channel = supabase
+            .channel(`notifications-${user.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                () => {
+                    fetchAll();
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'friendships',
+                    filter: `addressee_id=eq.${user.id}`,
+                },
+                () => {
+                    fetchAll();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user, fetchAll]);
 
     // Fecha ao clicar fora
     useEffect(() => {
@@ -235,7 +275,7 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                         </>
                                     )}
 
-                                    {/* === Menções === */}
+                                    {/* === Menções e atividades === */}
                                     {mentions.length > 0 && (
                                         <>
                                             {requests.length > 0 && (
@@ -243,7 +283,7 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                             )}
                                             <div className="px-4 py-1.5">
                                                 <span className="text-[10px] font-semibold uppercase tracking-wider text-white/25">
-                                                    Menções
+                                                    Menções e atividades
                                                 </span>
                                             </div>
                                             <AnimatePresence mode="popLayout">
@@ -264,12 +304,33 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                                 alt={notif.actor?.display_name || 'User'}
                                                                 size="sm"
                                                             />
-                                                            <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ${notif.type.includes('like') ? 'bg-red-500' : 'bg-[var(--accent-primary)]'
-                                                                }`}>
-                                                                {notif.type === 'mention_post' && <AtSign size={9} className="text-white" />}
-                                                                {notif.type === 'mention_comment' && <AtSign size={9} className="text-white" />}
-                                                                {notif.type === 'comment_photo' && <MessageCircle size={9} className="text-white" />}
-                                                                {notif.type.includes('like') && <Heart size={9} className="text-white fill-current" />}
+                                                            <div
+                                                                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ${
+                                                                    notif.type === 'comment_photo' ||
+                                                                    notif.type === 'comment_post'
+                                                                        ? 'bg-[var(--accent-primary)]'
+                                                                        : 'bg-red-500'
+                                                                }`}
+                                                            >
+                                                                {notif.type === 'mention_post' && (
+                                                                    <AtSign size={9} className="text-white" />
+                                                                )}
+                                                                {notif.type === 'mention_comment' && (
+                                                                    <AtSign size={9} className="text-white" />
+                                                                )}
+                                                                {notif.type === 'comment_photo' && (
+                                                                    <MessageCircle size={9} className="text-white" />
+                                                                )}
+                                                                {notif.type === 'comment_post' && (
+                                                                    <MessageCircle size={9} className="text-white" />
+                                                                )}
+                                                                {(notif.type === 'like_post' ||
+                                                                    notif.type === 'like_photo' ||
+                                                                    notif.type === 'like_comment' ||
+                                                                    notif.type === 'reaction_post' ||
+                                                                    notif.type === 'new_post_friend') && (
+                                                                    <Heart size={9} className="text-white fill-current" />
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -282,7 +343,11 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                                 {notif.type === 'mention_comment' && 'te mencionou em um comentário'}
                                                                 {notif.type === 'like_post' && 'curtiu o seu post'}
                                                                 {notif.type === 'like_photo' && 'curtiu a sua foto'}
+                                                                {notif.type === 'like_comment' && 'curtiu o seu comentário'}
                                                                 {notif.type === 'comment_photo' && 'comentou na sua foto'}
+                                                                {notif.type === 'comment_post' && 'comentou no seu post'}
+                                                                {notif.type === 'reaction_post' && 'reagiu ao seu post'}
+                                                                {notif.type === 'new_post_friend' && 'publicou um novo post'}
                                                             </p>
                                                             {notif.content && (
                                                                 <p className="text-[10px] text-white/30 truncate mt-0.5">

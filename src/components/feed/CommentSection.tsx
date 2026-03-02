@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Trash2 } from 'lucide-react';
+import { Send, Trash2, Heart } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { EmojiPicker } from '@/components/ui/EmojiPicker';
 import { MentionInput } from '@/components/ui/MentionInput';
 import { useAuthStore } from '@/store/authStore';
-import { getComments, addComment, deleteComment } from '@/lib/feedService';
+import { getComments, addComment, deleteComment, toggleCommentLike } from '@/lib/feedService';
 import { processMentions } from '@/lib/notificationService';
 import { renderMentions } from '@/lib/renderMentions';
 import type { PostComment } from '@/types';
@@ -77,6 +77,26 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
         }
     };
 
+    const handleToggleLike = async (comment: PostComment) => {
+        if (!user) return;
+        try {
+            const liked = await toggleCommentLike(comment.id, user.id);
+            setComments((prev) =>
+                prev.map((c) =>
+                    c.id === comment.id
+                        ? {
+                              ...c,
+                              liked_by_me: liked,
+                              likes_count: (c.likes_count ?? 0) + (liked ? 1 : -1),
+                          }
+                        : c
+                )
+            );
+        } catch {
+            // ignore
+        }
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -117,6 +137,22 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                                     <p className="text-xs text-white/60 mt-0.5 break-words">
                                         {renderMentions(comment.content)}
                                     </p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <button
+                                            onClick={() => handleToggleLike(comment)}
+                                            className={`flex items-center gap-1 text-[10px] transition-colors cursor-pointer ${
+                                                comment.liked_by_me
+                                                    ? 'text-[var(--accent-danger)]'
+                                                    : 'text-white/30 hover:text-white/60'
+                                            }`}
+                                        >
+                                            <Heart
+                                                size={11}
+                                                className={comment.liked_by_me ? 'fill-current' : ''}
+                                            />
+                                            <span>{comment.likes_count ?? 0}</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 {(user?.id === comment.author_id || isAdmin) && (
                                     <button

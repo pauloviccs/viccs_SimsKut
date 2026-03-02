@@ -13,7 +13,16 @@ export interface AppNotification {
     id: string;
     user_id: string;
     actor_id: string;
-    type: 'mention_post' | 'mention_comment' | 'like_post' | 'like_photo' | 'comment_photo';
+    type:
+        | 'mention_post'
+        | 'mention_comment'
+        | 'like_post'
+        | 'like_photo'
+        | 'comment_photo'
+        | 'comment_post'
+        | 'like_comment'
+        | 'reaction_post'
+        | 'new_post_friend';
     reference_id: string | null;
     content: string | null;
     read: boolean;
@@ -72,7 +81,14 @@ export async function createMentionNotification(
 export async function createInteractionNotification(
     targetUserId: string,
     actorId: string,
-    type: 'like_post' | 'like_photo' | 'comment_photo',
+    type:
+        | 'like_post'
+        | 'like_photo'
+        | 'comment_photo'
+        | 'comment_post'
+        | 'like_comment'
+        | 'reaction_post'
+        | 'new_post_friend',
     referenceId: string,
     contentPreview: string | null = null
 ): Promise<void> {
