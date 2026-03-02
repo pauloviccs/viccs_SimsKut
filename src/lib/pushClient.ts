@@ -37,7 +37,11 @@ function getNotificationTitleAndBody(type: AppNotification['type'], content: str
     }
 }
 
-/** Mostra uma notificação do navegador (quando o app está aberto em background). */
+/**
+ * Mostra uma notificação do navegador (quando o app está aberto em background).
+ * Usa o Service Worker para exibir a notificação — único método que funciona no mobile.
+ * `new Notification()` é ignorado silenciosamente em iOS e Android.
+ */
 export function maybeShowBrowserNotification(payload: Pick<AppNotification, 'type' | 'content'>): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     if (!('Notification' in window)) return;
@@ -48,24 +52,43 @@ export function maybeShowBrowserNotification(payload: Pick<AppNotification, 'typ
 
     const { title, body } = getNotificationTitleAndBody(payload.type, payload.content ?? null);
 
-    try {
-        new Notification(title, { body });
-    } catch {
-        // Ignora falhas silenciosamente
+    if ('serviceWorker' in navigator) {
+        // Caminho correto para mobile: delega ao Service Worker
+        navigator.serviceWorker.ready
+            .then((reg) => reg.showNotification(title, { body, icon: '/favicon-32x32.png', badge: '/favicon-32x32.png' }))
+            .catch(() => {
+                // Fallback para desktop caso o SW não esteja disponível
+                try { new Notification(title, { body }); } catch { /* ignora */ }
+            });
+    } else {
+        // Desktop sem SW
+        try { new Notification(title, { body }); } catch { /* ignora */ }
     }
 }
 
-/** Solicita permissão para notificações do navegador (pode ser chamado a partir de Configurações). */
+/**
+ * Solicita permissão para notificações do navegador.
+ * IMPORTANTE: Não retorna cedo quando já 'granted' — o chamador deve tentar
+ * subscribeToPush() independentemente, pois no iOS a janela de subscrição
+ * é de uso único por sessão e o SW precisa ser inscrito logo após o grant.
+ */
 export async function ensureNotificationPermission(): Promise<NotificationPermission> {
     if (typeof window === 'undefined' || !('Notification' in window)) {
         return 'denied';
     }
 
-    if (Notification.permission === 'granted' || Notification.permission === 'denied') {
-        return Notification.permission;
+    // Se já negado, nada a fazer
+    if (Notification.permission === 'denied') {
+        return 'denied';
     }
 
-    return await Notification.requestPermission();
+    // Se ainda 'default', pede permissão
+    if (Notification.permission === 'default') {
+        return await Notification.requestPermission();
+    }
+
+    // 'granted' — retorna mas NÃO bloqueia chamada de subscribeToPush()
+    return Notification.permission;
 }
 
 /** Converte base64url em ArrayBuffer para a Push API */

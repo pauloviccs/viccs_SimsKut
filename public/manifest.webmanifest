@@ -2,9 +2,13 @@
   "name": "SimsKut",
   "short_name": "SimsKut",
   "description": "Rede social privada para comunidades de The Sims.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone"
+  ],
   "background_color": "#0b0f17",
   "theme_color": "#0b0f17",
   "icons": [
