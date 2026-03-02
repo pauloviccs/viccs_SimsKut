@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Save, AlertTriangle, User, Hash, Palette, RotateCcw } from 'lucide-react';
+import { Camera, Save, AlertTriangle, User, Hash, Palette, RotateCcw, Bell } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchProfile, signOut } from '@/lib/authService';
 import { useThemeStore } from '@/store/themeStore';
 import { normalizeZenThemeConfig, REFERENCE_DARK_MODE_THEME } from '@/store/themeStore';
+import { ensureNotificationPermission, subscribeToPush } from '@/lib/pushClient';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
@@ -45,8 +46,17 @@ export function SettingsPage() {
     const [savingAvatar, setSavingAvatar] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [zenMessage, setZenMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [notifMessage, setNotifMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [notifLoading, setNotifLoading] = useState(false);
+    const [notifPermission, setNotifPermission] = useState<NotificationPermission | null>(null);
     const [cropFile, setCropFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            setNotifPermission(Notification.permission);
+        }
+    }, []);
 
     const tagAlreadyChanged = profile?.tag_changed ?? false;
 
@@ -155,6 +165,30 @@ export function SettingsPage() {
         } catch (err) {
             console.error('Zen background save error:', err);
             setZenMessage({ type: 'error', text: 'Erro ao salvar fundo. Tente novamente.' });
+        }
+    };
+
+    const handleToggleNotifications = async () => {
+        setNotifMessage(null);
+        setNotifLoading(true);
+        try {
+            const perm = await ensureNotificationPermission();
+            setNotifPermission(perm);
+            if (perm === 'granted') {
+                const ok = await subscribeToPush();
+                if (ok) {
+                    setNotifMessage({ type: 'success', text: 'Notificações ativadas! Você receberá avisos mesmo com o app fechado.' });
+                } else {
+                    setNotifMessage({ type: 'success', text: 'Notificações ativadas para esta aba.' });
+                }
+            } else if (perm === 'denied') {
+                setNotifMessage({ type: 'error', text: 'Permissão negada. Habilite nas configurações do navegador.' });
+            }
+        } catch (err) {
+            console.error('Notification permission error:', err);
+            setNotifMessage({ type: 'error', text: 'Não foi possível ativar. Tente novamente.' });
+        } finally {
+            setNotifLoading(false);
         }
     };
 
@@ -369,6 +403,64 @@ export function SettingsPage() {
                                 }`}
                         >
                             {zenMessage.text}
+                        </motion.p>
+                    )}
+                </GlassCard>
+            </motion.div>
+
+            {/* === Notificações === */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...spring, delay: 0.3 }}
+            >
+                <GlassCard className="p-6">
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-white/80">
+                        <Bell size={18} className="text-[var(--accent-primary)]" />
+                        Notificações
+                    </h2>
+                    <p className="text-sm text-white/50 mb-4">
+                        Receba avisos quando alguém curtir, comentar ou interagir com seu conteúdo, mesmo com o app fechado.
+                    </p>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <button
+                            type="button"
+                            onClick={handleToggleNotifications}
+                            disabled={notifLoading || notifPermission === 'granted'}
+                            className={`
+                                inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+                                transition-all duration-200 cursor-pointer
+                                ${notifPermission === 'granted'
+                                    ? 'bg-[var(--accent-success)]/20 text-[var(--accent-success)] border border-[var(--accent-success)]/30 cursor-default'
+                                    : 'bg-white/10 text-white/90 hover:bg-white/15 border border-white/20 hover:border-white/30'
+                                }
+                                disabled:opacity-70 disabled:cursor-not-allowed
+                            `}
+                        >
+                            <Bell size={16} />
+                            {notifPermission === 'granted'
+                                ? 'Notificações ativadas'
+                                : notifLoading
+                                    ? 'Ativando...'
+                                    : 'Ativar notificações do sistema'
+                            }
+                        </button>
+                        {notifPermission === 'denied' && (
+                            <p className="text-xs text-white/40">
+                                Permissão bloqueada. Abra as configurações do site no navegador para permitir.
+                            </p>
+                        )}
+                    </div>
+                    {notifMessage && (
+                        <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`text-xs mt-3 px-4 py-2.5 rounded-lg ${notifMessage.type === 'success'
+                                ? 'text-[var(--accent-success)] bg-[var(--accent-success)]/10'
+                                : 'text-[var(--accent-danger)] bg-[var(--accent-danger)]/10'
+                                }`}
+                        >
+                            {notifMessage.text}
                         </motion.p>
                     )}
                 </GlassCard>

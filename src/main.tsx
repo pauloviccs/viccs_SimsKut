@@ -10,6 +10,13 @@ import { supabase } from '@/lib/supabaseClient';
 import { fetchProfile } from '@/lib/authService';
 import '@/styles/global.css';
 
+// Registra Service Worker para Web Push (notificações offline)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+}
+
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {

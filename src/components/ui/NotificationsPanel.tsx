@@ -15,6 +15,7 @@ import {
 } from '@/lib/notificationService';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/lib/supabaseClient';
+import { maybeShowBrowserNotification } from '@/lib/pushClient';
 
 /**
  * NotificationsPanel — Centro de notificações unificado.
@@ -80,7 +81,9 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                     table: 'notifications',
                     filter: `user_id=eq.${user.id}`,
                 },
-                () => {
+                (payload) => {
+                    const n = payload.new as { type: AppNotification['type']; content: string | null };
+                    maybeShowBrowserNotification({ type: n.type, content: n.content ?? null });
                     fetchAll();
                 }
             )

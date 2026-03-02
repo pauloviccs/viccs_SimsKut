@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { FeedPost, PostComment, PostReactionAggregate } from '@/types';
-import { createInteractionNotification } from './notificationService';
+import { createInteractionNotification, notifyFriendsOfUser } from './notificationService';
 
 /**
  * feedService — Backend do Feed.
@@ -136,37 +136,9 @@ export async function createPost(
     };
 
     // Notificações para amigos/seguidores (novo post)
-    try {
-        const { data: friendships, error: friendsError } = await supabase
-            .from('friendships')
-            .select('requester_id, addressee_id')
-            .eq('status', 'accepted')
-            .or(`requester_id.eq.${authorId},addressee_id.eq.${authorId}`);
-
-        if (!friendsError && friendships) {
-            const targetIds = new Set<string>();
-            for (const f of friendships) {
-                if (f.requester_id === authorId && f.addressee_id !== authorId) {
-                    targetIds.add(f.addressee_id);
-                } else if (f.addressee_id === authorId && f.requester_id !== authorId) {
-                    targetIds.add(f.requester_id);
-                }
-            }
-
-            if (targetIds.size > 0) {
-                const rows = Array.from(targetIds).map((id) => ({
-                    user_id: id,
-                    actor_id: authorId,
-                    type: 'new_post_friend' as const,
-                    reference_id: post.id,
-                    content: content ? content.substring(0, 100) : null,
-                }));
-                await supabase.from('notifications').insert(rows);
-            }
-        }
-    } catch (err) {
-        console.error('Erro ao criar notificações de novo post para amigos:', err);
-    }
+    notifyFriendsOfUser(authorId, 'new_post_friend', post.id, content || null).catch((err) =>
+        console.error('Erro ao criar notificações de novo post para amigos:', err)
+    );
 
     return post;
 }

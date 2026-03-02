@@ -22,7 +22,9 @@ export interface AppNotification {
         | 'comment_post'
         | 'like_comment'
         | 'reaction_post'
-        | 'new_post_friend';
+        | 'new_post_friend'
+        | 'friend_accept'
+        | 'family_update';
     reference_id: string | null;
     content: string | null;
     read: boolean;
@@ -88,7 +90,9 @@ export async function createInteractionNotification(
         | 'comment_post'
         | 'like_comment'
         | 'reaction_post'
-        | 'new_post_friend',
+        | 'new_post_friend'
+        | 'friend_accept'
+        | 'family_update',
     referenceId: string,
     contentPreview: string | null = null
 ): Promise<void> {
@@ -108,6 +112,52 @@ export async function createInteractionNotification(
     });
 
     if (error) console.error(`Erro ao criar notificação de interação (${type}):`, error);
+}
+
+/**
+ * Envia uma notificação para todos os amigos aceitos de um usuário (baseado na tabela friendships).
+ * Útil para eventos como novo post ou atualização de família.
+ */
+export async function notifyFriendsOfUser(
+    actorId: string,
+    type: 'new_post_friend' | 'family_update',
+    referenceId: string,
+    contentPreview: string | null
+): Promise<void> {
+    const { data: friendships, error } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${actorId},addressee_id.eq.${actorId}`);
+
+    if (error || !friendships) {
+        if (error) console.error('Erro ao buscar amizades para notificação:', error);
+        return;
+    }
+
+    const targetIds = new Set<string>();
+    for (const f of friendships) {
+        if (f.requester_id === actorId && f.addressee_id !== actorId) {
+            targetIds.add(f.addressee_id);
+        } else if (f.addressee_id === actorId && f.requester_id !== actorId) {
+            targetIds.add(f.requester_id);
+        }
+    }
+
+    if (targetIds.size === 0) return;
+
+    const rows = Array.from(targetIds).map((id) => ({
+        user_id: id,
+        actor_id: actorId,
+        type,
+        reference_id: referenceId,
+        content: contentPreview ? contentPreview.substring(0, 100) : null,
+    }));
+
+    const { error: insertError } = await supabase.from('notifications').insert(rows);
+    if (insertError) {
+        console.error('Erro ao inserir notificações para amigos:', insertError);
+    }
 }
 
 /** Exclui a notificação do banco de dados */

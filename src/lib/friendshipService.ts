@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { Profile } from '@/types';
+import { createInteractionNotification } from './notificationService';
 
 /**
  * friendshipService — Serviço de amizades.
@@ -66,12 +67,30 @@ export async function sendFriendRequest(targetId: string): Promise<void> {
 
 /** Aceita uma solicitação de amizade */
 export async function acceptFriendRequest(friendshipId: string): Promise<void> {
-    const { error } = await supabase
+    const currentUserId = (await supabase.auth.getUser()).data.user?.id;
+    if (!currentUserId) throw new Error('Não autenticado');
+
+    const { data, error } = await supabase
         .from('friendships')
         .update({ status: 'accepted' })
-        .eq('id', friendshipId);
+        .eq('id', friendshipId)
+        .select('requester_id, addressee_id')
+        .single();
 
     if (error) throw error;
+
+    const requesterId = data.requester_id;
+
+    // Notifica quem enviou o pedido de que foi aceito
+    if (requesterId && requesterId !== currentUserId) {
+        await createInteractionNotification(
+            requesterId,
+            currentUserId,
+            'friend_accept',
+            friendshipId,
+            null
+        );
+    }
 }
 
 /** Rejeita/cancela uma solicitação ou desfaz amizade */

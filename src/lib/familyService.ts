@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { Family, Sim, SimTrait } from '@/types';
+import { notifyFriendsOfUser } from './notificationService';
 
 /**
  * familyService — Backend das Famílias Sims.
@@ -31,12 +32,35 @@ export async function createFamily(userId: string, name: string): Promise<Family
         .single();
 
     if (error) throw error;
-    return { ...data, sims_count: 0 };
+
+    const family: Family = { ...data, sims_count: 0 };
+
+    // Notifica amigos de que uma nova família foi criada
+    notifyFriendsOfUser(userId, 'family_update', family.id, `Criou a família ${family.family_name}`).catch(
+        (err) => console.error('Erro ao notificar amigos sobre nova família:', err)
+    );
+
+    return family;
 }
 
 export async function updateFamily(familyId: string, name: string): Promise<void> {
-    const { error } = await supabase.from('families').update({ family_name: name.trim() }).eq('id', familyId);
+    const { data, error } = await supabase
+        .from('families')
+        .update({ family_name: name.trim() })
+        .eq('id', familyId)
+        .select('id, owner_id, family_name')
+        .single();
     if (error) throw error;
+
+    // Notifica amigos de que a família foi atualizada
+    if (data?.owner_id) {
+        notifyFriendsOfUser(
+            data.owner_id,
+            'family_update',
+            data.id,
+            `Atualizou a família ${data.family_name}`
+        ).catch((err) => console.error('Erro ao notificar amigos sobre atualização de família:', err));
+    }
 }
 
 export async function deleteFamily(familyId: string): Promise<void> {
@@ -74,7 +98,30 @@ export async function createSim(
         .single();
 
     if (error) throw error;
-    return { ...data, traits: [] };
+
+    const sim: Sim = { ...data, traits: [] };
+
+    // Notifica amigos de que a família recebeu um novo Sim
+    try {
+        const { data: family } = await supabase
+            .from('families')
+            .select('id, owner_id, family_name')
+            .eq('id', familyId)
+            .single();
+
+        if (family?.owner_id) {
+            await notifyFriendsOfUser(
+                family.owner_id,
+                'family_update',
+                family.id,
+                `Adicionou o Sim ${sim.name} à família ${family.family_name}`
+            );
+        }
+    } catch (err) {
+        console.error('Erro ao notificar amigos sobre novo Sim:', err);
+    }
+
+    return sim;
 }
 
 export async function updateSim(

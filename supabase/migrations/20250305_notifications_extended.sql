@@ -5,6 +5,8 @@
 -- - like_comment     (curtida em comentário)
 -- - reaction_post    (reação com emoji em post)
 -- - new_post_friend  (novo post de amigo / seguido)
+-- - friend_accept    (amigo aceitou seu pedido)
+-- - family_update    (atualização importante na família de um amigo)
 -- =============================================
 
 -- Ajusta a constraint de CHECK em notifications.type
@@ -22,6 +24,8 @@ ALTER TABLE public.notifications
         'comment_post',
         'like_comment',
         'reaction_post',
-        'new_post_friend'
+        'new_post_friend',
+        'friend_accept',
+        'family_update'
     ));
 
