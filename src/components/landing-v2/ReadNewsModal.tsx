@@ -177,7 +177,7 @@ export function ReadNewsModal({ isOpen, onClose, news }: ReadNewsModalProps) {
 
                                     {/* Content */}
                                     <div
-                                        className="prose prose-invert prose-lg max-w-none text-white/80 leading-relaxed font-light"
+                                        className="prose prose-invert prose-lg max-w-none text-white/80 leading-relaxed font-light [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
                                         dangerouslySetInnerHTML={{ __html: news.excerpt }}
                                     />
 
