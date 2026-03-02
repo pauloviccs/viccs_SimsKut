@@ -11,7 +11,8 @@ import { LandingV2 } from "../landing-v2";
 export function LandingPage() {
     const navigate = useNavigate();
     const { user, profile, isLoading, logout } = useAuthStore();
-    const useNewLanding = import.meta.env.VITE_NEW_LANDING === 'true';
+    // Tornando a V2 o padrão. Só vai renderizar a V1 se a variável for explicitamente 'false'
+    const useNewLanding = import.meta.env.VITE_NEW_LANDING !== 'false';
 
     const handleLogout = async () => {
         try {
