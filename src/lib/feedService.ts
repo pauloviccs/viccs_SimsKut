@@ -9,6 +9,43 @@ import { createInteractionNotification, notifyFriendsOfUser } from './notificati
 
 const POST_MAX_LENGTH = 280;
 
+// ======== SHOWCASE (landing page — sem auth) ========
+
+/**
+ * Busca posts com imagem para o mini-feed da landing page.
+ * Não requer autenticação — funciona para visitantes anônimos.
+ * Embaralha localmente para randomização a cada carregamento.
+ */
+export async function getPublicShowcasePosts(limit = 3): Promise<Pick<FeedPost, 'id' | 'content' | 'image_url' | 'created_at' | 'author' | 'likes_count'>[]> {
+    const { data, error } = await supabase
+        .from('feed_posts')
+        .select(`
+            id,
+            content,
+            image_url,
+            created_at,
+            author: profiles!author_id(username, display_name, avatar_url),
+            post_likes(count)
+        `)
+        .not('image_url', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+    if (error || !data || data.length === 0) return [];
+
+    // Embaralha localmente para randomização por página
+    const shuffled = [...data].sort(() => Math.random() - 0.5);
+
+    return shuffled.slice(0, limit).map((p: any) => ({
+        id: p.id,
+        content: p.content,
+        image_url: p.image_url,
+        created_at: p.created_at,
+        author: Array.isArray(p.author) ? p.author[0] : p.author,
+        likes_count: p.post_likes?.[0]?.count ?? 0,
+    }));
+}
+
 // ======== POSTS ========
 
 /** Busca posts do feed com author, contagens e se eu dei like */
