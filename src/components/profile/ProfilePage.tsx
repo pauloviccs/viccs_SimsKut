@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, LinkIcon, Loader2, Camera, ImageIcon, MessageCircle, Users as UsersIcon, Briefcase, Zap, Star, X, Maximize } from 'lucide-react';
+import { CalendarDays, LinkIcon, Loader2, Camera, ImageIcon, MessageCircle, Users as UsersIcon, X, Maximize } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
+import { withEmoji } from '@/utils/simEmojis';
 import { PostCard } from '@/components/feed/PostCard';
 import { FriendshipButton } from './FriendshipButton';
 import { ProfileEditModal } from './ProfileEditModal';
@@ -470,24 +471,24 @@ export function ProfilePage() {
                                                                         <h3 className="text-lg font-semibold text-white/90 truncate">{sim.name}</h3>
                                                                         {sim.profession && (
                                                                             <p className="text-xs text-[var(--accent-primary)] flex items-center gap-1 mt-1 truncate">
-                                                                                <Briefcase size={12} className="shrink-0" /> {sim.profession}
+                                                                                {withEmoji(sim.profession, 'profession')}
                                                                             </p>
                                                                         )}
 
                                                                         <div className="flex flex-wrap gap-1.5 mt-2">
                                                                             {sim.life_stage && (
                                                                                 <span className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] text-white/70">
-                                                                                    {sim.life_stage}
+                                                                                    {withEmoji(sim.life_stage, 'life_stage')}
                                                                                 </span>
                                                                             )}
                                                                             {sim.occult_type && (
                                                                                 <span className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] text-white/70">
-                                                                                    {sim.occult_type}
+                                                                                    {withEmoji(sim.occult_type, 'occult')}
                                                                                 </span>
                                                                             )}
                                                                             {sim.aspiration && (
                                                                                 <span className="px-1.5 py-0.5 rounded border border-[var(--accent-warning)]/20 bg-[var(--accent-warning)]/10 text-[10px] text-[var(--accent-warning)] flex items-center gap-1">
-                                                                                    <Star size={10} /> {sim.aspiration}
+                                                                                    {withEmoji(sim.aspiration, 'aspiration')}
                                                                                 </span>
                                                                             )}
                                                                         </div>
@@ -507,8 +508,7 @@ export function ProfilePage() {
                                                                                             : 'bg-[var(--accent-success)]/15 text-[var(--accent-success)]'
                                                                                             }`}
                                                                                     >
-                                                                                        {trait.trait_type === 'quality' ? <Star size={10} /> : <Zap size={10} />}
-                                                                                        {trait.value}
+                                                                                        {withEmoji(trait.value, trait.trait_type === 'quality' ? 'trait' : 'skill')}
                                                                                     </span>
                                                                                 ))}
                                                                             </div>
