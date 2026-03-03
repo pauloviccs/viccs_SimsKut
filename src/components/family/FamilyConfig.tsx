@@ -123,6 +123,9 @@ const LIFE_STAGE_OPTIONS = [
     { value: 'Jovem Adulto', emoji: '🧑' },
     { value: 'Adulto', emoji: '🧑' },
     { value: 'Idoso', emoji: '👴' },
+    // Animais
+    { value: 'Filhote', emoji: '🐾' },
+    { value: 'Potro', emoji: '🐴' },
 ];
 
 const OCCULT_OPTIONS = [
@@ -134,6 +137,19 @@ const OCCULT_OPTIONS = [
     { value: 'Alienígena', emoji: '👽' },
     { value: 'Sim Planta', emoji: '🌿' },
     { value: 'Fantasma', emoji: '👻' },
+    // Pets
+    { value: 'Cão', emoji: '🐶' },
+    { value: 'Gato', emoji: '🐱' },
+    { value: 'Cavalo', emoji: '🐴' },
+    { value: 'Galinha', emoji: '🐔' },
+    { value: 'Galo', emoji: '🐓' },
+    { value: 'Pintinho', emoji: '🐤' },
+    { value: 'Galinha Dourada', emoji: '✨' },
+    { value: 'Galinha do Vazio', emoji: '🌌' },
+    { value: 'Hamster', emoji: '🐹' },
+    { value: 'Rato', emoji: '🐭' },
+    { value: 'Porquinho-da-índia', emoji: '🐹' },
+    { value: 'Ouriço', emoji: '🦔' },
 ];
 
 export function FamilyConfig() {

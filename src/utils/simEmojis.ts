@@ -20,6 +20,22 @@ export const simEmojis: Record<string, string> = {
     'Sim Planta': '🌿',
     'Fantasma': '👻',
 
+    // Animais / Pets
+    'Cão': '🐶',
+    'Gato': '🐱',
+    'Cavalo': '🐴',
+    'Galinha': '🐔',
+    'Galo': '🐓',
+    'Pintinho': '🐤',
+    'Galinha Dourada': '✨',
+    'Galinha do Vazio': '🌌',
+    'Hamster': '🐹',
+    'Rato': '🐭',
+    'Porquinho-da-índia': '🐹',
+    'Ouriço': '🦔',
+    'Filhote': '🐾',
+    'Potro': '🐴',
+
     // Aspirações
     // Fortuna
     'Barão das Mansões': '💰',
