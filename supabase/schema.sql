@@ -191,6 +191,9 @@ CREATE TABLE IF NOT EXISTS public.sims (
     photo_url   TEXT,
     profession  TEXT,
     bio         TEXT,
+    life_stage  TEXT,
+    occult_type TEXT,
+    aspiration  TEXT,
     created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 

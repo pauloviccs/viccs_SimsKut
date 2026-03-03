@@ -70,7 +70,7 @@ const QUALITY_OPTIONS = [
     // Emocionais
     'Alegre', 'Bom Humor', 'Mal-Humorado', 'Dramático', 'Infeliz',
     // Mentais
-    'Genial', 'Analítico', 'Criativo', 'Curioso', 'Concentrado', 'Nerd', 'Geek', 'Lógico',
+    'Genial', 'Analítico', 'Criativo', 'Curioso', 'Concentrado', 'Nerd', 'Geek', 'Lógico', 'Desonesto',
     // Sociais
     'Extrovertido', 'Tímido', 'Solitário', 'Sedutor', 'Amável',
     'Grosso', 'Manipulador', 'Festeiro', 'Engraçado',

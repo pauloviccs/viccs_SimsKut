@@ -1,3 +1,9 @@
+-- =============================================
+-- MIGRATION: 20260303_sims_extended.sql
+-- Garante a criação de todas as tabelas (caso tenha limpado o banco)
+-- e corrige colunas faltantes + limpa o cache da API (corrige erro PGRST204).
+-- =============================================
+
 -- 1. TABELA: families (base para criar Sims)
 CREATE TABLE IF NOT EXISTS public.families (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -27,9 +33,9 @@ CREATE TABLE IF NOT EXISTS public.sims (
     photo_url   TEXT,
     profession  TEXT,
     bio         TEXT,
-    life_stage  TEXT,    -- Nova coluna
-    occult_type TEXT,    -- Nova coluna
-    aspiration  TEXT,    -- Nova coluna
+    life_stage  TEXT,
+    occult_type TEXT,
+    aspiration  TEXT,
     created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -66,17 +72,14 @@ DROP POLICY IF EXISTS "sim_traits_delete_own" ON public.sim_traits;
 CREATE POLICY "sim_traits_delete_own" ON public.sim_traits FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM public.sims s JOIN public.families f ON f.id = s.family_id WHERE s.id = sim_id AND f.owner_id = auth.uid()));
 
 
--- E por via das dúvidas: se as tabelas já existiam, mas faltavam apenas as colunas:
+-- 4. ATUALIZAR TABELA EXISTENTE (Segurança dupla)
+-- E por via das dúvidas: se as tabelas já existiam, mas faltavam apenas as colunas (isso evita o erro):
 ALTER TABLE public.sims 
 ADD COLUMN IF NOT EXISTS life_stage TEXT,
 ADD COLUMN IF NOT EXISTS occult_type TEXT,
 ADD COLUMN IF NOT EXISTS aspiration TEXT;
 
 
-
--- Migration for adding life_stage, occult_type, aspiration to sims
-ALTER TABLE public.sims 
-ADD COLUMN IF NOT EXISTS life_stage TEXT,
-ADD COLUMN IF NOT EXISTS occult_type TEXT,
-ADD COLUMN IF NOT EXISTS aspiration TEXT;
-
+-- 5. O SEGREDO CONTRA O ERRO 'PGRST204'
+-- Recarrega o cache do PostgREST da API do Supabase para ele enxergar as colunas novas.
+NOTIFY pgrst, 'reload schema';
