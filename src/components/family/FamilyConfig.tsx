@@ -487,7 +487,7 @@ export function FamilyConfig() {
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0.9, opacity: 0 }}
                                 transition={spring}
-                                className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-6 w-full max-w-md"
+                                className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-6 w-full max-w-[90vw] md:max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <div className="flex items-center justify-between mb-5">
@@ -502,106 +502,115 @@ export function FamilyConfig() {
                                     </button>
                                 </div>
 
-                                {/* Photo */}
-                                <div className="flex justify-center mb-5">
-                                    <div className="relative group cursor-pointer" onClick={() => simPhotoRef.current?.click()}>
-                                        <Avatar
-                                            src={simPhotoPreview}
-                                            alt={simForm.name || 'Sim'}
-                                            size="xl"
-                                        />
-                                        <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                            <Camera size={20} className="text-white/80" />
+                                <div className="flex flex-col md:flex-row gap-6 mb-2">
+                                    {/* Left side: Photo */}
+                                    <div className="flex flex-col items-center gap-4 w-full md:w-1/3 shrink-0">
+                                        <div className="relative group cursor-pointer mt-2" onClick={() => simPhotoRef.current?.click()}>
+                                            <Avatar
+                                                src={simPhotoPreview}
+                                                alt={simForm.name || 'Sim'}
+                                                size="xl"
+                                                className="w-32 h-32 md:w-40 md:h-40"
+                                            />
+                                            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                                <Camera size={24} className="text-white/80" />
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <GlassInput
-                                        label="Nome do Sim"
-                                        value={simForm.name}
-                                        onChange={(e) => setSimForm({ ...simForm, name: e.target.value })}
-                                        placeholder="Ex: Bella Goth"
-                                    />
-
-                                    {/* Estágio de Vida */}
-                                    <div>
-                                        <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
-                                            Estágio de Vida
-                                        </label>
-                                        <select
-                                            value={simForm.life_stage}
-                                            onChange={(e) => setSimForm({ ...simForm, life_stage: e.target.value })}
-                                            className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50"
-                                        >
-                                            <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
-                                            {LIFE_STAGE_OPTIONS.map((s) => (
-                                                <option key={s.value} value={s.value} className="bg-[#0f0f13] text-white">
-                                                    {s.emoji} {s.value}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <p className="text-xs text-white/40 text-center px-4 hidden md:block">
+                                            Clique na imagem para alterar a foto do seu Sim.
+                                        </p>
                                     </div>
 
-                                    {/* Tipo Oculto */}
-                                    <div>
-                                        <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
-                                            Tipo de Sim
-                                        </label>
-                                        <select
-                                            value={simForm.occult_type}
-                                            onChange={(e) => setSimForm({ ...simForm, occult_type: e.target.value })}
-                                            className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50"
-                                        >
-                                            <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
-                                            {OCCULT_OPTIONS.map((o) => (
-                                                <option key={o.value} value={o.value} className="bg-[#0f0f13] text-white">
-                                                    {o.emoji} {o.value}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    {/* Right side: Form Fields */}
+                                    <div className="flex-1 space-y-4">
+                                        <GlassInput
+                                            label="Nome do Sim"
+                                            value={simForm.name}
+                                            onChange={(e) => setSimForm({ ...simForm, name: e.target.value })}
+                                            placeholder="Ex: Bella Goth"
+                                        />
 
-                                    {/* Aspiração */}
-                                    <div>
-                                        <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
-                                            Aspiração
-                                        </label>
-                                        <select
-                                            value={simForm.aspiration}
-                                            onChange={(e) => setSimForm({ ...simForm, aspiration: e.target.value })}
-                                            className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50"
-                                        >
-                                            <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
-                                            {ASPIRATION_OPTIONS.map((a) => (
-                                                <option key={a} value={a} className="bg-[#0f0f13] text-white">{a}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Estágio de Vida */}
+                                            <div>
+                                                <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
+                                                    Estágio de Vida
+                                                </label>
+                                                <select
+                                                    value={simForm.life_stage}
+                                                    onChange={(e) => setSimForm({ ...simForm, life_stage: e.target.value })}
+                                                    className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50 transition-colors"
+                                                >
+                                                    <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
+                                                    {LIFE_STAGE_OPTIONS.map((s) => (
+                                                        <option key={s.value} value={s.value} className="bg-[#0f0f13] text-white">
+                                                            {s.emoji} {s.value}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
 
-                                    {/* Profissão */}
-                                    <div>
-                                        <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
-                                            Profissão
-                                        </label>
-                                        <select
-                                            value={simForm.profession}
-                                            onChange={(e) => setSimForm({ ...simForm, profession: e.target.value })}
-                                            className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50"
-                                        >
-                                            <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
-                                            {PROFESSIONS.map((p) => (
-                                                <option key={p} value={p} className="bg-[#0f0f13] text-white">{p}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                            {/* Tipo Oculto */}
+                                            <div>
+                                                <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
+                                                    Tipo de Sim
+                                                </label>
+                                                <select
+                                                    value={simForm.occult_type}
+                                                    onChange={(e) => setSimForm({ ...simForm, occult_type: e.target.value })}
+                                                    className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50 transition-colors"
+                                                >
+                                                    <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
+                                                    {OCCULT_OPTIONS.map((o) => (
+                                                        <option key={o.value} value={o.value} className="bg-[#0f0f13] text-white">
+                                                            {o.emoji} {o.value}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
 
-                                    <GlassInput
-                                        label="Bio / Descrição"
-                                        value={simForm.bio}
-                                        onChange={(e) => setSimForm({ ...simForm, bio: e.target.value })}
-                                        placeholder="Uma breve descrição do Sim"
-                                    />
+                                            {/* Aspiração */}
+                                            <div>
+                                                <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
+                                                    Aspiração
+                                                </label>
+                                                <select
+                                                    value={simForm.aspiration}
+                                                    onChange={(e) => setSimForm({ ...simForm, aspiration: e.target.value })}
+                                                    className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50 transition-colors"
+                                                >
+                                                    <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
+                                                    {ASPIRATION_OPTIONS.map((a) => (
+                                                        <option key={a} value={a} className="bg-[#0f0f13] text-white">{a}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Profissão */}
+                                            <div>
+                                                <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
+                                                    Profissão
+                                                </label>
+                                                <select
+                                                    value={simForm.profession}
+                                                    onChange={(e) => setSimForm({ ...simForm, profession: e.target.value })}
+                                                    className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50 transition-colors"
+                                                >
+                                                    <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
+                                                    {PROFESSIONS.map((p) => (
+                                                        <option key={p} value={p} className="bg-[#0f0f13] text-white">{p}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <GlassInput
+                                            label="Bio / Descrição"
+                                            value={simForm.bio}
+                                            onChange={(e) => setSimForm({ ...simForm, bio: e.target.value })}
+                                            placeholder="Uma breve descrição do Sim"
+                                        />
+                                    </div>
                                 </div>
 
                                 <GlassButton
