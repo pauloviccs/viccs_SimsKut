@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, LinkIcon, Loader2, Camera, ImageIcon, MessageCircle, Users as UsersIcon, Briefcase, Zap, Star } from 'lucide-react';
+import { CalendarDays, LinkIcon, Loader2, Camera, ImageIcon, MessageCircle, Users as UsersIcon, Briefcase, Zap, Star, X, Maximize } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
 import { PostCard } from '@/components/feed/PostCard';
@@ -45,6 +45,7 @@ export function ProfilePage() {
     const [showFriendsList, setShowFriendsList] = useState(false);
     const [viewingSim, setViewingSim] = useState<any | null>(null);
     const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+    const [showAvatarFullscreen, setShowAvatarFullscreen] = useState(false);
 
     // Tab data
     const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -210,13 +211,23 @@ export function ProfilePage() {
                 {/* Avatar — Sobreposto ao banner */}
                 <div className="flex justify-between items-start">
                     <div className="-mt-16 sm:-mt-20">
-                        <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-[#0a0a0f] overflow-hidden">
+                        <div
+                            className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-[#0a0a0f] overflow-hidden group cursor-pointer"
+                            onClick={() => {
+                                if (profile.avatar_url) setShowAvatarFullscreen(true);
+                            }}
+                        >
                             <Avatar
                                 src={profile.avatar_url}
                                 alt={profile.display_name || profile.username}
                                 size="2xl"
-                                className="w-full h-full !border-0"
+                                className="w-full h-full !border-0 transition-transform duration-500 group-hover:scale-110"
                             />
+                            {profile.avatar_url && (
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Maximize size={24} className="text-white/80 drop-shadow-md" />
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -539,6 +550,37 @@ export function ProfilePage() {
                             setPhotos(prev => prev.map(p => p.id === updated.id ? updated : p));
                         }}
                     />
+                )}
+            </AnimatePresence>
+
+            {/* =========== AVATAR FULLSCREEN MODAL =========== */}
+            <AnimatePresence>
+                {showAvatarFullscreen && profile?.avatar_url && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowAvatarFullscreen(false)}
+                        className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-8 cursor-zoom-out"
+                    >
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setShowAvatarFullscreen(false); }}
+                            className="absolute top-4 right-4 sm:top-8 sm:right-8 w-12 h-12 flex flex-col items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 hover:scale-105 backdrop-blur-md transition-all ring-1 ring-white/20 z-[110]"
+                            title="Fechar"
+                        >
+                            <X size={24} />
+                        </button>
+                        <motion.img
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            src={profile.avatar_url}
+                            alt={profile.display_name || profile.username}
+                            className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl ring-1 ring-white/10"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>
