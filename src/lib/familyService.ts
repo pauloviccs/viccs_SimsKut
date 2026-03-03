@@ -83,7 +83,7 @@ export async function getSims(familyId: string): Promise<Sim[]> {
 
 export async function createSim(
     familyId: string,
-    simInput: { name: string; photo_url?: string; profession?: string; bio?: string }
+    simInput: { name: string; photo_url?: string; profession?: string; bio?: string; life_stage?: string; occult_type?: string; aspiration?: string; }
 ): Promise<Sim> {
     const { data, error } = await supabase
         .from('sims')
@@ -93,6 +93,9 @@ export async function createSim(
             photo_url: simInput.photo_url || null,
             profession: simInput.profession?.trim() || null,
             bio: simInput.bio?.trim() || null,
+            life_stage: simInput.life_stage?.trim() || null,
+            occult_type: simInput.occult_type?.trim() || null,
+            aspiration: simInput.aspiration?.trim() || null,
         })
         .select()
         .single();
@@ -126,13 +129,16 @@ export async function createSim(
 
 export async function updateSim(
     simId: string,
-    updates: { name?: string; photo_url?: string; profession?: string; bio?: string }
+    updates: { name?: string; photo_url?: string; profession?: string; bio?: string; life_stage?: string; occult_type?: string; aspiration?: string; }
 ): Promise<void> {
     const clean: Record<string, unknown> = {};
     if (updates.name !== undefined) clean.name = updates.name.trim();
     if (updates.photo_url !== undefined) clean.photo_url = updates.photo_url;
     if (updates.profession !== undefined) clean.profession = updates.profession.trim() || null;
     if (updates.bio !== undefined) clean.bio = updates.bio.trim() || null;
+    if (updates.life_stage !== undefined) clean.life_stage = updates.life_stage.trim() || null;
+    if (updates.occult_type !== undefined) clean.occult_type = updates.occult_type.trim() || null;
+    if (updates.aspiration !== undefined) clean.aspiration = updates.aspiration.trim() || null;
 
     const { error } = await supabase.from('sims').update(clean).eq('id', simId);
     if (error) throw error;

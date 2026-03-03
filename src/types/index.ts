@@ -183,6 +183,9 @@ export interface Sim {
     photo_url: string | null;
     profession: string | null;
     bio: string | null;
+    life_stage: string | null;
+    occult_type: string | null;
+    aspiration: string | null;
     created_at: string;
     // Joined
     traits?: SimTrait[];

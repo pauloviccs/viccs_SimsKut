@@ -473,6 +473,25 @@ export function ProfilePage() {
                                                                                 <Briefcase size={12} className="shrink-0" /> {sim.profession}
                                                                             </p>
                                                                         )}
+
+                                                                        <div className="flex flex-wrap gap-1.5 mt-2">
+                                                                            {sim.life_stage && (
+                                                                                <span className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] text-white/70">
+                                                                                    {sim.life_stage}
+                                                                                </span>
+                                                                            )}
+                                                                            {sim.occult_type && (
+                                                                                <span className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] text-white/70">
+                                                                                    {sim.occult_type}
+                                                                                </span>
+                                                                            )}
+                                                                            {sim.aspiration && (
+                                                                                <span className="px-1.5 py-0.5 rounded border border-[var(--accent-warning)]/20 bg-[var(--accent-warning)]/10 text-[10px] text-[var(--accent-warning)] flex items-center gap-1">
+                                                                                    <Star size={10} /> {sim.aspiration}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+
                                                                         {sim.bio && (
                                                                             <p className="text-xs text-white/50 mt-2 line-clamp-2">{sim.bio}</p>
                                                                         )}

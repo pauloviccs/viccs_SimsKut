@@ -21,22 +21,118 @@ import type { Family, Sim } from '@/types';
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
 const PROFESSIONS = [
-    'Astronauta', 'Detetive', 'Médico(a)', 'Cientista', 'Escritor(a)',
-    'Chef', 'Artista', 'Atleta', 'Empresário(a)', 'Hacker',
-    'Gamer Profissional', 'Influencer', 'Músico(a)', 'Policial',
-    'Professor(a)', 'Militar', 'Desempregado(a)', 'Outra',
+    // Tradicionais
+    'Astronauta', 'Atleta', 'Médico(a)', 'Cientista', 'Detetive',
+    'Engenheiro(a)', 'Advogado(a)', 'Político(a)',
+    // Criativas
+    'Ator/Atriz', 'Músico(a)', 'Escritor(a)', 'Artista / Pintor(a)', 'Comediante',
+    // Negócios / Tecnologia
+    'Empresário(a)', 'Hacker / Programador(a)', 'Executivo(a)', 'Financista',
+    // Mídias
+    'Influencer', 'Chef', 'Streamer',
+    // Campo / Natureza
+    'Fazendeiro(a)', 'Botânico(a)', 'Veterinário(a)',
+    // Segurança
+    'Policial', 'Militar', 'Agente Secreto',
+    // Educação
+    'Professor(a)', 'Conselheiro(a)',
+    // Vilania / Alternativas
+    'Chefe do Crime', 'Vilão(a) em Ascensão',
+    // Sobrenatural
+    'Alquimista', 'Investigador(a) Paranormal',
+    // Outros
+    'Gamer Profissional', 'Desempregado(a)', 'Aposentado(a)', 'Outra',
 ];
 
 const SKILL_OPTIONS = [
-    'Culinária', 'Carisma', 'Jardinagem', 'Violão', 'Piano',
-    'Pintura', 'Escrita', 'Lógica', 'Fitness', 'Videogame',
-    'Comédia', 'Fotografia', 'Programação', 'Mixologia', 'Robótica',
+    // Criativas
+    'Pintura', 'Escrita', 'Fotografia', 'Escultura',
+    'Fabricação de Velas', 'Costura', 'Arranjo Floral', 'Mixologia',
+    // Musicais
+    'Violão', 'Piano', 'Violino', 'Bateria', 'Baixo', 'DJ', 'Canto',
+    // Conhecimento / Técnicas
+    'Lógica', 'Programação', 'Robótica', 'Eletrônica',
+    'Foguete', 'Pesquisa e Debate',
+    // Sociais
+    'Carisma', 'Comédia', 'Travessura', 'Transmissão ao Vivo',
+    // Natureza
+    'Jardinagem', 'Pesca', 'Rastreamento', 'Astrologia',
+    'Veterinária', 'Escalada', 'Esqui', 'Snowboard', 'Mergulho Livre',
+    // Físico
+    'Fitness', 'Natação',
+    // Culinária
+    'Culinária', 'Gastronomia', 'Fabricação de Néctar',
+    // Dom do Lar
+    'Criatividade (Infantil)', 'Videogame', 'Trabalho Mental (Criança)', 'Motor (Criança)', 'Socialização (Criança)',
 ];
 
 const QUALITY_OPTIONS = [
-    'Alegre', 'Genial', 'Criativo', 'Preguiçoso', 'Malvado',
-    'Romântico', 'Aventureiro', 'Perfeccionista', 'Desastrado',
-    'Festeiro', 'Solitário', 'Geek', 'Guloso', 'Atlético',
+    // Emocionais
+    'Alegre', 'Bom Humor', 'Mal-Humorado', 'Dramático', 'Infeliz',
+    // Mentais
+    'Genial', 'Analítico', 'Criativo', 'Curioso', 'Concentrado', 'Nerd', 'Geek', 'Lógico',
+    // Sociais
+    'Extrovertido', 'Tímido', 'Solitário', 'Sedutor', 'Amável',
+    'Grosso', 'Manipulador', 'Festeiro', 'Engraçado',
+    // Físicos
+    'Atlético', 'Preguiçoso', 'Descuidado', 'Guloso', 'Limpo', 'Noturno', 'Madrugador',
+    // Românticos
+    'Romântico', 'Fiel', 'Ciumento', 'Pervertido', 'Serial Romântico',
+    // Negativos
+    'Malvado', 'Mesquinho', 'Antipático', 'Egoísta', 'Invejoso', 'Irritadiço',
+    // Especiais
+    'Aventureiro', 'Perfeccionista', 'Desastrado', 'Ambicioso', 'Neurótico',
+    'Workaholic', 'Materialista', 'Amante de Animais', 'Amante da Natureza',
+    'Eco-Consciente', 'Autoconfiante', 'Apreciador de Livros',
+    'Detesta Crianças', 'Infantil', 'Amante de Cachorros', 'Amante de Gatos',
+    'Não-comprometido', 'Cleptomaníaco', 'Paranóico',
+];
+
+const ASPIRATION_OPTIONS = [
+    // Fortuna
+    'Barão das Mansões', 'Fabulosamente Rico',
+    // Amor
+    'Alma Gêmea', 'Serial Romântico',
+    // Família
+    'Super Pai/Mãe', 'Grande Família Feliz', 'Vampiro Familiar',
+    // Criatividade
+    'Autor Best-Seller', 'Pintor Extraordinário', 'Mestre da Música', 'Comediante Brilhante',
+    // Conhecimento
+    'Nerd do Computador', 'Gênio da Lógica', 'Especialista em Poções', 'Mestre Vampiro', 'Curador de Museu', 'Acadêmico',
+    // Esporte
+    'Fisiculturista', 'Atleta Extraordinário',
+    // Natureza
+    'Entusiasta da Pesca', 'Botânico', 'Curador da Selva', 'Guardião do Monte Komorebi',
+    // Popularidade
+    'Amigo do Mundo', 'Líder da Trupe', 'Piada Viva', 'Ícone da Festa',
+    // Animais
+    'Amigo dos Animais', 'Treinador(a) Campeão(ã)', 'Fazendeiro(a)',
+    // Estilo de Vida
+    'Nativo(a) da Cidade', 'Mestre da Cultura de Selvadorada', 'Vida Sustentável', 'Fabricante Mestre', 'Senhor(a) do Néctar', 'Explorador(a) do Espaço', 'Paranormal', 'Lobisomem Alfa', 'Mágico(a) Supremo(a)', 'Filho(a) das Ilhas',
+    // Criança
+    'Gênio Infantil', 'Prodígio Artístico', 'Turbilhão Social', 'Campeão de Criatividade',
+];
+
+const LIFE_STAGE_OPTIONS = [
+    { value: 'Recém-nascido', emoji: '👶' },
+    { value: 'Bebê', emoji: '👶' },
+    { value: 'Criança de colo', emoji: '🧒' },
+    { value: 'Criança', emoji: '🧒' },
+    { value: 'Adolescente', emoji: '🧑' },
+    { value: 'Jovem Adulto', emoji: '🧑' },
+    { value: 'Adulto', emoji: '🧑' },
+    { value: 'Idoso', emoji: '👴' },
+];
+
+const OCCULT_OPTIONS = [
+    { value: 'Humano', emoji: '👤' },
+    { value: 'Vampiro', emoji: '🧛' },
+    { value: 'Feiticeiro(a)', emoji: '🧙' },
+    { value: 'Lobisim', emoji: '🐺' },
+    { value: 'Sereia/o', emoji: '🧜' },
+    { value: 'Alienígena', emoji: '👽' },
+    { value: 'Sim Planta', emoji: '🌿' },
+    { value: 'Fantasma', emoji: '👻' },
 ];
 
 export function FamilyConfig() {
@@ -53,7 +149,7 @@ export function FamilyConfig() {
     const [showNewFamily, setShowNewFamily] = useState(false);
 
     // Sim form
-    const [simForm, setSimForm] = useState({ name: '', profession: '', bio: '' });
+    const [simForm, setSimForm] = useState({ name: '', profession: '', bio: '', life_stage: '', occult_type: '', aspiration: '' });
     const [simPhotoBlob, setSimPhotoBlob] = useState<Blob | null>(null);
     const [simPhotoPreview, setSimPhotoPreview] = useState<string | null>(null);
     const [simCropFile, setSimCropFile] = useState<File | null>(null);
@@ -121,7 +217,7 @@ export function FamilyConfig() {
     };
 
     const openCreateSim = () => {
-        setSimForm({ name: '', profession: '', bio: '' });
+        setSimForm({ name: '', profession: '', bio: '', life_stage: '', occult_type: '', aspiration: '' });
         setSimPhotoBlob(null);
         setSimPhotoPreview(null);
         setEditingSim(null);
@@ -133,6 +229,9 @@ export function FamilyConfig() {
             name: sim.name,
             profession: sim.profession || '',
             bio: sim.bio || '',
+            life_stage: sim.life_stage || '',
+            occult_type: sim.occult_type || '',
+            aspiration: sim.aspiration || '',
         });
         setSimPhotoPreview(sim.photo_url);
         setSimPhotoBlob(null);
@@ -174,6 +273,9 @@ export function FamilyConfig() {
                     profession: simForm.profession || undefined,
                     bio: simForm.bio || undefined,
                     photo_url: photoUrl,
+                    ...(simForm.life_stage ? { life_stage: simForm.life_stage } : {}),
+                    ...(simForm.occult_type ? { occult_type: simForm.occult_type } : {}),
+                    ...(simForm.aspiration ? { aspiration: simForm.aspiration } : {}),
                 });
                 setSims((prev) => prev.map((s) =>
                     s.id === editingSim.id
@@ -186,6 +288,9 @@ export function FamilyConfig() {
                     profession: simForm.profession || undefined,
                     bio: simForm.bio || undefined,
                     photo_url: photoUrl,
+                    ...(simForm.life_stage ? { life_stage: simForm.life_stage } : {}),
+                    ...(simForm.occult_type ? { occult_type: simForm.occult_type } : {}),
+                    ...(simForm.aspiration ? { aspiration: simForm.aspiration } : {}),
                 });
                 setSims((prev) => [...prev, newSim]);
             }
@@ -291,6 +396,25 @@ export function FamilyConfig() {
                                                 <Briefcase size={12} /> {sim.profession}
                                             </p>
                                         )}
+
+                                        <div className="flex flex-wrap gap-1.5 mt-2">
+                                            {sim.life_stage && (
+                                                <span className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] text-white/70">
+                                                    {sim.life_stage}
+                                                </span>
+                                            )}
+                                            {sim.occult_type && (
+                                                <span className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] text-white/70">
+                                                    {sim.occult_type}
+                                                </span>
+                                            )}
+                                            {sim.aspiration && (
+                                                <span className="px-1.5 py-0.5 rounded border border-[var(--accent-warning)]/20 bg-[var(--accent-warning)]/10 text-[10px] text-[var(--accent-warning)] flex items-center gap-1">
+                                                    <Star size={10} /> {sim.aspiration}
+                                                </span>
+                                            )}
+                                        </div>
+
                                         {sim.bio && (
                                             <p className="text-xs text-white/50 mt-2">{sim.bio}</p>
                                         )}
@@ -399,6 +523,63 @@ export function FamilyConfig() {
                                         onChange={(e) => setSimForm({ ...simForm, name: e.target.value })}
                                         placeholder="Ex: Bella Goth"
                                     />
+
+                                    {/* Estágio de Vida */}
+                                    <div>
+                                        <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
+                                            Estágio de Vida
+                                        </label>
+                                        <select
+                                            value={simForm.life_stage}
+                                            onChange={(e) => setSimForm({ ...simForm, life_stage: e.target.value })}
+                                            className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50"
+                                        >
+                                            <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
+                                            {LIFE_STAGE_OPTIONS.map((s) => (
+                                                <option key={s.value} value={s.value} className="bg-[#0f0f13] text-white">
+                                                    {s.emoji} {s.value}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Tipo Oculto */}
+                                    <div>
+                                        <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
+                                            Tipo de Sim
+                                        </label>
+                                        <select
+                                            value={simForm.occult_type}
+                                            onChange={(e) => setSimForm({ ...simForm, occult_type: e.target.value })}
+                                            className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50"
+                                        >
+                                            <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
+                                            {OCCULT_OPTIONS.map((o) => (
+                                                <option key={o.value} value={o.value} className="bg-[#0f0f13] text-white">
+                                                    {o.emoji} {o.value}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Aspiração */}
+                                    <div>
+                                        <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
+                                            Aspiração
+                                        </label>
+                                        <select
+                                            value={simForm.aspiration}
+                                            onChange={(e) => setSimForm({ ...simForm, aspiration: e.target.value })}
+                                            className="w-full min-h-[52px] px-4 py-3 bg-white/[0.05] border border-white/12 rounded-[var(--radius-sm)] text-white text-sm backdrop-blur-md outline-none focus:border-[var(--accent-primary)]/50"
+                                        >
+                                            <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
+                                            {ASPIRATION_OPTIONS.map((a) => (
+                                                <option key={a} value={a} className="bg-[#0f0f13] text-white">{a}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Profissão */}
                                     <div>
                                         <label className="text-[10px] font-medium text-[var(--accent-primary)] mb-1 block ml-1">
                                             Profissão
@@ -414,6 +595,7 @@ export function FamilyConfig() {
                                             ))}
                                         </select>
                                     </div>
+
                                     <GlassInput
                                         label="Bio / Descrição"
                                         value={simForm.bio}
