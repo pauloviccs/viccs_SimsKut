@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Trash2, Heart } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { EmojiPicker } from '@/components/ui/EmojiPicker';
@@ -49,7 +49,7 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
     }, [postId]);
 
     const handleSend = async () => {
-        if (!user || !text.trim() || sending) return;
+        if (!user || !text.trim() || sending || text.length > 280) return;
         setSending(true);
 
         try {
@@ -85,10 +85,10 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                 prev.map((c) =>
                     c.id === comment.id
                         ? {
-                              ...c,
-                              liked_by_me: liked,
-                              likes_count: (c.likes_count ?? 0) + (liked ? 1 : -1),
-                          }
+                            ...c,
+                            liked_by_me: liked,
+                            likes_count: (c.likes_count ?? 0) + (liked ? 1 : -1),
+                        }
                         : c
                 )
             );
@@ -140,11 +140,10 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                                     <div className="flex items-center gap-3 mt-1">
                                         <button
                                             onClick={() => handleToggleLike(comment)}
-                                            className={`flex items-center gap-1 text-[10px] transition-colors cursor-pointer ${
-                                                comment.liked_by_me
-                                                    ? 'text-[var(--accent-danger)]'
-                                                    : 'text-white/30 hover:text-white/60'
-                                            }`}
+                                            className={`flex items-center gap-1 text-[10px] transition-colors cursor-pointer ${comment.liked_by_me
+                                                ? 'text-[var(--accent-danger)]'
+                                                : 'text-white/30 hover:text-white/60'
+                                                }`}
                                         >
                                             <Heart
                                                 size={11}
@@ -170,35 +169,132 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
             )}
 
             {/* Input */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-end gap-2">
                 <Avatar
                     src={profile?.avatar_url}
                     alt={profile?.display_name || 'User'}
                     size="sm"
                 />
-                <div className="flex-1 flex items-center gap-1 bg-white/[0.04] rounded-full px-3 py-1.5 border border-white/[0.06]">
+                <div className="flex-1 flex items-end gap-1 bg-white/[0.04] rounded-2xl px-3 py-2 border border-white/[0.06]">
                     <MentionInput
                         value={text}
                         onChange={setText}
                         onKeyDown={handleKeyDown}
                         placeholder="Escreva um comentário..."
-                        className="flex-1 bg-transparent text-xs text-white/80 placeholder-white/25 outline-none"
-                        maxLength={500}
+                        className="flex-1 w-full bg-transparent text-xs text-white/80 placeholder-white/25 outline-none leading-relaxed"
+                        maxLength={280}
+                        mode="textarea"
+                        autoResize
+                        rows={1}
                     />
-                    <EmojiPicker
-                        onSelect={(emoji) => setText((prev) => prev + emoji)}
-                        size={14}
-                        position="top"
-                    />
-                    <button
-                        onClick={handleSend}
-                        disabled={!text.trim() || sending}
-                        className={`text-[var(--accent-primary)] transition-opacity cursor-pointer ${!text.trim() ? 'opacity-30' : 'opacity-100 hover:opacity-80'}`}
-                    >
-                        <Send size={14} />
-                    </button>
+                    <div className="flex items-center gap-1 pb-0.5 shrink-0">
+                        <EmojiPicker
+                            onSelect={(emoji) => setText((prev) => prev + emoji)}
+                            size={14}
+                            position="top"
+                        />
+                        {/* Contador de caracteres — estilo Twitter */}
+                        <CharCounter current={text.length} max={280} />
+                        <button
+                            onClick={handleSend}
+                            disabled={!text.trim() || sending || text.length > 280}
+                            className={`text-[var(--accent-primary)] transition-opacity cursor-pointer ${!text.trim() ? 'opacity-30' : 'opacity-100 hover:opacity-80'}`}
+                        >
+                            <Send size={14} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </motion.div>
+    );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CharCounter — anel circular SVG estilo Twitter
+   ──────────────────────────────────────────────────────────── */
+
+const RING_RADIUS = 9;
+const RING_CIRCUM = 2 * Math.PI * RING_RADIUS;
+
+function ringColor(remaining: number): string {
+    if (remaining <= 20) return '#ef4444';
+    if (remaining <= 50) return '#eab308';
+    return 'rgba(255,255,255,0.55)';
+}
+
+interface CharCounterProps {
+    current: number;
+    max: number;
+}
+
+function CharCounter({ current, max }: CharCounterProps) {
+    const remaining = max - current;
+    const filled = Math.min(current / max, 1);
+    const dashOffset = RING_CIRCUM * (1 - filled);
+    const color = ringColor(remaining);
+    const showNum = current > 0 && remaining <= 60;
+
+    return (
+        <AnimatePresence>
+            {current > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    className="relative flex items-center justify-center select-none shrink-0"
+                    style={{ width: 22, height: 22 }}
+                    title={`${remaining} caracteres restantes`}
+                >
+                    {/* Anel SVG — girado -90° para começar do topo */}
+                    <svg
+                        width={22}
+                        height={22}
+                        viewBox="0 0 22 22"
+                        className="absolute inset-0"
+                        style={{ transform: 'rotate(-90deg)' }}
+                    >
+                        {/* trilho */}
+                        <circle
+                            cx={11} cy={11} r={RING_RADIUS}
+                            fill="none"
+                            stroke="white"
+                            strokeOpacity={remaining <= 20 ? 0.3 : 0.1}
+                            strokeWidth={2}
+                        />
+                        {/* progresso */}
+                        <motion.circle
+                            cx={11} cy={11} r={RING_RADIUS}
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeDasharray={RING_CIRCUM}
+                            animate={{
+                                strokeDashoffset: dashOffset,
+                                stroke: color,
+                                strokeWidth: remaining <= 0 ? 2.5 : 2,
+                            }}
+                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                        />
+                    </svg>
+
+                    {/* Número regressivo — só nos últimos 100 chars */}
+                    <AnimatePresence mode="wait">
+                        {showNum && (
+                            <motion.span
+                                key={remaining <= 0 ? 'neg' : 'pos'}
+                                initial={{ opacity: 0, scale: 0.4 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.4 }}
+                                transition={{ duration: 0.1 }}
+                                className="relative z-10 font-semibold tabular-nums leading-none"
+                                style={{ fontSize: 7, color }}
+                            >
+                                {remaining < 0 ? `-${Math.abs(remaining)}` : remaining}
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }

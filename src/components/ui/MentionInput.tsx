@@ -20,6 +20,8 @@ interface MentionInputProps {
     mode?: 'input' | 'textarea';
     rows?: number;
     onKeyDown?: (e: React.KeyboardEvent) => void;
+    /** Expande a altura automaticamente conforme o conteúdo cresce (só funciona com mode='textarea') */
+    autoResize?: boolean;
 }
 
 export function MentionInput({
@@ -29,8 +31,9 @@ export function MentionInput({
     className = '',
     maxLength,
     mode = 'input',
-    rows = 2,
+    rows = 1,
     onKeyDown,
+    autoResize = false,
 }: MentionInputProps) {
     const [suggestions, setSuggestions] = useState<Profile[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -40,6 +43,15 @@ export function MentionInput({
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+    // Auto-resize: ajusta a altura do textarea conforme o conteúdo
+    useEffect(() => {
+        if (!autoResize || mode !== 'textarea') return;
+        const el = inputRef.current as HTMLTextAreaElement | null;
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight}px`;
+    }, [value, autoResize, mode]);
 
     // Detecta @ no texto enquanto digita
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -152,7 +164,11 @@ export function MentionInput({
     return (
         <div className="relative flex-1" ref={containerRef}>
             {mode === 'textarea' ? (
-                <textarea {...sharedProps} rows={rows} />
+                <textarea
+                    {...sharedProps}
+                    rows={rows}
+                    style={autoResize ? { resize: 'none', overflow: 'hidden' } : undefined}
+                />
             ) : (
                 <input {...sharedProps} />
             )}
