@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users, Plus, Pencil, Trash2, X, Save, Camera,
-    Briefcase, Star, Zap, Loader2, ChevronDown
+    Loader2, ChevronDown
 } from 'lucide-react';
+import { withEmoji } from '@/utils/simEmojis';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
@@ -68,7 +69,7 @@ const SKILL_OPTIONS = [
 
 const QUALITY_OPTIONS = [
     // Emocionais
-    'Alegre', 'Bom Humor', 'Mal-Humorado', 'Dramático', 'Infeliz',
+    'Alegre', 'Bom Humor', 'Mal-Humorado', 'Dramático', 'Infeliz', 'Carinhoso', 'Brincalhão', 'Amigável',
     // Mentais
     'Genial', 'Analítico', 'Criativo', 'Curioso', 'Concentrado', 'Nerd', 'Geek', 'Lógico', 'Desonesto',
     // Sociais
@@ -393,24 +394,24 @@ export function FamilyConfig() {
                                         </div>
                                         {sim.profession && (
                                             <p className="text-xs text-[var(--accent-primary)] flex items-center gap-1 mt-1">
-                                                <Briefcase size={12} /> {sim.profession}
+                                                {withEmoji(sim.profession, 'profession')}
                                             </p>
                                         )}
 
                                         <div className="flex flex-wrap gap-1.5 mt-2">
                                             {sim.life_stage && (
                                                 <span className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] text-white/70">
-                                                    {sim.life_stage}
+                                                    {withEmoji(sim.life_stage, 'life_stage')}
                                                 </span>
                                             )}
                                             {sim.occult_type && (
                                                 <span className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] text-white/70">
-                                                    {sim.occult_type}
+                                                    {withEmoji(sim.occult_type, 'occult')}
                                                 </span>
                                             )}
                                             {sim.aspiration && (
                                                 <span className="px-1.5 py-0.5 rounded border border-[var(--accent-warning)]/20 bg-[var(--accent-warning)]/10 text-[10px] text-[var(--accent-warning)] flex items-center gap-1">
-                                                    <Star size={10} /> {sim.aspiration}
+                                                    {withEmoji(sim.aspiration, 'aspiration')}
                                                 </span>
                                             )}
                                         </div>
@@ -431,8 +432,7 @@ export function FamilyConfig() {
                                                     onClick={() => handleRemoveTrait(sim.id, trait.id)}
                                                     title="Clique para remover"
                                                 >
-                                                    {trait.trait_type === 'quality' ? <Star size={10} /> : <Zap size={10} />}
-                                                    {trait.value}
+                                                    {withEmoji(trait.value, trait.trait_type === 'quality' ? 'trait' : 'skill')}
                                                 </span>
                                             ))}
                                         </div>
@@ -454,7 +454,7 @@ export function FamilyConfig() {
                                             >
                                                 <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
                                                 {(newTraitType === 'quality' ? QUALITY_OPTIONS : SKILL_OPTIONS).map((opt) => (
-                                                    <option key={opt} value={opt} className="bg-[#0f0f13] text-white">{opt}</option>
+                                                    <option key={opt} value={opt} className="bg-[#0f0f13] text-white">{withEmoji(opt, newTraitType === 'quality' ? 'trait' : 'skill')}</option>
                                                 ))}
                                             </select>
                                             <button
@@ -581,7 +581,7 @@ export function FamilyConfig() {
                                                 >
                                                     <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
                                                     {ASPIRATION_OPTIONS.map((a) => (
-                                                        <option key={a} value={a} className="bg-[#0f0f13] text-white">{a}</option>
+                                                        <option key={a} value={a} className="bg-[#0f0f13] text-white">{withEmoji(a, 'aspiration')}</option>
                                                     ))}
                                                 </select>
                                             </div>
@@ -598,7 +598,7 @@ export function FamilyConfig() {
                                                 >
                                                     <option value="" className="bg-[#0f0f13] text-white">Selecionar...</option>
                                                     {PROFESSIONS.map((p) => (
-                                                        <option key={p} value={p} className="bg-[#0f0f13] text-white">{p}</option>
+                                                        <option key={p} value={p} className="bg-[#0f0f13] text-white">{withEmoji(p, 'profession')}</option>
                                                     ))}
                                                 </select>
                                             </div>

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { X, Briefcase, Star, Zap } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
+import { withEmoji } from '@/utils/simEmojis';
 import type { Sim } from '@/types';
 
 interface SimDetailsModalProps {
@@ -52,25 +53,24 @@ export function SimDetailsModal({ sim, onClose }: SimDetailsModalProps) {
 
                     {sim.profession && (
                         <div className="flex items-center gap-1.5 text-sm text-[var(--accent-primary)] mt-1">
-                            <Briefcase size={14} />
-                            <span>{sim.profession}</span>
+                            <span>{withEmoji(sim.profession, 'profession')}</span>
                         </div>
                     )}
 
                     <div className="flex flex-wrap justify-center gap-3 mt-3">
                         {sim.life_stage && (
                             <span className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-white/70">
-                                {sim.life_stage}
+                                {withEmoji(sim.life_stage, 'life_stage')}
                             </span>
                         )}
                         {sim.occult_type && (
                             <span className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-white/70">
-                                {sim.occult_type}
+                                {withEmoji(sim.occult_type, 'occult')}
                             </span>
                         )}
                         {sim.aspiration && (
                             <span className="px-2 py-1 rounded-md bg-[var(--accent-warning)]/10 border border-[var(--accent-warning)]/20 text-[var(--accent-warning)] text-xs flex items-center gap-1">
-                                <Star size={12} /> {sim.aspiration}
+                                {withEmoji(sim.aspiration, 'aspiration')}
                             </span>
                         )}
                     </div>
@@ -104,8 +104,7 @@ export function SimDetailsModal({ sim, onClose }: SimDetailsModalProps) {
                                             : 'bg-[var(--accent-success)]/10 border-[var(--accent-success)]/20 text-[var(--accent-success)]'
                                             }`}
                                     >
-                                        {trait.trait_type === 'quality' ? <Star size={12} /> : <Zap size={12} />}
-                                        {trait.value}
+                                        {withEmoji(trait.value, trait.trait_type === 'quality' ? 'trait' : 'skill')}
                                     </div>
                                 ))}
                             </div>
