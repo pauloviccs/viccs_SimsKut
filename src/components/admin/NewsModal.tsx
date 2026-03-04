@@ -130,8 +130,8 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
 
         try {
             const ext = file.name.split('.').pop();
-            const filePath = `news-inline/${Date.now()}.${ext}`;
-            const url = await processAndUploadFeedImage(file, 'posts', filePath);
+            const filePath = `inline/${Date.now()}.${ext}`;
+            const url = await processAndUploadFeedImage(file, 'news', filePath);
             document.execCommand('insertImage', false, url);
 
             // Trigger change for react-hook-form
