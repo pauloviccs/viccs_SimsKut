@@ -336,28 +336,31 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
         }
     };
 
-    const handleEditorWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'IMG' && target.parentElement?.classList.contains('inline-image-wrapper')) {
-            e.preventDefault(); // Prevent page scroll when hovering the image
+    // We must use a raw DOM event because React's onWheel is passive in React 17+ and can't preventDefault to stop scroll
+    const setupWheelListener = (node: HTMLDivElement | null) => {
+        (editorRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        if (!node) return;
 
-            const imgTarget = target as HTMLImageElement;
-            let scale = parseFloat(imgTarget.getAttribute('data-scale') || '1');
+        node.addEventListener('wheel', (e: WheelEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'IMG' && target.parentElement?.classList.contains('inline-image-wrapper')) {
+                e.preventDefault(); // Stop outer scrolling
 
-            // Adjust scaling speed depending on wheelDelta
-            const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            scale += delta;
+                const imgTarget = target as HTMLImageElement;
+                let scale = parseFloat(imgTarget.getAttribute('data-scale') || '1');
 
-            // Constrain Zoom (ex: 1x to 4x)
-            scale = Math.max(1, Math.min(4, scale));
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                scale += delta;
+                scale = Math.max(1, Math.min(4, scale));
 
-            imgTarget.setAttribute('data-scale', scale.toString());
-            imgTarget.style.transform = `scale(${scale})`;
+                imgTarget.setAttribute('data-scale', scale.toString());
+                imgTarget.style.transform = `scale(${scale})`;
 
-            if (editorRef.current) {
-                setValue('excerpt', editorRef.current.innerHTML, { shouldValidate: true });
+                if (editorRef.current) {
+                    setValue('excerpt', editorRef.current.innerHTML, { shouldValidate: true });
+                }
             }
-        }
+        }, { passive: false });
     };
 
     return (
@@ -511,7 +514,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                 id="hidden-excerpt"
                                             />
                                             <div
-                                                ref={editorRef}
+                                                ref={setupWheelListener}
                                                 className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
                                                 contentEditable
                                                 onBlur={saveSelection}
@@ -521,7 +524,6 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                 onMouseMove={handleEditorMouseMove}
                                                 onMouseUp={handleEditorMouseUp}
                                                 onMouseLeave={handleEditorMouseLeave}
-                                                onWheel={handleEditorWheel}
                                                 onInput={(e) => {
                                                     const value = e.currentTarget.innerHTML;
                                                     setValue('excerpt', value, { shouldValidate: true });
