@@ -229,7 +229,7 @@ export const simEmojis: Record<string, string> = {
     'Político(a)': '🏛️',
     'Ator/Atriz': '🎭',
     'Músico(a)': '🎵',
-    'Escritor(a) / Autor(a)': '✍️',
+    'Escritor(a)': '✍️',
     'Artista / Pintor(a)': '🖌️',
     'Comediante': '🎤',
     'Empresário(a)': '💼',
