@@ -146,32 +146,48 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                     sel.addRange(savedRange);
                 }
 
-                // We create the image element manually as execCommand('insertImage') strips custom styles/attributes
+                // Cuidando do Resize Container
+                const wrapper = document.createElement('div');
+                wrapper.className = "inline-image-wrapper";
+                wrapper.style.display = 'inline-block';
+                wrapper.style.maxWidth = '100%';
+                wrapper.style.minWidth = '100px';
+                wrapper.style.minHeight = '100px';
+                wrapper.style.width = '300px'; // Initial reasonable size
+                wrapper.style.resize = 'both';
+                wrapper.style.overflow = 'hidden';
+                wrapper.style.border = '2px dashed transparent';
+                wrapper.style.marginBottom = '1rem';
+                wrapper.style.marginTop = '1rem';
+
+                // Pra fazer aparecer a bordinha de arrastar quando clica nele no editor
+                wrapper.contentEditable = 'false';
+
+                // Evento de hover manual pra simular a borda no admin
+                wrapper.onmouseenter = () => wrapper.style.border = '2px dashed rgba(255,255,255,0.3)';
+                wrapper.onmouseleave = () => wrapper.style.border = '2px dashed transparent';
+
                 const imgNode = document.createElement('img');
                 imgNode.src = url;
                 imgNode.alt = "Imagem da Notícia";
-                // Add inline styling for resize capability within contentEditable
-                imgNode.style.maxWidth = '100%';
-                imgNode.style.height = 'auto';
+                imgNode.style.width = '100%';
+                imgNode.style.height = '100%';
+                imgNode.style.objectFit = 'cover';
                 imgNode.style.borderRadius = '8px';
-                imgNode.style.marginTop = '1rem';
-                imgNode.style.marginBottom = '1rem';
+                imgNode.style.pointerEvents = 'none'; // Evita que o usuário arraste a imagem em si em vez do container
 
-                // Essential for enabling resize handles in some browsers inside contentEditable
-                imgNode.style.resize = 'both';
-                imgNode.style.overflow = 'hidden';
-                imgNode.style.display = 'block';
+                wrapper.appendChild(imgNode);
 
                 if (sel && sel.rangeCount > 0) {
                     const range = sel.getRangeAt(0);
                     range.deleteContents();
 
-                    // We insert a line break, the image, and another line break for spacing
                     const br1 = document.createElement('br');
                     const br2 = document.createElement('br');
 
+                    // Importante inserir em ordem reversa pelo range logic nativo:
                     range.insertNode(br2);
-                    range.insertNode(imgNode);
+                    range.insertNode(wrapper);
                     range.insertNode(br1);
 
                     // Move cursor after the inserted image
@@ -182,7 +198,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                 } else {
                     // Fallback to end
                     contentDiv.appendChild(document.createElement('br'));
-                    contentDiv.appendChild(imgNode);
+                    contentDiv.appendChild(wrapper);
                     contentDiv.appendChild(document.createElement('br'));
                 }
 
