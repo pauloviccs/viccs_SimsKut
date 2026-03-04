@@ -46,7 +46,8 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
         startX: 0,
         startY: 0,
         posX: 50,
-        posY: 50
+        posY: 50,
+        scale: 1
     });
 
     const saveSelection = () => {
@@ -196,6 +197,9 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                 imgNode.draggable = false;
                 imgNode.setAttribute('data-pos-x', '50');
                 imgNode.setAttribute('data-pos-y', '50');
+                imgNode.setAttribute('data-scale', '1');
+                imgNode.style.transform = `scale(1)`;
+                imgNode.style.transformOrigin = 'center center';
                 imgNode.style.cursor = 'grab';
 
                 wrapper.appendChild(imgNode);
@@ -264,6 +268,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
 
             let px = parseFloat(target.getAttribute('data-pos-x') || '50');
             let py = parseFloat(target.getAttribute('data-pos-y') || '50');
+            let scale = parseFloat(target.getAttribute('data-scale') || '1');
 
             dragState.current = {
                 isDragging: true,
@@ -272,6 +277,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                 startY: e.clientY,
                 posX: px,
                 posY: py,
+                scale: scale
             };
             target.style.cursor = 'grabbing';
         }
@@ -279,14 +285,14 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
 
     const handleEditorMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (dragState.current.isDragging && dragState.current.target) {
-            const { target, startX, startY, posX, posY } = dragState.current;
+            const { target, startX, startY, posX, posY, scale } = dragState.current;
 
             const deltaX = e.clientX - startX;
             const deltaY = e.clientY - startY;
 
-            // Adjust values. Increase deltaX (drag right) => decrease posX (move image view left)
-            const percentX = posX - (deltaX / target.clientWidth) * 100;
-            const percentY = posY - (deltaY / target.clientHeight) * 100;
+            // Adjust values accounting for scale (if we zoom in, drag feels faster so we scale the delta)
+            const percentX = posX - (deltaX / (target.clientWidth * scale)) * 100;
+            const percentY = posY - (deltaY / (target.clientHeight * scale)) * 100;
 
             const clampedX = Math.max(0, Math.min(100, percentX));
             const clampedY = Math.max(0, Math.min(100, percentY));
@@ -298,13 +304,13 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
     const handleEditorMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
         if (dragState.current.isDragging && dragState.current.target) {
             const target = dragState.current.target;
-            const { startX, startY, posX, posY } = dragState.current;
+            const { startX, startY, posX, posY, scale } = dragState.current;
 
             const deltaX = e.clientX - startX;
             const deltaY = e.clientY - startY;
 
-            const percentX = posX - (deltaX / target.clientWidth) * 100;
-            const percentY = posY - (deltaY / target.clientHeight) * 100;
+            const percentX = posX - (deltaX / (target.clientWidth * scale)) * 100;
+            const percentY = posY - (deltaY / (target.clientHeight * scale)) * 100;
 
             const clampedX = Math.max(0, Math.min(100, percentX));
             const clampedY = Math.max(0, Math.min(100, percentY));
@@ -327,6 +333,30 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
     const handleEditorMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
         if (dragState.current.isDragging) {
             handleEditorMouseUp(e);
+        }
+    };
+
+    const handleEditorWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'IMG' && target.parentElement?.classList.contains('inline-image-wrapper')) {
+            e.preventDefault(); // Prevent page scroll when hovering the image
+
+            const imgTarget = target as HTMLImageElement;
+            let scale = parseFloat(imgTarget.getAttribute('data-scale') || '1');
+
+            // Adjust scaling speed depending on wheelDelta
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            scale += delta;
+
+            // Constrain Zoom (ex: 1x to 4x)
+            scale = Math.max(1, Math.min(4, scale));
+
+            imgTarget.setAttribute('data-scale', scale.toString());
+            imgTarget.style.transform = `scale(${scale})`;
+
+            if (editorRef.current) {
+                setValue('excerpt', editorRef.current.innerHTML, { shouldValidate: true });
+            }
         }
     };
 
@@ -491,6 +521,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                 onMouseMove={handleEditorMouseMove}
                                                 onMouseUp={handleEditorMouseUp}
                                                 onMouseLeave={handleEditorMouseLeave}
+                                                onWheel={handleEditorWheel}
                                                 onInput={(e) => {
                                                     const value = e.currentTarget.innerHTML;
                                                     setValue('excerpt', value, { shouldValidate: true });
