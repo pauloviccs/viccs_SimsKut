@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -37,6 +37,24 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
 
     const { toast } = useToast();
     const queryClient = useQueryClient();
+
+    // Editor and Drag State for Image Panning
+    const editorRef = useRef<HTMLDivElement>(null);
+    const dragState = useRef({
+        isDragging: false,
+        target: null as HTMLImageElement | null,
+        startX: 0,
+        startY: 0,
+        posX: 50,
+        posY: 50
+    });
+
+    const saveSelection = () => {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0 && editorRef.current?.contains(sel.anchorNode)) {
+            setSavedRange(sel.getRangeAt(0).cloneRange());
+        }
+    };
 
     const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<NewsFormData>({
         resolver: zodResolver(newsSchema),
@@ -173,8 +191,12 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                 imgNode.style.width = '100%';
                 imgNode.style.height = '100%';
                 imgNode.style.objectFit = 'cover';
+                imgNode.style.objectPosition = '50% 50%';
                 imgNode.style.borderRadius = '8px';
-                imgNode.style.pointerEvents = 'none'; // Evita que o usuário arraste a imagem em si em vez do container
+                imgNode.draggable = false;
+                imgNode.setAttribute('data-pos-x', '50');
+                imgNode.setAttribute('data-pos-y', '50');
+                imgNode.style.cursor = 'grab';
 
                 wrapper.appendChild(imgNode);
 
@@ -223,6 +245,88 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
         } finally {
             setIsUploadingInline(false);
             if (e.target) e.target.value = '';
+        }
+    };
+
+    const handleEditorMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'IMG' && target.parentElement?.classList.contains('inline-image-wrapper')) {
+            const rect = target.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            // Allow native resize handle to work (bottom right 20x20 area)
+            if (clickX > rect.width - 20 && clickY > rect.height - 20) {
+                return;
+            }
+
+            e.preventDefault(); // Prevents selection
+
+            let px = parseFloat(target.getAttribute('data-pos-x') || '50');
+            let py = parseFloat(target.getAttribute('data-pos-y') || '50');
+
+            dragState.current = {
+                isDragging: true,
+                target: target as HTMLImageElement,
+                startX: e.clientX,
+                startY: e.clientY,
+                posX: px,
+                posY: py,
+            };
+            target.style.cursor = 'grabbing';
+        }
+    };
+
+    const handleEditorMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (dragState.current.isDragging && dragState.current.target) {
+            const { target, startX, startY, posX, posY } = dragState.current;
+
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+
+            // Adjust values. Increase deltaX (drag right) => decrease posX (move image view left)
+            const percentX = posX - (deltaX / target.clientWidth) * 100;
+            const percentY = posY - (deltaY / target.clientHeight) * 100;
+
+            const clampedX = Math.max(0, Math.min(100, percentX));
+            const clampedY = Math.max(0, Math.min(100, percentY));
+
+            target.style.objectPosition = `${clampedX}% ${clampedY}%`;
+        }
+    };
+
+    const handleEditorMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (dragState.current.isDragging && dragState.current.target) {
+            const target = dragState.current.target;
+            const { startX, startY, posX, posY } = dragState.current;
+
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+
+            const percentX = posX - (deltaX / target.clientWidth) * 100;
+            const percentY = posY - (deltaY / target.clientHeight) * 100;
+
+            const clampedX = Math.max(0, Math.min(100, percentX));
+            const clampedY = Math.max(0, Math.min(100, percentY));
+
+            target.setAttribute('data-pos-x', clampedX.toString());
+            target.setAttribute('data-pos-y', clampedY.toString());
+            target.style.cursor = 'grab';
+
+            dragState.current.isDragging = false;
+            dragState.current.target = null;
+
+            if (editorRef.current) {
+                setValue('excerpt', editorRef.current.innerHTML, { shouldValidate: true });
+            }
+        }
+
+        saveSelection();
+    };
+
+    const handleEditorMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (dragState.current.isDragging) {
+            handleEditorMouseUp(e);
         }
     };
 
@@ -377,15 +481,16 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                 id="hidden-excerpt"
                                             />
                                             <div
+                                                ref={editorRef}
                                                 className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
                                                 contentEditable
-                                                onBlur={() => {
-                                                    // Save selection when the editor loses focus (e.g. clicking the upload button)
-                                                    const sel = window.getSelection();
-                                                    if (sel && sel.rangeCount > 0) {
-                                                        setSavedRange(sel.getRangeAt(0));
-                                                    }
-                                                }}
+                                                onBlur={saveSelection}
+                                                onKeyUp={saveSelection}
+                                                onClick={saveSelection}
+                                                onMouseDown={handleEditorMouseDown}
+                                                onMouseMove={handleEditorMouseMove}
+                                                onMouseUp={handleEditorMouseUp}
+                                                onMouseLeave={handleEditorMouseLeave}
                                                 onInput={(e) => {
                                                     const value = e.currentTarget.innerHTML;
                                                     setValue('excerpt', value, { shouldValidate: true });
