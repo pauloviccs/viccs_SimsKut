@@ -132,11 +132,22 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
             const ext = file.name.split('.').pop();
             const filePath = `inline/${Date.now()}.${ext}`;
             const url = await processAndUploadFeedImage(file, 'news', filePath);
-            document.execCommand('insertImage', false, url);
 
-            // Trigger change for react-hook-form
-            const contentDiv = document.querySelector('[contenteditable]');
+            const contentDiv = document.querySelector('[contenteditable]') as HTMLDivElement;
+
             if (contentDiv) {
+                // Devolvemos o foco ao editor para o comando ter um alvo
+                contentDiv.focus();
+
+                // Tenta inserir via comando nativo na posição do cursor
+                const success = document.execCommand('insertImage', false, url);
+
+                // Se falhou (sem seleção, fora de foco) ou sumiu, injetamos no final manualmente
+                if (!success || !contentDiv.innerHTML.includes(url)) {
+                    contentDiv.innerHTML += `<br><img src="${url}" alt="Imagem da Notícia" /><br>`;
+                }
+
+                // Dispara a revalidação do formulário
                 setValue('excerpt', contentDiv.innerHTML, { shouldValidate: true });
             }
 
