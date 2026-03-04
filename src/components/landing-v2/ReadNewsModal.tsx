@@ -167,13 +167,13 @@ export function ReadNewsModal({ isOpen, onClose, news }: ReadNewsModalProps) {
                                             {news.author && (
                                                 <div className="flex items-center gap-2 mt-4">
                                                     <img
-                                                        src={news.author.avatar_url || '/default-avatar.png'}
-                                                        alt={news.author.display_name || news.author.username}
+                                                        src={news.author?.avatar_url || '/default-avatar.png'}
+                                                        alt={news.author?.display_name || news.author?.username || 'Usuário Deletado'}
                                                         className="w-8 h-8 rounded-full border border-white/20 object-cover"
                                                     />
                                                     <div>
                                                         <p className="text-sm text-white/90 font-medium">
-                                                            {news.author.display_name || news.author.username}
+                                                            {news.author?.display_name || news.author?.username || 'Usuário Deletado'}
                                                         </p>
                                                         <p className="text-xs text-white/50">Admin</p>
                                                     </div>
@@ -241,14 +241,14 @@ export function ReadNewsModal({ isOpen, onClose, news }: ReadNewsModalProps) {
                                                     comments.map((comment: any) => (
                                                         <div key={comment.id} className="flex gap-4 p-4 rounded-xl bg-black/20 border border-white/5 group">
                                                             <img
-                                                                src={comment.author.avatar_url || '/default-avatar.png'}
-                                                                alt={comment.author.username}
+                                                                src={comment.author?.avatar_url || '/default-avatar.png'}
+                                                                alt={comment.author?.username || 'Unknown'}
                                                                 className="w-10 h-10 rounded-full object-cover border border-white/10 shrink-0"
                                                             />
                                                             <div className="flex-1">
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <span className="font-semibold text-white/90 text-sm">
-                                                                        {comment.author.display_name || comment.author.username}
+                                                                        {comment.author?.display_name || comment.author?.username || 'Usuário'}
                                                                     </span>
                                                                     <span className="text-xs text-white/40">
                                                                         {new Date(comment.created_at).toLocaleDateString('pt-BR', {
