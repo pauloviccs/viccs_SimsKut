@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { newsService } from '@/lib/newsService';
+import { processAndUploadFeedImage } from '@/lib/imageService';
 import type { News } from '@/types';
 
 const Categories = ['Patch Note', 'Evento', 'Novidade', 'Aviso', 'Desafio'] as const;
@@ -31,6 +32,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.image_url || null);
+    const [isUploadingInline, setIsUploadingInline] = useState(false);
 
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -113,6 +115,49 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
             fileAction = 'remove';
         }
         mutation.mutate({ data, file: fileAction });
+    };
+
+    const handleInlineImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploadingInline(true);
+        toast({
+            title: 'Fazendo upload...',
+            description: 'Enviando imagem, aguarde.',
+            duration: 100000, // Keep open until finished
+        });
+
+        try {
+            const ext = file.name.split('.').pop();
+            const filePath = `news-inline/${Date.now()}.${ext}`;
+            const url = await processAndUploadFeedImage(file, 'posts', filePath);
+            document.execCommand('insertImage', false, url);
+
+            // Trigger change for react-hook-form
+            const contentDiv = document.querySelector('[contenteditable]');
+            if (contentDiv) {
+                setValue('excerpt', contentDiv.innerHTML, { shouldValidate: true });
+            }
+
+            // Dismiss loading toast, show success
+            queryClient.invalidateQueries(); // hack to dismiss toast globally if we don't have dismiss()
+            toast({
+                title: 'Sucesso',
+                description: 'Imagem inserida.',
+            });
+
+        } catch (error) {
+            console.error('Error uploading inline image:', error);
+            toast({
+                title: 'Erro',
+                description: 'Não foi possível fazer o upload da imagem.',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsUploadingInline(false);
+            if (e.target) e.target.value = '';
+        }
     };
 
     return (
@@ -233,6 +278,19 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                     const url = prompt('Cole o link:');
                                                     if (url) document.execCommand('createLink', false, url);
                                                 }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Adicionar Link"><Link size={16} /></button>
+
+                                                {/* Inline Image Upload */}
+                                                <label className={`p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer ${isUploadingInline ? 'opacity-50 pointer-events-none' : ''}`} title="Inserir Imagem">
+                                                    {isUploadingInline ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        disabled={isUploadingInline}
+                                                        onChange={handleInlineImageUpload}
+                                                    />
+                                                </label>
+
                                                 <div className="w-px h-4 bg-white/10 mx-1"></div>
                                                 <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertUnorderedList', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista com Marcadores"><List size={16} /></button>
                                                 <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertOrderedList', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista Numerada"><ListOrdered size={16} /></button>
@@ -253,7 +311,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                 id="hidden-excerpt"
                                             />
                                             <div
-                                                className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
+                                                className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4"
                                                 contentEditable
                                                 onInput={(e) => {
                                                     const value = e.currentTarget.innerHTML;
