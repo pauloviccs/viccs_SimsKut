@@ -33,6 +33,7 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.image_url || null);
     const [isUploadingInline, setIsUploadingInline] = useState(false);
+    const [savedRange, setSavedRange] = useState<Range | null>(null);
 
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -136,15 +137,53 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
             const contentDiv = document.querySelector('[contenteditable]') as HTMLDivElement;
 
             if (contentDiv) {
-                // Devolvemos o foco ao editor para o comando ter um alvo
                 contentDiv.focus();
 
-                // Tenta inserir via comando nativo na posição do cursor
-                const success = document.execCommand('insertImage', false, url);
+                // Restore selection if we have one, otherwise just append
+                const sel = window.getSelection();
+                if (sel && savedRange) {
+                    sel.removeAllRanges();
+                    sel.addRange(savedRange);
+                }
 
-                // Se falhou (sem seleção, fora de foco) ou sumiu, injetamos no final manualmente
-                if (!success || !contentDiv.innerHTML.includes(url)) {
-                    contentDiv.innerHTML += `<br><img src="${url}" alt="Imagem da Notícia" /><br>`;
+                // We create the image element manually as execCommand('insertImage') strips custom styles/attributes
+                const imgNode = document.createElement('img');
+                imgNode.src = url;
+                imgNode.alt = "Imagem da Notícia";
+                // Add inline styling for resize capability within contentEditable
+                imgNode.style.maxWidth = '100%';
+                imgNode.style.height = 'auto';
+                imgNode.style.borderRadius = '8px';
+                imgNode.style.marginTop = '1rem';
+                imgNode.style.marginBottom = '1rem';
+
+                // Essential for enabling resize handles in some browsers inside contentEditable
+                imgNode.style.resize = 'both';
+                imgNode.style.overflow = 'hidden';
+                imgNode.style.display = 'block';
+
+                if (sel && sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
+                    range.deleteContents();
+
+                    // We insert a line break, the image, and another line break for spacing
+                    const br1 = document.createElement('br');
+                    const br2 = document.createElement('br');
+
+                    range.insertNode(br2);
+                    range.insertNode(imgNode);
+                    range.insertNode(br1);
+
+                    // Move cursor after the inserted image
+                    range.setStartAfter(br2);
+                    range.setEndAfter(br2);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                } else {
+                    // Fallback to end
+                    contentDiv.appendChild(document.createElement('br'));
+                    contentDiv.appendChild(imgNode);
+                    contentDiv.appendChild(document.createElement('br'));
                 }
 
                 // Dispara a revalidação do formulário
@@ -322,8 +361,15 @@ export function NewsModal({ isOpen, onClose, initialData }: NewsModalProps) {
                                                 id="hidden-excerpt"
                                             />
                                             <div
-                                                className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4"
+                                                className="w-full flex-1 p-4 prose prose-invert max-w-none focus:outline-none min-h-[300px] text-sm overflow-y-auto text-white/90 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
                                                 contentEditable
+                                                onBlur={() => {
+                                                    // Save selection when the editor loses focus (e.g. clicking the upload button)
+                                                    const sel = window.getSelection();
+                                                    if (sel && sel.rangeCount > 0) {
+                                                        setSavedRange(sel.getRangeAt(0));
+                                                    }
+                                                }}
                                                 onInput={(e) => {
                                                     const value = e.currentTarget.innerHTML;
                                                     setValue('excerpt', value, { shouldValidate: true });
