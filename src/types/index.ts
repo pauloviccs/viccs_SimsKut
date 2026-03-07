@@ -115,6 +115,11 @@ export interface PostReaction {
     created_at: string;
 }
 
+export interface TrendingTag {
+    tag: string;
+    count: number;
+}
+
 // ======== GALERIA ========
 
 export interface GalleryFolder {

@@ -6,7 +6,9 @@ import { LoginPage } from '@/components/auth/LoginPage';
 import { PendingApproval } from '@/components/auth/PendingApproval';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { FeedPage } from '@/components/feed/FeedPage';
-import { GlobalGallery } from '@/components/gallery/GlobalGallery';
+
+import CommunityPage from '@/components/community/CommunityPage';
+import HashtagPage from '@/components/community/HashtagPage';
 import { PrivateGallery } from '@/components/gallery/PrivateGallery';
 import { FamilyConfig } from '@/components/family/FamilyConfig';
 import { AuthCallback } from '@/components/auth/AuthCallback';
@@ -37,7 +39,8 @@ export default function App() {
                     }
                 >
                     <Route path="/feed" element={<FeedPage />} />
-                    <Route path="/gallery/global" element={<GlobalGallery />} />
+                    <Route path="/community" element={<CommunityPage />} />
+                    <Route path="/community/hashtag/:tag" element={<HashtagPage />} />
                     <Route path="/gallery/private" element={<PrivateGallery />} />
                     <Route path="/family" element={<FamilyConfig />} />
                     <Route path="/family-tree" element={<Navigate to="/family" replace />} />

@@ -8,11 +8,15 @@ import type { ReactNode } from 'react';
  * Recebe texto puro, retorna array de ReactNodes (mix de strings + Links).
  */
 
-const MENTION_REGEX = /@([a-zA-Z0-9_#]+)/g;
+const MENTION_REGEX = /@([a-zA-Z0-9_]+)/g;
+const HASHTAG_REGEX = /#([a-zA-Z0-9_À-ÿ]+)/g;
 /** URLs http(s); evita capturar pontuação final */
 const URL_REGEX = /https?:\/\/[^\s\])\}>"']+/gi;
 
 const MENTION_CLASS =
+    'inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded-md bg-white/5 border border-white/10 text-[var(--accent-primary)] hover:bg-white/10 hover:text-white transition-all font-medium whitespace-nowrap';
+
+const HASHTAG_CLASS =
     'inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded-md bg-white/5 border border-white/10 text-[var(--accent-primary)] hover:bg-white/10 hover:text-white transition-all font-medium whitespace-nowrap';
 
 /** Link com comportamento spoiler: oculto até o usuário clicar para revelar */
@@ -45,15 +49,24 @@ function SpoilerLink({ url }: { url: string }) {
     );
 }
 
-type Segment = { start: number; end: number; type: 'mention'; username: string } | { start: number; end: number; type: 'url'; url: string };
+type Segment =
+    | { start: number; end: number; type: 'mention'; username: string }
+    | { start: number; end: number; type: 'hashtag'; tag: string }
+    | { start: number; end: number; type: 'url'; url: string };
 
 function getSegments(text: string): Segment[] {
     const segments: Segment[] = [];
 
     let m: RegExpExecArray | null;
+
     MENTION_REGEX.lastIndex = 0;
     while ((m = MENTION_REGEX.exec(text)) !== null) {
         segments.push({ start: m.index, end: m.index + m[0].length, type: 'mention', username: m[1] });
+    }
+
+    HASHTAG_REGEX.lastIndex = 0;
+    while ((m = HASHTAG_REGEX.exec(text)) !== null) {
+        segments.push({ start: m.index, end: m.index + m[0].length, type: 'hashtag', tag: m[1] });
     }
 
     URL_REGEX.lastIndex = 0;
@@ -75,7 +88,7 @@ function getSegments(text: string): Segment[] {
 }
 
 /**
- * Renderiza conteúdo de post: @menções clicáveis + links como spoiler (revelar ao clicar).
+ * Renderiza conteúdo de post: @menções e #hashtags clicáveis + links como spoiler (revelar ao clicar).
  */
 export function renderPostContent(text: string): ReactNode[] {
     const segments = getSegments(text);
@@ -88,6 +101,7 @@ export function renderPostContent(text: string): ReactNode[] {
         if (seg.start > lastIndex) {
             parts.push(text.slice(lastIndex, seg.start));
         }
+
         if (seg.type === 'mention') {
             parts.push(
                 <Link
@@ -99,7 +113,18 @@ export function renderPostContent(text: string): ReactNode[] {
                     @{seg.username}
                 </Link>
             );
-        } else {
+        } else if (seg.type === 'hashtag') {
+            parts.push(
+                <Link
+                    key={`hashtag-${seg.start}`}
+                    to={`/community/hashtag/${encodeURIComponent(seg.tag)}`}
+                    className={HASHTAG_CLASS}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    #{seg.tag}
+                </Link>
+            );
+        } else if (seg.type === 'url') {
             parts.push(<SpoilerLink key={`url-${seg.start}`} url={seg.url} />);
         }
         lastIndex = seg.end;
@@ -113,35 +138,7 @@ export function renderPostContent(text: string): ReactNode[] {
 }
 
 export function renderMentions(text: string): ReactNode[] {
-    const parts: ReactNode[] = [];
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
-
-    MENTION_REGEX.lastIndex = 0;
-
-    while ((match = MENTION_REGEX.exec(text)) !== null) {
-        if (match.index > lastIndex) {
-            parts.push(text.slice(lastIndex, match.index));
-        }
-
-        const username = match[1];
-        parts.push(
-            <Link
-                key={`mention-${match.index}`}
-                to={`/profile/${encodeURIComponent(username)}`}
-                className={MENTION_CLASS}
-                onClick={(e) => e.stopPropagation()}
-            >
-                @{username}
-            </Link>
-        );
-
-        lastIndex = match.index + match[0].length;
-    }
-
-    if (lastIndex < text.length) {
-        parts.push(text.slice(lastIndex));
-    }
-
-    return parts.length > 0 ? parts : [text];
+    // Para renderMentions apenas da galeria, repassamos pro parser completo
+    // Que agora unifica tanto menções quanto hashtags
+    return renderPostContent(text);
 }

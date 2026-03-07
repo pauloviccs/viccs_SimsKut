@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Image, Camera, Users, Settings, Shield, LogOut, ArrowLeft, PanelLeftClose, PanelLeftOpen, UserCircle } from 'lucide-react';
+import { Home, Camera, Users, Settings, Shield, LogOut, ArrowLeft, PanelLeftClose, PanelLeftOpen, UserCircle, Compass } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useSidebarStore } from '@/store/sidebarStore';
 import { signOut } from '@/lib/authService';
@@ -8,7 +8,7 @@ import { NotificationsPanel } from '@/components/ui/NotificationsPanel';
 
 const navItems = [
     { to: '/feed', icon: Home, label: 'Feed' },
-    { to: '/gallery/global', icon: Image, label: 'Galeria Global' },
+    { to: '/community', icon: Compass, label: 'Comunidade' },
     { to: '/gallery/private', icon: Camera, label: 'Minha Galeria' },
     { to: '/family', icon: Users, label: 'Minha Família' },
     { to: '/settings', icon: Settings, label: 'Configurações' },
