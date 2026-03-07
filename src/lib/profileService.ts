@@ -31,6 +31,7 @@ export async function updateProfile(
     userId: string,
     data: {
         display_name?: string;
+        display_title?: string | null;
         bio?: string;
         website_url?: string | null;
     }

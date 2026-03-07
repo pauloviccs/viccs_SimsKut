@@ -3,6 +3,7 @@ export interface Challenge {
     title: string;
     slug: string;
     description: string;
+    hashtag?: string;
     rules?: string;
     thumbnail_url?: string;
     badge_image_url: string;

@@ -253,7 +253,12 @@ export function ProfilePage() {
                     <h1 className="text-xl font-bold text-white/95">
                         {profile.display_name || profile.username}
                     </h1>
-                    <p className="text-sm text-white/40">@{profile.username}</p>
+                    <div className="flex flex-col gap-0.5">
+                        <p className="text-sm text-white/40">@{profile.username}</p>
+                        {profile.display_title && (
+                            <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider">{profile.display_title}</p>
+                        )}
+                    </div>
                 </div>
 
                 {/* Bio */}

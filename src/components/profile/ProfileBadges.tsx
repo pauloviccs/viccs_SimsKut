@@ -13,12 +13,11 @@ export function ProfileBadges({ userId, isOwnProfile }: { userId: string; isOwnP
         );
     }
 
-    if (badges.length === 0) {
-        return null; // Não exibe se não houver badges
-    }
+    const featuredBadges = badges.filter(b => b.is_featured).slice(0, 5);
 
-    const featuredBadges = badges.filter(b => b.is_featured);
-    const otherBadges = badges.filter(b => !b.is_featured);
+    if (featuredBadges.length === 0 && !isOwnProfile) {
+        return null; // Visitante não vê nada se não tiver destaque
+    }
 
     return (
         <div className="mt-6 mb-2">
@@ -27,7 +26,7 @@ export function ProfileBadges({ userId, isOwnProfile }: { userId: string; isOwnP
                 Emblemas de Desafios
             </h3>
 
-            {featuredBadges.length > 0 && (
+            {featuredBadges.length > 0 ? (
                 <div className="flex flex-wrap gap-4 mb-4">
                     {featuredBadges.map(badge => (
                         <BadgeDisplay
@@ -38,19 +37,10 @@ export function ProfileBadges({ userId, isOwnProfile }: { userId: string; isOwnP
                         />
                     ))}
                 </div>
-            )}
-
-            {otherBadges.length > 0 && (
-                <div className="flex flex-wrap gap-3">
-                    {otherBadges.map(badge => (
-                        <BadgeDisplay
-                            key={badge.id}
-                            badge={badge}
-                            isOwner={isOwnProfile}
-                            onUpdate={reload}
-                        />
-                    ))}
-                </div>
+            ) : (
+                <p className="text-xs text-white/40 italic">
+                    Nenhum emblema em destaque. Edite seu perfil para escolher.
+                </p>
             )}
         </div>
     );

@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { FileImage, AlertCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { GlassCard } from '../../ui/GlassCard';
 import { GlassButton } from '../../ui/GlassButton';
 
 interface MilestoneUploadModalProps {
     milestoneTitle: string;
+    hashtag?: string;
     onClose: () => void;
     onSubmit: (media1: File, media2?: File, note?: string) => Promise<void>;
 }
 
-export function MilestoneUploadModal({ milestoneTitle, onClose, onSubmit }: MilestoneUploadModalProps) {
+export function MilestoneUploadModal({ milestoneTitle, hashtag, onClose, onSubmit }: MilestoneUploadModalProps) {
     const [file1, setFile1] = useState<File | null>(null);
     const [file2, setFile2] = useState<File | null>(null);
     const [note, setNote] = useState('');
@@ -58,10 +58,9 @@ export function MilestoneUploadModal({ milestoneTitle, onClose, onSubmit }: Mile
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-lg"
+                className="w-full max-w-lg max-h-[90vh] overflow-y-auto"
             >
-                <GlassCard className="p-0 overflow-hidden">
+                <div className="relative bg-[#0f0f13]/95 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
                     <div className="p-6 border-b border-white/10 bg-white/5">
                         <h2 className="text-xl font-bold text-white mb-1">Registrar Conquista</h2>
                         <p className="text-sm text-white/60">{milestoneTitle}</p>
@@ -127,6 +126,11 @@ export function MilestoneUploadModal({ milestoneTitle, onClose, onSubmit }: Mile
                                 className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none custom-scrollbar"
                                 placeholder="Conte algo sobre essa etapa..."
                             />
+                            {hashtag && (
+                                <p className="text-xs text-amber-400 mt-2">
+                                    Essa atualização será postada na comunidade com a hashtag <strong>{hashtag}</strong>.
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
@@ -138,7 +142,7 @@ export function MilestoneUploadModal({ milestoneTitle, onClose, onSubmit }: Mile
                             </GlassButton>
                         </div>
                     </form>
-                </GlassCard>
+                </div>
             </motion.div>
         </div>
     );

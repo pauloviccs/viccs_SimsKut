@@ -46,7 +46,9 @@ export function ChallengeCard({ challenge, onClick }: ChallengeCardProps) {
             <div className="absolute inset-x-0 bottom-0 p-5 pt-32 bg-gradient-to-t from-[#0a0a0a] via-black/80 to-transparent flex flex-col justify-end">
                 <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                     <h3 className="line-clamp-2 text-xl font-bold text-white drop-shadow-md mb-1">{challenge.title}</h3>
-                    <p className="text-sm text-white/70 line-clamp-2 leading-relaxed mb-4">{challenge.description}</p>
+                    <p className="text-sm text-white/70 line-clamp-2 leading-relaxed mb-4">
+                        {challenge.description?.replace(/<[^>]*>?/gm, '')}
+                    </p>
 
                     <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-white/70 font-medium">
                         <span className="flex shrink-0 items-center gap-1.5 drop-shadow-sm bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/5">

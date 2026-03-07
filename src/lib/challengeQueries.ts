@@ -116,6 +116,9 @@ export async function completeMilestone({
     mediaFile1,
     mediaFile2,
     note,
+    hashtag,
+    isFinal,
+    challengeId,
 }: {
     participantId: string;
     milestoneId: string;
@@ -123,6 +126,9 @@ export async function completeMilestone({
     mediaFile1: File;
     mediaFile2?: File;
     note?: string;
+    hashtag?: string | null;
+    isFinal?: boolean;
+    challengeId?: string;
 }): Promise<MilestoneEntry> {
     const entryId = crypto.randomUUID();
     const basePath = `${userId}/${entryId}`;
@@ -157,8 +163,8 @@ export async function completeMilestone({
         url2 = publicUrl;
     }
 
-    // Inserir entrada no banco
-    const { data, error } = await supabase
+    // Inserir entrada no banco para o check-in do milestone
+    const { data: entryData, error: entryError } = await supabase
         .from('challenge_milestone_entries')
         .insert({
             id: entryId,
@@ -172,8 +178,80 @@ export async function completeMilestone({
         .select()
         .single();
 
+    if (entryError) throw entryError;
+
+    // Criar post na aba da comunidade usando feedService-like logic (direct query para feed_posts evita deps circulares grossas mas como import feedService daria erro, fazemos o direct query aqui ou importamos o básico)
+    try {
+        let postContent = note ? note : 'Check-in de etapa cumprido!';
+        if (hashtag) {
+            postContent += `\n\n${hashtag}`;
+        }
+
+        const imageUrlsForFeed = [url1];
+        if (url2) imageUrlsForFeed.push(url2);
+
+        const imageUrlStr = imageUrlsForFeed.length === 1 ? imageUrlsForFeed[0] : JSON.stringify(imageUrlsForFeed);
+
+        await supabase.from('feed_posts').insert({
+            author_id: userId,
+            content: postContent,
+            image_url: imageUrlStr,
+            is_spoiler: false,
+        });
+
+    } catch (e) {
+        console.error('Non-blocking error: missed to feed post creation during milestone', e);
+    }
+
+    // Se for a última milestone, recompensa a badge automaticamente.
+    if (isFinal && challengeId) {
+        try {
+            await awardBadgeToUser(challengeId, userId);
+        } catch (e) {
+            console.error('Non-blocking error: user badge rewarding failed heavily', e);
+        }
+    }
+
+    return entryData;
+}
+
+// ── [ADMIN / AUTO] Recompensar badge para o usuário ──
+export async function awardBadgeToUser(challengeId: string, userId: string): Promise<void> {
+    // 1. Fetch Challenge setup para as credenciais da badge
+    const { data: challenge } = await supabase
+        .from('challenges')
+        .select('badge_title, badge_image_url')
+        .eq('id', challengeId)
+        .single();
+
+    if (!challenge || !challenge.badge_title || !challenge.badge_image_url) {
+        return; // não tem badge registrada
+    }
+
+    // 2. Check se já possui
+    const { data: existing } = await supabase
+        .from('user_badges')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('challenge_id', challengeId)
+        .maybeSingle();
+
+    if (existing) {
+        return; // Já ganhou a badge
+    }
+
+    // 3. Destribuir badge
+    const { error } = await supabase
+        .from('user_badges')
+        .insert({
+            user_id: userId,
+            challenge_id: challengeId,
+            badge_title: challenge.badge_title,
+            badge_image_url: challenge.badge_image_url,
+            is_featured: false
+        });
+
     if (error) throw error;
-    return data;
 }
 
 // ── Buscar badges do usuário ──
@@ -214,6 +292,32 @@ export async function toggleFeaturedBadge(
         .eq('user_id', userId);
 
     if (error) throw error;
+}
+
+// ── Atualizar múltiplos destaques de uma vez (Modal de Perfil) ──
+export async function updateFeaturedBadges(userId: string, badgeIds: string[]): Promise<void> {
+    if (badgeIds.length > 5) {
+        throw new Error('Você pode selecionar no máximo 5 emblemas para destaque.');
+    }
+
+    // Primeiro, removemos destaque de todas as badges do usuário
+    const { error: resetError } = await supabase
+        .from('user_badges')
+        .update({ is_featured: false })
+        .eq('user_id', userId);
+
+    if (resetError) throw resetError;
+
+    // Agora ativamos destaque apenas nas selecionadas
+    if (badgeIds.length > 0) {
+        const { error: updateError } = await supabase
+            .from('user_badges')
+            .update({ is_featured: true })
+            .eq('user_id', userId)
+            .in('id', badgeIds);
+
+        if (updateError) throw updateError;
+    }
 }
 
 // ── [ADMIN] Criar desafio ──
@@ -270,4 +374,29 @@ export async function upsertMilestones(
 
     if (error) throw error;
     return data ?? [];
+}
+
+// ── [ADMIN] Remover Badge do Usuário ──
+export async function removeUserBadge(badgeId: string): Promise<void> {
+    const { error } = await supabase
+        .from('user_badges')
+        .delete()
+        .eq('id', badgeId);
+
+    if (error) throw error;
+}
+
+// ── [ADMIN] Fetch Badges catalog available from all challenges ──
+export async function fetchAllChallengeBadges(): Promise<{ id: string; title: string; image_url: string }[]> {
+    const { data, error } = await supabase
+        .from('challenges')
+        .select('id, badge_title, badge_image_url')
+        .not('badge_title', 'is', null);
+
+    if (error) throw error;
+
+    // dedup 
+    return data
+        ? data.map(d => ({ id: d.id, title: d.badge_title, image_url: d.badge_image_url }))
+        : [];
 }

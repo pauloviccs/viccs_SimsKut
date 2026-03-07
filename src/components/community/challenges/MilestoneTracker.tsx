@@ -31,6 +31,9 @@ export function MilestoneTracker({ challenge, onUpdate }: MilestoneTrackerProps)
             mediaFile1: media1,
             mediaFile2: media2,
             note,
+            hashtag: challenge.hashtag,
+            isFinal: selectedMilestone.is_final,
+            challengeId: challenge.id
         });
         toast.success('Conquista registrada com sucesso!');
         onUpdate();
@@ -43,9 +46,16 @@ export function MilestoneTracker({ challenge, onUpdate }: MilestoneTrackerProps)
 
             <div className="space-y-8 relative">
                 {milestones.map((milestone, index) => {
-                    const isCompleted = !!milestone.my_entry;
-                    // Verifica se o milestone anterior (se houver) está concluído
-                    const previousCompleted = index === 0 || !!milestones[index - 1].my_entry;
+                    const rawEntry = milestone.my_entry as any;
+                    const entryArray = Array.isArray(rawEntry) ? rawEntry : (rawEntry ? [rawEntry] : []);
+                    const myEntry = entryArray.find((e: any) => e && e.user_id === user?.id);
+                    const isCompleted = !!myEntry;
+
+                    const prevEntryRaw = index === 0 ? null : (milestones[index - 1].my_entry as any);
+                    const prevEntryArray = Array.isArray(prevEntryRaw) ? prevEntryRaw : (prevEntryRaw ? [prevEntryRaw] : []);
+                    const prevEntry = index === 0 ? null : prevEntryArray.find((e: any) => e && e.user_id === user?.id);
+
+                    const previousCompleted = index === 0 || !!prevEntry;
                     const isCurrent = !isCompleted && previousCompleted;
                     const isLocked = !isCompleted && !isCurrent;
 
@@ -87,23 +97,23 @@ export function MilestoneTracker({ challenge, onUpdate }: MilestoneTrackerProps)
                                 )}
 
                                 {/* Área de Ação ou Visualização */}
-                                {isCompleted && milestone.my_entry ? (
+                                {isCompleted && myEntry ? (
                                     <div className="mt-4 pt-4 border-t border-white/10">
                                         <div className="flex gap-3">
-                                            {milestone.my_entry.media_url_1 && (
+                                            {myEntry.media_url_1 && (
                                                 <div className="w-20 h-20 rounded-lg overflow-hidden border border-white/10 relative group">
-                                                    <img src={milestone.my_entry.media_url_1} alt="Evidência 1" className="w-full h-full object-cover" />
+                                                    <img src={myEntry.media_url_1} alt="Evidência 1" className="w-full h-full object-cover" />
                                                 </div>
                                             )}
-                                            {milestone.my_entry.media_url_2 && (
+                                            {myEntry.media_url_2 && (
                                                 <div className="w-20 h-20 rounded-lg overflow-hidden border border-white/10 relative group">
-                                                    <img src={milestone.my_entry.media_url_2} alt="Evidência 2" className="w-full h-full object-cover" />
+                                                    <img src={myEntry.media_url_2} alt="Evidência 2" className="w-full h-full object-cover" />
                                                 </div>
                                             )}
                                         </div>
-                                        {milestone.my_entry.note && (
+                                        {myEntry.note && (
                                             <p className="mt-3 text-xs text-white/50 italic border-l-2 border-white/10 pl-2">
-                                                "{milestone.my_entry.note}"
+                                                "{myEntry.note}"
                                             </p>
                                         )}
                                     </div>
@@ -129,6 +139,7 @@ export function MilestoneTracker({ challenge, onUpdate }: MilestoneTrackerProps)
                 {selectedMilestone && (
                     <MilestoneUploadModal
                         milestoneTitle={selectedMilestone.title}
+                        hashtag={challenge.hashtag}
                         onClose={() => setSelectedMilestone(null)}
                         onSubmit={handleUploadSubmit}
                     />

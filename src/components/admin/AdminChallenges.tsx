@@ -3,6 +3,7 @@ import { Plus, Loader2, RefreshCw, Edit } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { ChallengeAdminForm } from '../community/challenges/ChallengeAdminForm';
+import { AdminBadgeManager } from './AdminBadgeManager';
 import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -145,6 +146,8 @@ export function AdminChallenges() {
                     </table>
                 </div>
             </GlassCard>
+
+            <AdminBadgeManager />
 
             {(isCreating || editingChallenge) && (
                 <ChallengeAdminForm

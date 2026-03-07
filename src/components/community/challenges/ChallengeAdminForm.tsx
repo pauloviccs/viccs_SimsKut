@@ -5,7 +5,43 @@ import { supabase } from '../../../lib/supabaseClient';
 import { GlassCard } from '../../ui/GlassCard';
 import { GlassButton } from '../../ui/GlassButton';
 import { toast } from 'sonner';
-import { Plus, X, Loader2 } from 'lucide-react';
+import { Plus, X, Loader2, Bold, Italic, Underline, Link as LinkIcon, Strikethrough, Code, List, ListOrdered, Quote, Minus, Eraser } from 'lucide-react';
+
+const EditorToolbar = () => (
+    <div className="flex items-center flex-wrap gap-1 p-2 border-b border-white/10 bg-white/5 rounded-t-xl">
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('bold', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Negrito"><Bold size={16} /></button>
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('italic', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Itálico"><Italic size={16} /></button>
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('underline', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Sublinhado"><Underline size={16} /></button>
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('strikeThrough', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Tachado"><Strikethrough size={16} /></button>
+        <button type="button" onMouseDown={(e) => {
+            e.preventDefault();
+            const selection = window.getSelection()?.toString();
+            if (selection) {
+                document.execCommand('insertHTML', false, `<code>${selection}</code>`);
+            } else {
+                document.execCommand('formatBlock', false, 'PRE');
+            }
+        }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Código"><Code size={16} /></button>
+        <div className="w-px h-4 bg-white/10 mx-1"></div>
+        <button type="button" onMouseDown={(e) => {
+            e.preventDefault();
+            const url = prompt('Cole o link:');
+            if (url) document.execCommand('createLink', false, url);
+        }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Adicionar Link"><LinkIcon size={16} /></button>
+
+        <div className="w-px h-4 bg-white/10 mx-1"></div>
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertUnorderedList', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista com Marcadores"><List size={16} /></button>
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertOrderedList', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Lista Numerada"><ListOrdered size={16} /></button>
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('formatBlock', false, 'BLOCKQUOTE'); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Citação"><Quote size={16} /></button>
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertHorizontalRule', false); }} className="p-1.5 rounded hover:bg-white/10 text-white/70 hover:text-white transition-colors" title="Linha Divisória"><Minus size={16} /></button>
+
+        <div className="w-px h-4 bg-white/10 mx-1 hidden sm:block"></div>
+        <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('removeFormat', false); }} className="p-1.5 rounded hover:bg-destructive/20 text-white/70 hover:text-destructive transition-colors ml-auto flex items-center gap-1" title="Limpar todas as formatações">
+            <Eraser size={16} />
+            <span className="text-xs font-medium pr-1 hidden sm:inline-block">Limpar</span>
+        </button>
+    </div>
+);
 
 interface ChallengeAdminFormProps {
     onClose: () => void;
@@ -20,6 +56,7 @@ export function ChallengeAdminForm({ onClose, initialData }: ChallengeAdminFormP
         title: initialData?.title || '',
         slug: initialData?.slug || '',
         description: initialData?.description || '',
+        hashtag: initialData?.hashtag || '',
         rules: initialData?.rules || '',
         badge_title: initialData?.badge_title || '',
         status: initialData?.status || 'active',
@@ -91,6 +128,7 @@ export function ChallengeAdminForm({ onClose, initialData }: ChallengeAdminFormP
                 title: formData.title,
                 slug: formData.slug || mockChallengeId,
                 description: formData.description,
+                hashtag: formData.hashtag,
                 rules: formData.rules,
                 badge_title: formData.badge_title,
                 status: formData.status,
@@ -150,16 +188,37 @@ export function ChallengeAdminForm({ onClose, initialData }: ChallengeAdminFormP
                                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/50" />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-white/80 mb-2">Descrição (Resumo)</label>
-                                <textarea required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/50 resize-none" />
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-white/80">Descrição (Resumo)</label>
+                                <div className="border border-white/10 rounded-xl overflow-hidden bg-white/5 flex flex-col focus-within:border-amber-500/50 focus-within:ring-1 focus-within:ring-amber-500/50 transition-all">
+                                    <EditorToolbar />
+                                    <div
+                                        className="w-full p-4 prose prose-invert max-w-none focus:outline-none min-h-[120px] text-sm overflow-y-auto text-white/90 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-500/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
+                                        contentEditable
+                                        onInput={(e) => setFormData({ ...formData, description: e.currentTarget.innerHTML })}
+                                        dangerouslySetInnerHTML={{ __html: initialData?.description || '' }}
+                                    />
+                                </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-white/80 mb-2">Regras Completas (Markdown)</label>
-                                <textarea value={formData.rules} onChange={e => setFormData({ ...formData, rules: e.target.value })}
-                                    className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/50 resize-y" />
+                                <label className="block text-sm font-medium text-white/80 mb-2">Hashtag de Integração</label>
+                                <input required type="text" placeholder="#NomeDoDesafio" value={formData.hashtag} onChange={e => setFormData({ ...formData, hashtag: e.target.value.startsWith('#') ? e.target.value : `#${e.target.value}` })}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:ring-2 focus:ring-amber-500/50" />
+                                <p className="text-xs text-white/40 mt-1">Hashtag usada automaticamente nos envios (ex: #SimsChallenge)</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-white/80">Regras Completas (Opcional)</label>
+                                <div className="border border-white/10 rounded-xl overflow-hidden bg-white/5 flex flex-col focus-within:border-amber-500/50 focus-within:ring-1 focus-within:ring-amber-500/50 transition-all">
+                                    <EditorToolbar />
+                                    <div
+                                        className="w-full p-4 prose prose-invert max-w-none focus:outline-none min-h-[160px] text-sm overflow-y-auto text-white/90 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-500/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
+                                        contentEditable
+                                        onInput={(e) => setFormData({ ...formData, rules: e.currentTarget.innerHTML })}
+                                        dangerouslySetInnerHTML={{ __html: initialData?.rules || '' }}
+                                    />
+                                </div>
                             </div>
                         </div>
 

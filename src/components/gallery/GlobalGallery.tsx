@@ -22,7 +22,13 @@ export function GlobalGallery() {
         getPublicPhotos(30, 0) // Limit to top 30 recent
             .then((data) => {
                 if (mounted) {
-                    setPhotos(data);
+                    // Distribuição aleatória (Fisher-Yates shuffle) para parecer um "shuffle"
+                    const shuffledArray = [...data];
+                    for (let i = shuffledArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+                    }
+                    setPhotos(shuffledArray);
                 }
             })
             .catch(console.error)
@@ -198,8 +204,8 @@ export function GlobalGallery() {
                             key={idx}
                             onClick={() => setCurrentIndex(idx)}
                             className={`h-1.5 rounded-full transition-all duration-300 ${currentIndex === idx
-                                    ? 'w-6 bg-[var(--accent-primary)] shadow-[0_0_8px_rgba(var(--accent-primary-rgb),0.8)]'
-                                    : 'w-1.5 bg-white/20 hover:bg-white/40'
+                                ? 'w-6 bg-[var(--accent-primary)] shadow-[0_0_8px_rgba(var(--accent-primary-rgb),0.8)]'
+                                : 'w-1.5 bg-white/20 hover:bg-white/40'
                                 }`}
                             aria-label={`Ir para a imagem ${idx + 1}`}
                         />

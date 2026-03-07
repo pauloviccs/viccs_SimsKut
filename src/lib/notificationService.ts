@@ -24,7 +24,8 @@ export interface AppNotification {
     | 'reaction_post'
     | 'new_post_friend'
     | 'friend_accept'
-    | 'family_update';
+    | 'family_update'
+    | 'badge_awarded';
     reference_id: string | null;
     content: string | null;
     read: boolean;

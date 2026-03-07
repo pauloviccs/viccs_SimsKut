@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Camera, Loader2, LinkIcon } from 'lucide-react';
+import { X, Camera, Loader2, LinkIcon, Award } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { AvatarCropper } from '@/components/settings/AvatarCropper';
@@ -8,7 +8,10 @@ import { BannerCropper } from '@/components/settings/BannerCropper';
 import { useAuthStore } from '@/store/authStore';
 import { uploadAvatar, updateProfileAvatar } from '@/lib/avatarService';
 import { updateProfile, uploadBanner, updateProfileBanner } from '@/lib/profileService';
+import { fetchUserBadges, updateFeaturedBadges } from '@/lib/challengeQueries';
+import { toast } from 'sonner';
 import type { Profile } from '@/types';
+import type { UserBadge } from '@/types/challenges';
 
 interface ProfileEditModalProps {
     profile: Profile;
@@ -24,6 +27,12 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
     const [websiteUrl, setWebsiteUrl] = useState(profile.website_url || '');
     const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url);
     const [bannerPreview, setBannerPreview] = useState(profile.banner_url);
+
+    // Novas states para Título e Emblemas
+    const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+    const [selectedTitle, setSelectedTitle] = useState(profile.display_title || '');
+    const [featuredBadgeIds, setFeaturedBadgeIds] = useState<string[]>([]);
+
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 
@@ -38,11 +47,18 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
     const [bannerBlob, setBannerBlob] = useState<Blob | null>(null);
 
     useEffect(() => {
+        if (user) {
+            fetchUserBadges(user.id).then(badges => {
+                setUserBadges(badges);
+                setFeaturedBadgeIds(badges.filter(b => b.is_featured).map(b => b.id));
+            }).catch(console.error);
+        }
+
         return () => {
             if (avatarBlobUrlRef.current) URL.revokeObjectURL(avatarBlobUrlRef.current);
             if (bannerBlobUrlRef.current) URL.revokeObjectURL(bannerBlobUrlRef.current);
         };
-    }, []);
+    }, [user]);
 
     const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -127,17 +143,21 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
             if (displayName !== (profile.display_name || '')) textUpdates.display_name = displayName;
             if (bio !== (profile.bio || '')) textUpdates.bio = bio || null;
             if (websiteUrl !== (profile.website_url || '')) textUpdates.website_url = websiteUrl || null;
+            if (selectedTitle !== (profile.display_title || '')) textUpdates.display_title = selectedTitle || null;
 
             if (Object.keys(textUpdates).length > 0) {
                 await updateProfile(user.id, textUpdates);
                 Object.assign(updates, textUpdates);
             }
 
+            // Atualizar Badges
+            await updateFeaturedBadges(user.id, featuredBadgeIds);
+
             // Atualizar estado
-            if (Object.keys(updates).length > 0) {
+            if (Object.keys(updates).length > 0 || featuredBadgeIds.length >= 0) {
                 onSave(updates);
                 // Atualizar authStore para sincronizar Sidebar/Navbar
-                if (authProfile) {
+                if (authProfile && Object.keys(updates).length > 0) {
                     setAuthProfile({ ...authProfile, ...updates });
                 }
             }
@@ -278,6 +298,75 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
                                 maxLength={100}
                                 placeholder="https://meusite.com"
                             />
+                        </div>
+
+                        {/* Separador */}
+                        <div className="h-px bg-white/5 my-4" />
+
+                        {/* Title Selector */}
+                        <div>
+                            <label className="block text-xs text-amber-400/80 uppercase font-semibold tracking-wider mb-2 flex items-center gap-1">
+                                <Award size={12} /> Título do Perfil
+                            </label>
+                            <select
+                                value={selectedTitle || ''}
+                                onChange={(e) => setSelectedTitle(e.target.value)}
+                                className="w-full px-3 py-2.5 rounded-[var(--radius-sm)] bg-white/[0.06] border border-white/10 text-sm text-white/90 placeholder-white/30 focus:outline-none focus:border-[var(--accent-primary)]/40 transition-colors appearance-none cursor-pointer"
+                            >
+                                <option value="" className="bg-[#0f0f13] text-white">Nenhum</option>
+                                {Array.from(new Set(userBadges.map(b => b.badge_title))).map(title => (
+                                    <option key={title} value={title} className="bg-[#0f0f13] text-white">
+                                        {title}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-[10px] text-white/40 mt-1.5">Escolha um título obtido em desafios para exibir em seu perfil.</p>
+                        </div>
+
+                        {/* Badges Selector */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-xs text-amber-400/80 uppercase font-semibold tracking-wider flex items-center gap-1">
+                                    <Award size={12} /> Emblemas em Destaque
+                                </label>
+                                <span className="text-[10px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full">{featuredBadgeIds.length}/5</span>
+                            </div>
+
+                            {userBadges.length === 0 ? (
+                                <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
+                                    <p className="text-xs text-white/50">Você ainda não completou nenhum desafio para ganhar emblemas.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                                    {userBadges.map(badge => {
+                                        const isSelected = featuredBadgeIds.includes(badge.id);
+                                        return (
+                                            <div
+                                                key={badge.id}
+                                                onClick={() => {
+                                                    if (isSelected) {
+                                                        setFeaturedBadgeIds(prev => prev.filter(id => id !== badge.id));
+                                                    } else if (featuredBadgeIds.length < 5) {
+                                                        setFeaturedBadgeIds(prev => [...prev, badge.id]);
+                                                    } else {
+                                                        toast.error('Você já selecionou o limite máximo de 5 emblemas.');
+                                                    }
+                                                }}
+                                                className={`aspect-square rounded-xl overflow-hidden cursor-pointer transition-all border-2 relative
+                                                    ${isSelected
+                                                        ? 'border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)] scale-95'
+                                                        : 'border-white/5 hover:border-white/20 opacity-60 hover:opacity-100'
+                                                    }`}
+                                            >
+                                                <img src={badge.badge_image_url} alt={badge.badge_title} className="w-full h-full object-cover" />
+                                                {isSelected && (
+                                                    <div className="absolute top-1 right-1 w-3 h-3 bg-amber-400 rounded-full border border-[#0f0f13]" />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Error */}

@@ -138,18 +138,19 @@ export function ChallengeDetailModal({ challenge, onClose, onProgressUpdate }: C
 
                         <div className="prose prose-invert max-w-none">
                             <h3 className="text-xl font-semibold text-white mb-3">Sobre o Desafio</h3>
-                            <p className="text-white/80 whitespace-pre-wrap leading-relaxed">{challenge.description}</p>
+                            <div
+                                className="text-white/80 leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-500/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
+                                dangerouslySetInnerHTML={{ __html: challenge.description }}
+                            />
 
                             {challenge.rules && (
                                 <>
                                     <div className="h-px w-full bg-white/10 my-8" />
                                     <h3 className="text-xl font-semibold text-white mb-3">Regras</h3>
-                                    <div className="text-white/80 whitespace-pre-wrap leading-relaxed space-y-4">
-                                        {/* Basic markdown rendering. For advanced, consider react-markdown */}
-                                        {challenge.rules.split('\n').map((paragraph, i) => (
-                                            <p key={i}>{paragraph}</p>
-                                        ))}
-                                    </div>
+                                    <div
+                                        className="text-white/80 leading-relaxed space-y-4 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-500/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-white/70"
+                                        dangerouslySetInnerHTML={{ __html: challenge.rules }}
+                                    />
                                 </>
                             )}
                         </div>
