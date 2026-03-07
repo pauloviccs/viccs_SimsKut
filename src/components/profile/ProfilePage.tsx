@@ -11,6 +11,7 @@ import { ProfileEditModal } from './ProfileEditModal';
 import { FriendsListModal } from './FriendsListModal';
 import { SimDetailsModal } from './SimDetailsModal';
 import { PhotoLightbox } from '@/components/gallery/PhotoLightbox';
+import { ProfileBadges } from './ProfileBadges';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore, normalizeZenThemeConfig } from '@/store/themeStore';
 import {
@@ -299,6 +300,9 @@ export function ProfilePage() {
                         <span className="text-white/40 font-normal ml-1">Fotos</span>
                     </span>
                 </div>
+
+                {/* Emblemas / Badges */}
+                <ProfileBadges userId={profile.id} isOwnProfile={isOwnProfile} />
             </div>
 
             {/* =========== TABS =========== */}

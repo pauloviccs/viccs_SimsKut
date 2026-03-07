@@ -11,6 +11,7 @@ import {
     ArrowLeft,
     Sparkles,
     Newspaper,
+    Trophy,
 } from 'lucide-react';
 import { FluidBackground } from '@/components/ui/FluidBackground';
 import { AdminOverview } from './AdminOverview';
@@ -19,16 +20,18 @@ import { UserManager } from './UserManager';
 import { AdminFeed } from './AdminFeed';
 import { AdminNews } from './AdminNews';
 import { AdminProfile } from './AdminProfile';
+import { AdminChallenges } from './AdminChallenges';
 import { signOut } from '@/lib/authService';
 import { useAuthStore } from '@/store/authStore';
 
-type AdminTab = 'overview' | 'invites' | 'users' | 'news' | 'feed' | 'profile';
+type AdminTab = 'overview' | 'invites' | 'users' | 'news' | 'challenges' | 'feed' | 'profile';
 
 const tabs: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'overview', label: 'Visão Geral', icon: LayoutDashboard },
     { id: 'invites', label: 'Convites', icon: Ticket },
     { id: 'users', label: 'Usuários', icon: Users },
     { id: 'news', label: 'Notícias', icon: Newspaper },
+    { id: 'challenges', label: 'Desafios', icon: Trophy },
     { id: 'feed', label: 'Feed Geral', icon: MessageSquare },
     { id: 'profile', label: 'Meu Perfil', icon: UserCog },
 ];
@@ -54,6 +57,8 @@ export function AdminDashboard() {
                 return <UserManager />;
             case 'news':
                 return <AdminNews />;
+            case 'challenges':
+                return <AdminChallenges />;
             case 'feed':
                 return <AdminFeed />;
             case 'profile':
