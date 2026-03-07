@@ -57,6 +57,7 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
     }, [post.id, post.reactions]);
 
     const isAuthor = user?.id === post.author_id;
+    const canShowMenu = isAuthor || isAdmin || (post.is_spoiler && isRevealed);
 
     const handleLike = async () => {
         if (!user || liking) return;
@@ -164,11 +165,11 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
                 </div>
 
                 {/* Menu */}
-                {(isAuthor || isAdmin) && (
-                    <div className="relative">
+                {canShowMenu && (
+                    <div className="relative z-50">
                         <button
                             onClick={() => setShowMenu(!showMenu)}
-                            className="w-8 h-8 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-white/30 hover:text-white/60 transition-colors cursor-pointer"
+                            className="w-8 h-8 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-white/30 hover:text-white/60 transition-colors cursor-pointer relative"
                         >
                             <MoreHorizontal size={16} />
                         </button>
@@ -176,8 +177,18 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="absolute right-0 top-full mt-1 glass-popup rounded-[var(--radius-sm)] border border-white/10 py-1 z-10 min-w-[120px]"
+                                className="absolute right-0 top-full mt-1 glass-popup rounded-[var(--radius-sm)] border border-white/10 py-1 z-[100] min-w-[150px] shadow-xl overflow-hidden"
                             >
+                                {post.is_spoiler && isRevealed && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setIsRevealed(false); setShowMenu(false); }}
+                                        className="w-full px-3 py-2 text-sm text-white/80 hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors"
+                                    >
+                                        <EyeOff size={14} />
+                                        Ocultar Spoiler
+                                    </button>
+                                )}
                                 {isAuthor && (
                                     <button
                                         type="button"
@@ -207,14 +218,16 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
                                         )}
                                     </button>
                                 )}
-                                <button
-                                    type="button"
-                                    onClick={handleDelete}
-                                    className="w-full px-3 py-2 text-sm text-[var(--accent-danger)] hover:bg-white/10 flex items-center gap-2 cursor-pointer"
-                                >
-                                    <Trash2 size={14} />
-                                    Deletar
-                                </button>
+                                {(isAuthor || isAdmin) && (
+                                    <button
+                                        type="button"
+                                        onClick={handleDelete}
+                                        className="w-full px-3 py-2 text-sm text-[var(--accent-danger)] hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors"
+                                    >
+                                        <Trash2 size={14} />
+                                        Deletar
+                                    </button>
+                                )}
                             </motion.div>
                         )}
                     </div>
