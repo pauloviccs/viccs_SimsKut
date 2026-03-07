@@ -7,14 +7,14 @@
 CREATE OR REPLACE VIEW public.trending_hashtags AS
 WITH all_tags AS (
     -- Pega tags nos feed_posts
-    SELECT lower((regexp_matches(content, '#([a-zA-Z0-9_]+)', 'g'))[1]) AS tag
+    SELECT lower((regexp_matches(content, '(?:^|\s)#([0-9]*[a-zA-Z_À-ÿ][a-zA-Z0-9_À-ÿ]*)', 'g'))[1]) AS tag
     FROM public.feed_posts
     WHERE content IS NOT NULL
     
     UNION ALL
     
     -- Pega tags na descricao das rotas da Galeria Global
-    SELECT lower((regexp_matches(description, '#([a-zA-Z0-9_]+)', 'g'))[1]) AS tag
+    SELECT lower((regexp_matches(description, '(?:^|\s)#([0-9]*[a-zA-Z_À-ÿ][a-zA-Z0-9_À-ÿ]*)', 'g'))[1]) AS tag
     FROM public.photos
     WHERE description IS NOT NULL AND visibility = 'public'
 )

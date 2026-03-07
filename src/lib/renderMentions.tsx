@@ -8,8 +8,10 @@ import type { ReactNode } from 'react';
  * Recebe texto puro, retorna array de ReactNodes (mix de strings + Links).
  */
 
-const MENTION_REGEX = /@([a-zA-Z0-9_]+)/g;
-const HASHTAG_REGEX = /#([a-zA-Z0-9_À-ÿ]+)/g;
+const MENTION_REGEX = /@([a-zA-Z0-9_]+(?:#\d{4})?)/g;
+// Ensure hashtag is not purely numbers (must have at least one letter or underscore)
+// and must be preceded by whitespace or start of string to prevent parsing @user#0000
+const HASHTAG_REGEX = /(?<=\s|^)#([0-9]*[a-zA-Z_À-ÿ][a-zA-Z0-9_À-ÿ]*)/g;
 /** URLs http(s); evita capturar pontuação final */
 const URL_REGEX = /https?:\/\/[^\s\])\}>"']+/gi;
 

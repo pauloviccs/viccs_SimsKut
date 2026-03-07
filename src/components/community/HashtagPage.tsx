@@ -47,7 +47,7 @@ export default function HashtagPage() {
     return (
         <div className="max-w-3xl mx-auto w-full pb-20">
             {/* Header */}
-            <div className="glass-panel sticky top-0 z-30 mb-6 flex flex-col pt-3 px-4 border-b border-white/10 shadow-lg">
+            <div className="glass-heavy sticky top-0 z-[100] mb-6 flex flex-col pt-3 px-4 border-b border-white/10 shadow-lg backdrop-blur-md">
                 <div className="flex items-center gap-4 mb-3">
                     <button
                         onClick={() => navigate(-1)}
