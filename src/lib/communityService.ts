@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { FeedPost, Photo, TrendingTag } from '../types';
+import { getReactionsAggregateForPosts } from './feedService';
 
 export const communityService = {
     /**
@@ -25,20 +26,15 @@ export const communityService = {
      */
     async getPostsByTag(tag: string): Promise<FeedPost[]> {
         const query = `%#${tag}%`;
+        const userId = (await supabase.auth.getUser()).data.user?.id;
 
         const { data, error } = await supabase
             .from('feed_posts')
             .select(`
                 *,
-                author:profiles!author_id (
-                    id,
-                    username,
-                    avatar_url,
-                    role,
-                    frame_id,
-                    title_id
-                ),
-                reactions:post_reactions (*)
+                author:profiles!author_id(*),
+                post_likes(count),
+                post_comments(count)
             `)
             .ilike('content', query)
             .order('created_at', { ascending: false })
@@ -46,27 +42,31 @@ export const communityService = {
 
         if (error) throw error;
 
-        // Formata as reações para o agregador
-        const formattedPosts = data?.map((post: any) => {
-            const reactionsHash = (post.reactions || []).reduce((acc: any, r: any) => {
-                acc[r.emoji] = (acc[r.emoji] || 0) + 1;
-                return acc;
-            }, {});
+        let myLikes: Set<string> = new Set();
+        if (userId && data.length > 0) {
+            const postIds = data.map((p: any) => p.id);
+            const { data: likes } = await supabase
+                .from('post_likes')
+                .select('post_id')
+                .eq('user_id', userId)
+                .in('post_id', postIds);
 
-            const reactionArray = Object.entries(reactionsHash).map(([emoji, count]) => ({
-                emoji,
-                count: count as number,
-                reacted_by_me: false // Para simplicidade na view global
-            }));
+            myLikes = new Set((likes || []).map((l: any) => l.post_id));
+        }
 
-            return {
-                ...post,
-                author: Array.isArray(post.author) ? post.author[0] : post.author,
-                reactions: reactionArray
-            };
-        });
+        const postIds = data.map((p: any) => p.id);
+        const reactionsMap = postIds.length > 0
+            ? await getReactionsAggregateForPosts(postIds, userId ?? undefined)
+            : new Map();
 
-        return formattedPosts as FeedPost[];
+        return data.map((p: any) => ({
+            ...p,
+            author: Array.isArray(p.author) ? p.author[0] : p.author,
+            likes_count: p.post_likes?.[0]?.count ?? 0,
+            comments_count: p.post_comments?.[0]?.count ?? 0,
+            liked_by_me: myLikes.has(p.id),
+            reactions: reactionsMap.get(p.id) ?? [],
+        }));
     },
 
     /**
@@ -74,19 +74,15 @@ export const communityService = {
      */
     async getPhotosByTag(tag: string): Promise<Photo[]> {
         const query = `%#${tag}%`;
+        const userId = (await supabase.auth.getUser()).data.user?.id;
 
         const { data, error } = await supabase
             .from('photos')
             .select(`
                 *,
-                owner:profiles!owner_id(
-                    id,
-                    username,
-                    avatar_url,
-                    role,
-                    frame_id,
-                    title_id
-                )
+                owner:profiles!owner_id(*),
+                photo_likes(count),
+                photo_comments(count)
             `)
             .eq('visibility', 'public')
             .ilike('description', query)
@@ -95,9 +91,23 @@ export const communityService = {
 
         if (error) throw error;
 
+        let myLikes: Set<string> = new Set();
+        if (userId && data.length > 0) {
+            const photoIds = data.map((p: any) => p.id);
+            const { data: likes } = await supabase
+                .from('photo_likes')
+                .select('photo_id')
+                .eq('user_id', userId)
+                .in('photo_id', photoIds);
+            myLikes = new Set((likes || []).map((l: any) => l.photo_id));
+        }
+
         return (data || []).map((p: any) => ({
             ...p,
             owner: Array.isArray(p.owner) ? p.owner[0] : p.owner,
+            likes_count: p.photo_likes?.[0]?.count ?? 0,
+            comments_count: p.photo_comments?.[0]?.count ?? 0,
+            liked_by_me: myLikes.has(p.id)
         })) as Photo[];
     }
 };
