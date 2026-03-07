@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Trash2, MoreHorizontal, Pencil, Check, X, Pin, PinOff } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, MoreHorizontal, Pencil, Check, X, Pin, PinOff, EyeOff } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { MediaLightbox } from '@/components/ui/MediaLightbox';
 import { CommentSection } from './CommentSection';
@@ -50,6 +50,7 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
     const [editContent, setEditContent] = useState(post.content ?? '');
     const [saving, setSaving] = useState(false);
     const [reactions, setReactions] = useState<PostReactionAggregate[]>(post.reactions ?? []);
+    const [isRevealed, setIsRevealed] = useState(false);
 
     useEffect(() => {
         setReactions(post.reactions ?? []);
@@ -220,125 +221,155 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
                 )}
             </div>
 
-            {/* Content — modo edição ou exibição */}
-            {isEditing ? (
-                <div className="mt-3 space-y-2">
-                    <textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        placeholder="O que está acontecendo?"
-                        maxLength={280}
-                        rows={4}
-                        className="w-full rounded-[var(--radius-md)] bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:border-[var(--accent-primary)]/50 resize-y min-h-[80px]"
-                        disabled={saving}
-                        autoFocus
-                    />
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/40">{editContent.length}/280</span>
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={handleCancelEdit}
-                                disabled={saving}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-white/60 hover:bg-white/10 hover:text-white/80 transition-colors cursor-pointer disabled:opacity-50"
-                            >
-                                <X size={14} />
-                                Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleSaveEdit}
-                                disabled={saving || (editContent.trim() === (post.content ?? '').trim())}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {saving ? (
-                                    <span className="animate-pulse">Salvando…</span>
-                                ) : (
-                                    <>
-                                        <Check size={14} />
-                                        Salvar
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            ) : (
-                post.content != null && post.content !== '' && (
-                    <p className="text-sm text-white/80 mt-3 whitespace-pre-wrap break-words">
-                        {renderPostContent(post.content)}
-                    </p>
-                )
-            )}
-
-            {/* Images — grid estilo X/Twitter; clicável para lightbox em tela cheia */}
-            {(() => {
-                const urls = getPostImageUrls(post);
-                const openLightbox = (index: number) => setLightbox({ urls, index });
-                if (urls.length === 0) return null;
-                if (urls.length === 1) {
-                    return (
-                        <button
-                            type="button"
-                            onClick={() => openLightbox(0)}
-                            className="mt-3 rounded-[var(--radius-md)] overflow-hidden w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/50"
+            {/* Content & Images Container */}
+            <div className="relative mt-2">
+                <AnimatePresence>
+                    {post.is_spoiler && !isRevealed && !isEditing && (
+                        <motion.div
+                            initial={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute -inset-2 z-10 flex flex-col items-center justify-center bg-black/30 backdrop-blur-2xl rounded-[var(--radius-md)] border border-white/5"
                         >
-                            <img
-                                src={urls[0]}
-                                alt="Post"
-                                loading="lazy"
-                                className="w-full max-h-[500px] object-cover hover:opacity-95 transition-opacity"
-                            />
-                        </button>
-                    );
-                }
-                if (urls.length === 2) {
-                    return (
-                        <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-[2/1] w-full max-h-[400px]">
-                            {urls.map((src, i) => (
-                                <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => openLightbox(i)}
-                                    className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50"
-                                >
-                                    <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
-                                </button>
-                            ))}
-                        </div>
-                    );
-                }
-                if (urls.length === 3) {
-                    return (
-                        <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-[4/3] w-full max-h-[400px]">
-                            <button type="button" onClick={() => openLightbox(0)} className="relative row-span-2 min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
-                                <img src={urls[0]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
-                            </button>
-                            <button type="button" onClick={() => openLightbox(1)} className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
-                                <img src={urls[1]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
-                            </button>
-                            <button type="button" onClick={() => openLightbox(2)} className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
-                                <img src={urls[2]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
-                            </button>
-                        </div>
-                    );
-                }
-                // 4 imagens: 2x2 grid quadrada
-                return (
-                    <div className="grid grid-cols-2 grid-rows-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-square w-full max-h-[500px]">
-                        {urls.map((src, i) => (
                             <button
-                                key={i}
-                                type="button"
-                                onClick={() => openLightbox(i)}
-                                className="relative min-h-0 overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50"
+                                onClick={() => setIsRevealed(true)}
+                                className="flex flex-col items-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/50 rounded-xl p-4"
+                                aria-label="Aviso de Spoiler. Pressione para revelar o conteúdo"
                             >
-                                <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white/80 group-hover:bg-white/20 transition-colors shadow-lg">
+                                    <EyeOff size={24} />
+                                </div>
+                                <span className="text-sm font-semibold text-white/90">Spoiler</span>
+                                <span className="text-xs text-white/60">Clique para revelar</span>
                             </button>
-                        ))}
-                    </div>
-                );
-            })()}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <div
+                    aria-hidden={post.is_spoiler && !isRevealed && !isEditing ? "true" : "false"}
+                    className={post.is_spoiler && !isRevealed && !isEditing ? "opacity-20 blur-xl select-none pointer-events-none min-h-[100px] transition-all duration-500" : "transition-all duration-500"}
+                >
+                    {/* Content — modo edição ou exibição */}
+                    {isEditing ? (
+                        <div className="mt-3 space-y-2">
+                            <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                placeholder="O que está acontecendo?"
+                                maxLength={280}
+                                rows={4}
+                                className="w-full rounded-[var(--radius-md)] bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:border-[var(--accent-primary)]/50 resize-y min-h-[80px]"
+                                disabled={saving}
+                                autoFocus
+                            />
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs text-white/40">{editContent.length}/280</span>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        disabled={saving}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-white/60 hover:bg-white/10 hover:text-white/80 transition-colors cursor-pointer disabled:opacity-50"
+                                    >
+                                        <X size={14} />
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveEdit}
+                                        disabled={saving || (editContent.trim() === (post.content ?? '').trim())}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {saving ? (
+                                            <span className="animate-pulse">Salvando…</span>
+                                        ) : (
+                                            <>
+                                                <Check size={14} />
+                                                Salvar
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        post.content != null && post.content !== '' && (
+                            <p className="text-sm text-white/80 mt-3 whitespace-pre-wrap break-words">
+                                {renderPostContent(post.content)}
+                            </p>
+                        )
+                    )}
+
+                    {/* Images — grid estilo X/Twitter; clicável para lightbox em tela cheia */}
+                    {(() => {
+                        const urls = getPostImageUrls(post);
+                        const openLightbox = (index: number) => setLightbox({ urls, index });
+                        if (urls.length === 0) return null;
+                        if (urls.length === 1) {
+                            return (
+                                <button
+                                    type="button"
+                                    onClick={() => openLightbox(0)}
+                                    className="mt-3 rounded-[var(--radius-md)] overflow-hidden w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/50"
+                                >
+                                    <img
+                                        src={urls[0]}
+                                        alt="Post"
+                                        loading="lazy"
+                                        className="w-full max-h-[500px] object-cover hover:opacity-95 transition-opacity"
+                                    />
+                                </button>
+                            );
+                        }
+                        if (urls.length === 2) {
+                            return (
+                                <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-[2/1] w-full max-h-[400px]">
+                                    {urls.map((src, i) => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            onClick={() => openLightbox(i)}
+                                            className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50"
+                                        >
+                                            <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                                        </button>
+                                    ))}
+                                </div>
+                            );
+                        }
+                        if (urls.length === 3) {
+                            return (
+                                <div className="grid grid-cols-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-[4/3] w-full max-h-[400px]">
+                                    <button type="button" onClick={() => openLightbox(0)} className="relative row-span-2 min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
+                                        <img src={urls[0]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                                    </button>
+                                    <button type="button" onClick={() => openLightbox(1)} className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
+                                        <img src={urls[1]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                                    </button>
+                                    <button type="button" onClick={() => openLightbox(2)} className="relative min-h-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50">
+                                        <img src={urls[2]} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                                    </button>
+                                </div>
+                            );
+                        }
+                        // 4 imagens: 2x2 grid quadrada
+                        return (
+                            <div className="grid grid-cols-2 grid-rows-2 gap-0.5 mt-3 rounded-[var(--radius-md)] overflow-hidden aspect-square w-full max-h-[500px]">
+                                {urls.map((src, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => openLightbox(i)}
+                                        className="relative min-h-0 overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)]/50"
+                                    >
+                                        <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity" />
+                                    </button>
+                                ))}
+                            </div>
+                        );
+                    })()}
+                </div>
+            </div>
 
             {/* Actions — Like, Comment, Reactions (Discord-style) */}
             <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-3 pt-3 border-t border-white/[0.06]">

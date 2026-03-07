@@ -138,7 +138,8 @@ export async function getSinglePost(postId: string): Promise<FeedPost | null> {
 export async function createPost(
     authorId: string,
     content: string | null,
-    imageUrls: string[]
+    imageUrls: string[],
+    isSpoiler: boolean = false
 ): Promise<FeedPost> {
     if (content && content.length > POST_MAX_LENGTH) {
         throw new Error(`Post deve ter no máximo ${POST_MAX_LENGTH} caracteres`);
@@ -158,6 +159,7 @@ export async function createPost(
             author_id: authorId,
             content: content?.trim() || null,
             image_url: imageUrl,
+            is_spoiler: isSpoiler,
         })
         .select('*, author:profiles!author_id(*)')
         .single();

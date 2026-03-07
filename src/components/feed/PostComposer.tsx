@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ImagePlus, Images, Send, X } from 'lucide-react';
+import { ImagePlus, Images, Send, X, EyeOff } from 'lucide-react';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { Avatar } from '@/components/ui/Avatar';
 import { EmojiPicker } from '@/components/ui/EmojiPicker';
@@ -167,6 +167,8 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
     const [placeholder, setPlaceholder] = useState(PLACEHOLDER_PHRASES[0]);
     const fileRef = useRef<HTMLInputElement>(null);
 
+    const [isSpoiler, setIsSpoiler] = useState(false);
+
     useEffect(() => {
         const randomIndex = Math.floor(Math.random() * PLACEHOLDER_PHRASES.length);
         setPlaceholder(PLACEHOLDER_PHRASES[randomIndex]);
@@ -250,7 +252,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                 }
             }
 
-            const post = await createPost(user.id, content.trim() || null, imageUrls);
+            const post = await createPost(user.id, content.trim() || null, imageUrls, isSpoiler);
             onPostCreated(post);
 
             if (content.trim()) {
@@ -258,6 +260,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
             }
 
             setContent('');
+            setIsSpoiler(false);
             setMediaItems((prev) => {
                 prev.forEach((item) => {
                     if (item.type === 'file' && item.preview) URL.revokeObjectURL(item.preview);
@@ -275,6 +278,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
     return (
         <>
             <div className="glass-heavy rounded-[var(--radius-lg)] border border-white/10 p-4 mb-6 relative z-20">
+
                 <div className="flex gap-3">
                     <Avatar
                         src={profile?.avatar_url}
@@ -324,6 +328,17 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                                     size={18}
                                     position="bottom"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSpoiler(!isSpoiler)}
+                                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${isSpoiler
+                                            ? 'bg-white/20 text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]'
+                                            : 'hover:bg-white/[0.06] text-white/40 hover:text-white/80'
+                                        }`}
+                                    title={isSpoiler ? "Remover spoiler" : "Marcar como spoiler"}
+                                >
+                                    <EyeOff size={18} />
+                                </button>
                             </div>
 
                             <div className="flex items-center gap-3">

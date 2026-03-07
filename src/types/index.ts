@@ -52,6 +52,7 @@ export interface FeedPost {
     author_id: string;
     content: string | null;
     image_url: string | null;  // single URL ou JSON array de até 4 URLs
+    is_spoiler?: boolean;
     created_at: string;
     updated_at: string;
     // Joined
