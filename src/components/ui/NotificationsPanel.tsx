@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, UserCheck, X, AtSign, MessageCircle, Heart } from 'lucide-react';
+import { Bell, UserCheck, X, AtSign, MessageCircle, Heart, CheckCheck } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import {
     getPendingRequests,
@@ -11,6 +11,7 @@ import {
 import {
     getNotifications,
     deleteNotification,
+    deleteAllNotifications,
     type AppNotification,
 } from '@/lib/notificationService';
 import { useAuthStore } from '@/store/authStore';
@@ -143,6 +144,15 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
         } catch (err) { console.error(err); }
     };
 
+    const handleClearAll = async () => {
+        try {
+            await deleteAllNotifications();
+            setMentions([]);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const unreadMentions = mentions.filter((m) => !m.read);
     const totalCount = requests.length + unreadMentions.length;
     const hasAnything = requests.length > 0 || mentions.length > 0;
@@ -205,9 +215,21 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                             <span className="text-xs font-semibold text-white/70">
                                 Notificações
                             </span>
-                            {totalCount > 0 && (
-                                <span className="text-[10px] text-white/30">{totalCount} nova{totalCount !== 1 ? 's' : ''}</span>
-                            )}
+                            <div className="flex items-center gap-2">
+                                {mentions.length > 0 && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleClearAll(); }}
+                                        className="text-[10px] flex items-center gap-1 text-white/40 hover:text-white/80 transition-colors px-2 py-1 rounded-md hover:bg-white/5"
+                                        title="Limpar todas as notificações"
+                                    >
+                                        <CheckCheck size={12} />
+                                        Limpar
+                                    </button>
+                                )}
+                                {totalCount > 0 && (
+                                    <span className="text-[10px] text-white/30">{totalCount} nova{totalCount !== 1 ? 's' : ''}</span>
+                                )}
+                            </div>
                         </div>
 
                         {/* Content */}
@@ -308,12 +330,11 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                                 size="sm"
                                                             />
                                                             <div
-                                                                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ${
-                                                                    notif.type === 'comment_photo' ||
-                                                                    notif.type === 'comment_post'
+                                                                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ${notif.type === 'comment_photo' ||
+                                                                        notif.type === 'comment_post'
                                                                         ? 'bg-[var(--accent-primary)]'
                                                                         : 'bg-red-500'
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 {notif.type === 'mention_post' && (
                                                                     <AtSign size={9} className="text-white" />
@@ -332,8 +353,8 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                                     notif.type === 'like_comment' ||
                                                                     notif.type === 'reaction_post' ||
                                                                     notif.type === 'new_post_friend') && (
-                                                                    <Heart size={9} className="text-white fill-current" />
-                                                                )}
+                                                                        <Heart size={9} className="text-white fill-current" />
+                                                                    )}
                                                             </div>
                                                         </div>
                                                         <div className="flex-1 min-w-0">

@@ -14,17 +14,17 @@ export interface AppNotification {
     user_id: string;
     actor_id: string;
     type:
-        | 'mention_post'
-        | 'mention_comment'
-        | 'like_post'
-        | 'like_photo'
-        | 'comment_photo'
-        | 'comment_post'
-        | 'like_comment'
-        | 'reaction_post'
-        | 'new_post_friend'
-        | 'friend_accept'
-        | 'family_update';
+    | 'mention_post'
+    | 'mention_comment'
+    | 'like_post'
+    | 'like_photo'
+    | 'comment_photo'
+    | 'comment_post'
+    | 'like_comment'
+    | 'reaction_post'
+    | 'new_post_friend'
+    | 'friend_accept'
+    | 'family_update';
     reference_id: string | null;
     content: string | null;
     read: boolean;
@@ -169,6 +169,22 @@ export async function deleteNotification(notificationId: string): Promise<void> 
 
     if (error) {
         console.error('Erro ao deletar notificação:', error);
+        throw error;
+    }
+}
+
+/** Exclui TODAS as notificações do usuário logado */
+export async function deleteAllNotifications(): Promise<void> {
+    const userId = (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) return;
+
+    const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Erro ao limpar todas as notificações:', error);
         throw error;
     }
 }
