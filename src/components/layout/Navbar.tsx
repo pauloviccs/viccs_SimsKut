@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Image, Lock, Users, Settings, UserCircle } from 'lucide-react';
+import { Home, Compass, Lock, Users, Settings, UserCircle } from 'lucide-react';
 import { NotificationsPanel } from '@/components/ui/NotificationsPanel';
 import { useAuthStore } from '@/store/authStore';
 
@@ -9,7 +9,7 @@ export function Navbar() {
     const navItems = [
         { to: '/feed', icon: Home, label: 'Feed' },
         ...(profile?.username ? [{ to: `/profile/${encodeURIComponent(profile.username)}`, icon: UserCircle, label: 'Perfil' }] : []),
-        { to: '/gallery/global', icon: Image, label: 'Galeria' },
+        { to: '/community', icon: Compass, label: 'Comunidade' },
         { to: '/gallery/private', icon: Lock, label: 'Minha' },
         { to: '/family', icon: Users, label: 'Família' },
         { to: '/settings', icon: Settings, label: 'Config' },
