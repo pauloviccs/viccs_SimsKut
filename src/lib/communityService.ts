@@ -30,7 +30,7 @@ export const communityService = {
             .from('feed_posts')
             .select(`
                 *,
-                author:profiles!feed_posts_author_id_fkey (
+                author:profiles!author_id (
                     id,
                     username,
                     avatar_url,
@@ -48,7 +48,7 @@ export const communityService = {
 
         // Formata as reações para o agregador
         const formattedPosts = data?.map((post: any) => {
-            const reactionsHash = post.reactions.reduce((acc: any, r: any) => {
+            const reactionsHash = (post.reactions || []).reduce((acc: any, r: any) => {
                 acc[r.emoji] = (acc[r.emoji] || 0) + 1;
                 return acc;
             }, {});
@@ -56,10 +56,14 @@ export const communityService = {
             const reactionArray = Object.entries(reactionsHash).map(([emoji, count]) => ({
                 emoji,
                 count: count as number,
-                reacted_by_me: false // Para simplicidade na view global. Real logic precisa do userID atual
+                reacted_by_me: false // Para simplicidade na view global
             }));
 
-            return { ...post, reactions: reactionArray };
+            return {
+                ...post,
+                author: Array.isArray(post.author) ? post.author[0] : post.author,
+                reactions: reactionArray
+            };
         });
 
         return formattedPosts as FeedPost[];
@@ -75,7 +79,7 @@ export const communityService = {
             .from('photos')
             .select(`
                 *,
-                owner:profiles!photos_owner_id_fkey(
+                owner:profiles!owner_id(
                     id,
                     username,
                     avatar_url,
@@ -91,6 +95,9 @@ export const communityService = {
 
         if (error) throw error;
 
-        return data as Photo[];
+        return (data || []).map((p: any) => ({
+            ...p,
+            owner: Array.isArray(p.owner) ? p.owner[0] : p.owner,
+        })) as Photo[];
     }
 };
