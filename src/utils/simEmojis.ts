@@ -241,6 +241,7 @@ export const simEmojis: Record<string, string> = {
     'Chef': '🍳',
     'Crítico(a) de Gastronomia': '🍽️',
     'Veterinário(a)': '🐾',
+    'Botânico(a)': '🌿',
     'Policial': '👮',
     'Agente Secreto': '🕵️',
     'Militar': '🎖️',
