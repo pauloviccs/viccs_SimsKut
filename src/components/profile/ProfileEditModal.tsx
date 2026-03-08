@@ -8,7 +8,7 @@ import { BannerCropper } from '@/components/settings/BannerCropper';
 import { useAuthStore } from '@/store/authStore';
 import { uploadAvatar, updateProfileAvatar } from '@/lib/avatarService';
 import { updateProfile, uploadBanner, updateProfileBanner } from '@/lib/profileService';
-import { fetchUserBadges, updateFeaturedBadges } from '@/lib/challengeQueries';
+import { fetchUserBadges, updateFeaturedBadges, fetchUserTitles } from '@/lib/challengeQueries';
 import { toast } from 'sonner';
 import type { Profile } from '@/types';
 import type { UserBadge } from '@/types/challenges';
@@ -28,8 +28,9 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
     const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url);
     const [bannerPreview, setBannerPreview] = useState(profile.banner_url);
 
-    // Novas states para Título e Emblemas
+    // States para Título, Emblemas e Títulos possuídos
     const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+    const [userTitles, setUserTitles] = useState<{ id: string; title: string }[]>([]);
     const [selectedTitle, setSelectedTitle] = useState(profile.display_title || '');
     const [featuredBadgeIds, setFeaturedBadgeIds] = useState<string[]>([]);
 
@@ -48,10 +49,14 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
 
     useEffect(() => {
         if (user) {
+            // Carregar emblemas
             fetchUserBadges(user.id).then(badges => {
                 setUserBadges(badges);
                 setFeaturedBadgeIds(badges.filter(b => b.is_featured).map(b => b.id));
             }).catch(console.error);
+
+            // Carregar títulos possuídos pelo usuário (atribuídos pelo admin)
+            fetchUserTitles(user.id).then(setUserTitles).catch(console.error);
         }
 
         return () => {
@@ -184,15 +189,15 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
                     onClick={onClose}
                 />
 
-                {/* Modal */}
+                {/* Modal — flex-col para separar header fixo do corpo scrollável */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative glass-heavy rounded-[var(--radius-lg)] border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                    className="relative glass-heavy rounded-[var(--radius-lg)] border border-white/10 w-full max-w-lg max-h-[90vh] flex flex-col"
                 >
-                    {/* Header */}
-                    <div className="sticky top-0 glass-heavy rounded-t-[var(--radius-lg)] flex items-center justify-between px-4 py-3 border-b border-white/[0.08] z-10">
+                    {/* ── Header FORA do scroll — não sobrepõe nada ── */}
+                    <div className="flex-shrink-0 glass-heavy rounded-t-[var(--radius-lg)] flex items-center justify-between px-4 py-3 border-b border-white/[0.08] z-10">
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={onClose}
@@ -211,171 +216,182 @@ export function ProfileEditModal({ profile, onClose, onSave }: ProfileEditModalP
                         </button>
                     </div>
 
-                    {/* Banner Preview */}
-                    <div className="relative aspect-[3/1] cursor-pointer group" onClick={() => bannerInputRef.current?.click()}>
-                        {bannerPreview ? (
-                            <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[#007AFF]/30 via-[#5865F2]/20 to-[#34C759]/30" />
-                        )}
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Camera size={24} className="text-white" />
-                        </div>
-                        <input
-                            ref={bannerInputRef}
-                            type="file"
-                            accept="image/jpeg,image/png"
-                            onChange={handleBannerSelect}
-                            className="hidden"
-                        />
-                    </div>
+                    {/* ── Corpo scrollável abaixo do header ── */}
+                    <div className="overflow-y-auto flex-1">
 
-                    {/* Avatar Preview */}
-                    <div className="px-4 -mt-12">
-                        <div
-                            className="relative w-24 h-24 rounded-full border-4 border-[#0a0a0f] overflow-hidden cursor-pointer group"
-                            onClick={() => avatarInputRef.current?.click()}
-                        >
-                            <Avatar
-                                src={avatarPreview}
-                                alt={displayName || profile.username}
-                                size="xl"
-                                className="w-full h-full !border-0"
-                            />
-                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Camera size={20} className="text-white" />
-                            </div>
-                        </div>
-                        <input
-                            ref={avatarInputRef}
-                            type="file"
-                            accept="image/jpeg,image/png"
-                            onChange={handleAvatarSelect}
-                            className="hidden"
-                        />
-                    </div>
-
-                    {/* Form Fields */}
-                    <div className="p-4 space-y-4 mt-2">
-                        {/* Display Name */}
-                        <div>
-                            <label className="block text-xs text-white/40 mb-1">Nome de Exibição</label>
-                            <GlassInput
-                                value={displayName}
-                                onChange={(e: any) => setDisplayName(e.target.value)}
-                                maxLength={50}
-                                placeholder="Seu nome"
-                            />
-                            <span className="text-[10px] text-white/30 mt-0.5 block text-right">
-                                {displayName.length}/50
-                            </span>
-                        </div>
-
-                        {/* Bio */}
-                        <div>
-                            <label className="block text-xs text-white/40 mb-1">Bio</label>
-                            <textarea
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                                maxLength={160}
-                                rows={3}
-                                placeholder="Conte sobre você 🎮"
-                                className="w-full px-3 py-2 rounded-[var(--radius-sm)] bg-white/[0.06] border border-white/10 text-sm text-white/90 placeholder-white/30 resize-none focus:outline-none focus:border-[var(--accent-primary)]/40 transition-colors"
-                            />
-                            <span className="text-[10px] text-white/30 mt-0.5 block text-right">
-                                {bio.length}/160
-                            </span>
-                        </div>
-
-                        {/* Website */}
-                        <div>
-                            <label className="block text-xs text-white/40 mb-1 flex items-center gap-1">
-                                <LinkIcon size={12} /> Website
-                            </label>
-                            <GlassInput
-                                value={websiteUrl}
-                                onChange={(e: any) => setWebsiteUrl(e.target.value)}
-                                maxLength={100}
-                                placeholder="https://meusite.com"
-                            />
-                        </div>
-
-                        {/* Separador */}
-                        <div className="h-px bg-white/5 my-4" />
-
-                        {/* Title Selector */}
-                        <div>
-                            <label className="block text-xs text-amber-400/80 uppercase font-semibold tracking-wider mb-2 flex items-center gap-1">
-                                <Award size={12} /> Título do Perfil
-                            </label>
-                            <select
-                                value={selectedTitle || ''}
-                                onChange={(e) => setSelectedTitle(e.target.value)}
-                                className="w-full px-3 py-2.5 rounded-[var(--radius-sm)] bg-white/[0.06] border border-white/10 text-sm text-white/90 placeholder-white/30 focus:outline-none focus:border-[var(--accent-primary)]/40 transition-colors appearance-none cursor-pointer"
-                            >
-                                <option value="" className="bg-[#0f0f13] text-white">Nenhum</option>
-                                {Array.from(new Set(userBadges.map(b => b.badge_title))).map(title => (
-                                    <option key={title} value={title} className="bg-[#0f0f13] text-white">
-                                        {title}
-                                    </option>
-                                ))}
-                            </select>
-                            <p className="text-[10px] text-white/40 mt-1.5">Escolha um título obtido em desafios para exibir em seu perfil.</p>
-                        </div>
-
-                        {/* Badges Selector */}
-                        <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="block text-xs text-amber-400/80 uppercase font-semibold tracking-wider flex items-center gap-1">
-                                    <Award size={12} /> Emblemas em Destaque
-                                </label>
-                                <span className="text-[10px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full">{featuredBadgeIds.length}/5</span>
-                            </div>
-
-                            {userBadges.length === 0 ? (
-                                <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
-                                    <p className="text-xs text-white/50">Você ainda não completou nenhum desafio para ganhar emblemas.</p>
-                                </div>
+                        {/* Banner Preview */}
+                        <div className="relative aspect-[3/1] cursor-pointer group" onClick={() => bannerInputRef.current?.click()}>
+                            {bannerPreview ? (
+                                <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover" />
                             ) : (
-                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                                    {userBadges.map(badge => {
-                                        const isSelected = featuredBadgeIds.includes(badge.id);
-                                        return (
-                                            <div
-                                                key={badge.id}
-                                                onClick={() => {
-                                                    if (isSelected) {
-                                                        setFeaturedBadgeIds(prev => prev.filter(id => id !== badge.id));
-                                                    } else if (featuredBadgeIds.length < 5) {
-                                                        setFeaturedBadgeIds(prev => [...prev, badge.id]);
-                                                    } else {
-                                                        toast.error('Você já selecionou o limite máximo de 5 emblemas.');
-                                                    }
-                                                }}
-                                                className={`aspect-square rounded-xl overflow-hidden cursor-pointer transition-all border-2 relative
-                                                    ${isSelected
-                                                        ? 'border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)] scale-95'
-                                                        : 'border-white/5 hover:border-white/20 opacity-60 hover:opacity-100'
-                                                    }`}
-                                            >
-                                                <img src={badge.badge_image_url} alt={badge.badge_title} className="w-full h-full object-cover" />
-                                                {isSelected && (
-                                                    <div className="absolute top-1 right-1 w-3 h-3 bg-amber-400 rounded-full border border-[#0f0f13]" />
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                <div className="w-full h-full bg-gradient-to-br from-[#007AFF]/30 via-[#5865F2]/20 to-[#34C759]/30" />
+                            )}
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Camera size={24} className="text-white" />
+                            </div>
+                            <input
+                                ref={bannerInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png"
+                                onChange={handleBannerSelect}
+                                className="hidden"
+                            />
+                        </div>
+
+                        {/* Avatar Preview */}
+                        <div className="px-4 -mt-12">
+                            <div
+                                className="relative w-24 h-24 rounded-full border-4 border-[#0a0a0f] overflow-hidden cursor-pointer group"
+                                onClick={() => avatarInputRef.current?.click()}
+                            >
+                                <Avatar
+                                    src={avatarPreview}
+                                    alt={displayName || profile.username}
+                                    size="xl"
+                                    className="w-full h-full !border-0"
+                                />
+                                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Camera size={20} className="text-white" />
                                 </div>
+                            </div>
+                            <input
+                                ref={avatarInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png"
+                                onChange={handleAvatarSelect}
+                                className="hidden"
+                            />
+                        </div>
+
+                        {/* Form Fields */}
+                        <div className="p-4 space-y-4 mt-2">
+                            {/* Display Name */}
+                            <div>
+                                <label className="block text-xs text-white/40 mb-1">Nome de Exibição</label>
+                                <GlassInput
+                                    value={displayName}
+                                    onChange={(e: any) => setDisplayName(e.target.value)}
+                                    maxLength={50}
+                                    placeholder="Seu nome"
+                                />
+                                <span className="text-[10px] text-white/30 mt-0.5 block text-right">
+                                    {displayName.length}/50
+                                </span>
+                            </div>
+
+                            {/* Bio */}
+                            <div>
+                                <label className="block text-xs text-white/40 mb-1">Bio</label>
+                                <textarea
+                                    value={bio}
+                                    onChange={(e) => setBio(e.target.value)}
+                                    maxLength={160}
+                                    rows={3}
+                                    placeholder="Conte sobre você 🎮"
+                                    className="w-full px-3 py-2 rounded-[var(--radius-sm)] bg-white/[0.06] border border-white/10 text-sm text-white/90 placeholder-white/30 resize-none focus:outline-none focus:border-[var(--accent-primary)]/40 transition-colors"
+                                />
+                                <span className="text-[10px] text-white/30 mt-0.5 block text-right">
+                                    {bio.length}/160
+                                </span>
+                            </div>
+
+                            {/* Website */}
+                            <div>
+                                <label className="block text-xs text-white/40 mb-1 flex items-center gap-1">
+                                    <LinkIcon size={12} /> Website
+                                </label>
+                                <GlassInput
+                                    value={websiteUrl}
+                                    onChange={(e: any) => setWebsiteUrl(e.target.value)}
+                                    maxLength={100}
+                                    placeholder="https://meusite.com"
+                                />
+                            </div>
+
+                            {/* Separador */}
+                            <div className="h-px bg-white/5 my-4" />
+
+                            {/* Title Selector */}
+                            <div>
+                                <label className="block text-xs text-amber-400/80 uppercase font-semibold tracking-wider mb-2 flex items-center gap-1">
+                                    <Award size={12} /> Título do Perfil
+                                </label>
+                                {userTitles.length === 0 ? (
+                                    <div className="px-3 py-2.5 rounded-[var(--radius-sm)] bg-white/[0.04] border border-white/[0.06] text-xs text-white/40">
+                                        Você não possui títulos ainda. Títulos são concedidos pelo administrador.
+                                    </div>
+                                ) : (
+                                    <select
+                                        value={selectedTitle || ''}
+                                        onChange={(e) => setSelectedTitle(e.target.value)}
+                                        className="w-full px-3 py-2.5 rounded-[var(--radius-sm)] bg-white/[0.06] border border-white/10 text-sm text-white/90 placeholder-white/30 focus:outline-none focus:border-[var(--accent-primary)]/40 transition-colors appearance-none cursor-pointer"
+                                    >
+                                        <option value="" className="bg-[#0f0f13] text-white">Nenhum</option>
+                                        {userTitles.map(t => (
+                                            <option key={t.id} value={t.title} className="bg-[#0f0f13] text-white">
+                                                {t.title}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                                <p className="text-[10px] text-white/40 mt-1.5">Escolha um título para exibir em seu perfil.</p>
+                            </div>
+
+                            {/* Badges Selector */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs text-amber-400/80 uppercase font-semibold tracking-wider flex items-center gap-1">
+                                        <Award size={12} /> Emblemas em Destaque
+                                    </label>
+                                    <span className="text-[10px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full">{featuredBadgeIds.length}/5</span>
+                                </div>
+
+                                {userBadges.length === 0 ? (
+                                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
+                                        <p className="text-xs text-white/50">Você ainda não completou nenhum desafio para ganhar emblemas.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                                        {userBadges.map(badge => {
+                                            const isSelected = featuredBadgeIds.includes(badge.id);
+                                            return (
+                                                <div
+                                                    key={badge.id}
+                                                    onClick={() => {
+                                                        if (isSelected) {
+                                                            setFeaturedBadgeIds(prev => prev.filter(id => id !== badge.id));
+                                                        } else if (featuredBadgeIds.length < 5) {
+                                                            setFeaturedBadgeIds(prev => [...prev, badge.id]);
+                                                        } else {
+                                                            toast.error('Você já selecionou o limite máximo de 5 emblemas.');
+                                                        }
+                                                    }}
+                                                    className={`aspect-square rounded-xl overflow-hidden cursor-pointer transition-all border-2 relative
+                                                    ${isSelected
+                                                            ? 'border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)] scale-95'
+                                                            : 'border-white/5 hover:border-white/20 opacity-60 hover:opacity-100'
+                                                        }`}
+                                                >
+                                                    <img src={badge.badge_image_url} alt={badge.badge_title} className="w-full h-full object-cover" />
+                                                    {isSelected && (
+                                                        <div className="absolute top-1 right-1 w-3 h-3 bg-amber-400 rounded-full border border-[#0f0f13]" />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Error */}
+                            {error && (
+                                <p className="text-xs text-[var(--accent-danger)] bg-[var(--accent-danger)]/10 rounded-[var(--radius-sm)] px-3 py-2">
+                                    {error}
+                                </p>
                             )}
                         </div>
 
-                        {/* Error */}
-                        {error && (
-                            <p className="text-xs text-[var(--accent-danger)] bg-[var(--accent-danger)]/10 rounded-[var(--radius-sm)] px-3 py-2">
-                                {error}
-                            </p>
-                        )}
-                    </div>
+                    </div>{/* fim corpo scrollável */}
                 </motion.div>
             </motion.div>
 

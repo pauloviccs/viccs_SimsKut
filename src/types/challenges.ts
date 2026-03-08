@@ -56,11 +56,25 @@ export interface MilestoneEntry {
 export interface UserBadge {
     id: string;
     user_id: string;
-    challenge_id: string;
+    challenge_id?: string; // Optional agora para permitir badges independentes
+    admin_badge_id?: string;
     badge_image_url: string;
     badge_title: string;
     earned_at: string;
     is_featured: boolean;
+}
+
+export interface AdminTitle {
+    id: string;
+    title: string;
+    created_at: string;
+}
+
+export interface AdminBadge {
+    id: string;
+    title: string;
+    image_url: string;
+    created_at: string;
 }
 
 export interface ChallengeStats {

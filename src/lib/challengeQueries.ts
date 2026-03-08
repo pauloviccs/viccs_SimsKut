@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient';
 import type {
     Challenge, ChallengeMilestone, ChallengeParticipant,
-    MilestoneEntry, UserBadge, ChallengeProgress
+    MilestoneEntry, UserBadge, ChallengeProgress, AdminTitle, AdminBadge
 } from '../types/challenges';
 
 // ── Listar desafios ativos com stats e participação do usuário ──
@@ -416,4 +416,121 @@ export async function fetchAllChallengeBadges(): Promise<{ id: string; title: st
     return data
         ? data.map(d => ({ id: d.id, title: d.badge_title, image_url: d.badge_image_url }))
         : [];
+}
+
+// ── [ADMIN] Títulos e Emblemas Globais Independentes ──
+
+export async function fetchAdminTitles(): Promise<AdminTitle[]> {
+    const { data, error } = await supabase.from('admin_titles').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+}
+
+export async function createAdminTitle(title: string): Promise<AdminTitle> {
+    const { data, error } = await supabase.from('admin_titles').insert({ title }).select().single();
+    if (error) throw error;
+    return data;
+}
+
+// ── Buscar títulos possuídos pelo usuário (para o dropdown de "Título do Perfil") ──
+export async function fetchUserTitles(userId: string): Promise<{ id: string; title: string; assigned_at: string }[]> {
+    console.log('[DEBUG fetchUserTitles] chamado para userId:', userId); // TEMP: diagnóstico
+    const { data, error } = await supabase
+        .from('user_titles')
+        .select('id, title, assigned_at')
+        .eq('user_id', userId)
+        .order('assigned_at', { ascending: false });
+    if (error) {
+        // Tabela pode ainda não estar acessível (schema cache / RLS pendente).
+        // Retornar vazio em vez de crashar pra não travar o ProfileEditModal.
+        console.warn('[fetchUserTitles] Falhou, retornando lista vazia:', error.message);
+        return [];
+    }
+    return data ?? [];
+}
+
+// ── [ADMIN] Atribuir título ao usuário: salva em user_titles e atualiza display_title ──
+// titleId: UUID do admin_titles para títulos admin, ou null para títulos de desafio
+export async function assignTitleToUser(titleId: string | null, titleText: string, userId: string): Promise<void> {
+    // Se titleId veio null (título de desafio), precisamos resolver um ID real
+    // procurando ou criando um registro em admin_titles, pois user_titles.title_id é NOT NULL.
+    let resolvedTitleId = titleId;
+
+    if (!resolvedTitleId) {
+        // 1. Tentar encontrar um admin_title existente com o mesmo texto
+        const { data: existing } = await supabase
+            .from('admin_titles')
+            .select('id')
+            .eq('title', titleText)
+            .maybeSingle();
+
+        if (existing) {
+            resolvedTitleId = existing.id;
+        } else {
+            // 2. Criar automaticamente — o título de desafio vira um admin_title
+            const { data: created, error: createErr } = await supabase
+                .from('admin_titles')
+                .insert({ title: titleText })
+                .select('id')
+                .single();
+
+            if (createErr) {
+                console.error('[assignTitleToUser] Falha ao auto-criar admin_title:', createErr.message);
+                throw createErr;
+            }
+            resolvedTitleId = created.id;
+        }
+    }
+
+    const { error: insertError } = await supabase
+        .from('user_titles')
+        .insert({ user_id: userId, title_id: resolvedTitleId, title: titleText });
+
+    if (insertError) {
+        if (insertError.code !== '23505') {
+            throw insertError;
+        }
+    }
+
+    // 2. Atualizar o título exibido no perfil
+    const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ display_title: titleText })
+        .eq('id', userId);
+    if (profileError) throw profileError;
+}
+
+export async function fetchAdminBadges(): Promise<AdminBadge[]> {
+    const { data, error } = await supabase.from('admin_badges').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+}
+
+export async function createAdminBadge(title: string, image_url: string): Promise<AdminBadge> {
+    const { data, error } = await supabase.from('admin_badges').insert({ title, image_url }).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function awardAdminBadgeToUser(adminBadgeId: string, title: string, imageUrl: string, userId: string): Promise<void> {
+    // Check se ja tem
+    const { data: existing } = await supabase
+        .from('user_badges')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('admin_badge_id', adminBadgeId)
+        .maybeSingle();
+
+    if (existing) {
+        throw new Error('Usuário já possui este emblema.');
+    }
+
+    const { error } = await supabase.from('user_badges').insert({
+        user_id: userId,
+        admin_badge_id: adminBadgeId,
+        badge_title: title,
+        badge_image_url: imageUrl,
+        is_featured: false
+    });
+    if (error) throw error;
 }
