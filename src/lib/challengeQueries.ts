@@ -5,7 +5,7 @@ import type {
 } from '../types/challenges';
 
 // ── Listar desafios ativos com stats e participação do usuário ──
-export async function fetchActiveChallenges(_userId?: string): Promise<Challenge[]> {
+export async function fetchActiveChallenges(userId?: string): Promise<Challenge[]> {
     const { data: challenges, error } = await supabase
         .from('challenges')
         .select(`
@@ -16,6 +16,7 @@ export async function fetchActiveChallenges(_userId?: string): Promise<Challenge
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
+    // Se o usuário está logado, devemos filtrar o join de participação e milestones no TS 
     if (error) throw error;
     if (!challenges || challenges.length === 0) return [];
 
@@ -26,11 +27,25 @@ export async function fetchActiveChallenges(_userId?: string): Promise<Challenge
         .in('challenge_id', challengeIds);
 
     return challenges.map(challenge => {
-        const my_part = Array.isArray(challenge.my_participation) ? challenge.my_participation[0] : challenge.my_participation;
+        // Encontrar a participação EXATA desse usuário (supabase join retorna array pra relationships 1-n)
+        const my_part_array = Array.isArray(challenge.my_participation) ? challenge.my_participation : [challenge.my_participation];
+        const my_part = userId ? my_part_array.find((p: any) => p && p.user_id === userId) : null;
+
+        // Fitrar as entradas EXATAS desse usuário dentro das milestones para não bugar o tracker visual
+        const filteredMilestones = (challenge.milestones || []).map((m: any) => {
+            const entryArray = Array.isArray(m.my_entry) ? m.my_entry : (m.my_entry ? [m.my_entry] : []);
+            const userEntry = userId ? entryArray.find((e: any) => e && e.user_id === userId) : null;
+            return {
+                ...m,
+                my_entry: userEntry ? [userEntry] : [] // forçamos estrutura array ou empty pra tipagem posterior
+            };
+        });
+
         const stats = statsData?.find(s => s.challenge_id === challenge.id);
 
         return {
             ...challenge,
+            milestones: filteredMilestones,
             my_participation: my_part,
             stats: stats || { challenge_id: challenge.id, total_participants: 0, total_completed: 0 }
         } as Challenge;
@@ -142,9 +157,10 @@ export async function completeMilestone({
         });
     if (err1) throw err1;
 
-    const { data: { publicUrl: url1 } } = supabase.storage
+    const { data: publicUrl1 } = supabase.storage
         .from('challenge-media')
         .getPublicUrl(upload1.path);
+    const url1 = publicUrl1.publicUrl;
 
     // Upload mídia 2 (opcional)
     let url2: string | undefined;
@@ -157,10 +173,10 @@ export async function completeMilestone({
             });
         if (err2) throw err2;
 
-        const { data: { publicUrl } } = supabase.storage
+        const { data: publicUrl2 } = supabase.storage
             .from('challenge-media')
             .getPublicUrl(upload2.path);
-        url2 = publicUrl;
+        url2 = publicUrl2.publicUrl;
     }
 
     // Inserir entrada no banco para o check-in do milestone
@@ -190,6 +206,7 @@ export async function completeMilestone({
         const imageUrlsForFeed = [url1];
         if (url2) imageUrlsForFeed.push(url2);
 
+        // O FeedPost no supabase espera uma string para a url (pode ser json array ou link direto)
         const imageUrlStr = imageUrlsForFeed.length === 1 ? imageUrlsForFeed[0] : JSON.stringify(imageUrlsForFeed);
 
         await supabase.from('feed_posts').insert({

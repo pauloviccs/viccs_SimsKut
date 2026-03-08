@@ -11,9 +11,11 @@ import { useAuthStore } from '../../../store/authStore';
 interface MilestoneTrackerProps {
     challenge: Challenge;
     onUpdate: () => void;
+    /** Triggered right after successful upload to close parent modals if needed */
+    onCloseChallengeModal?: () => void;
 }
 
-export function MilestoneTracker({ challenge, onUpdate }: MilestoneTrackerProps) {
+export function MilestoneTracker({ challenge, onUpdate, onCloseChallengeModal }: MilestoneTrackerProps) {
     const { user } = useAuthStore();
     const [selectedMilestone, setSelectedMilestone] = useState<ChallengeMilestone | null>(null);
 
@@ -36,7 +38,14 @@ export function MilestoneTracker({ challenge, onUpdate }: MilestoneTrackerProps)
             challengeId: challenge.id
         });
         toast.success('Conquista registrada com sucesso!');
+        setSelectedMilestone(null); // Close inner modal first
         onUpdate();
+        if (onCloseChallengeModal) {
+            // Pequeno delay pra dar tempo do onUpdate injetar a chamada e ver a anim antes do close final, ou fecha logo.
+            setTimeout(() => {
+                onCloseChallengeModal();
+            }, 300);
+        }
     };
 
     return (

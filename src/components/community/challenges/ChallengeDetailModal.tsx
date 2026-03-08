@@ -184,7 +184,7 @@ export function ChallengeDetailModal({ challenge, onClose, onProgressUpdate }: C
                                             </button>
                                         )}
                                     </div>
-                                    <MilestoneTracker challenge={challenge} onUpdate={onProgressUpdate} />
+                                    <MilestoneTracker challenge={challenge} onUpdate={onProgressUpdate} onCloseChallengeModal={onClose} />
                                 </div>
                             </div>
                         )}
