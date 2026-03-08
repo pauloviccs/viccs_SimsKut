@@ -40,6 +40,16 @@ export default function HashtagPage() {
         fetchData();
     }, [tag]);
 
+    const handlePostDeleted = (postId: string) => {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+    };
+
+    const handlePostEdited = (postId: string, updates: { content: string | null; updated_at: string }) => {
+        setPosts((prev) =>
+            prev.map((p) => (p.id === postId ? { ...p, content: updates.content, updated_at: updates.updated_at } : p))
+        );
+    };
+
     const combinedTimeline = [...posts, ...photos].sort((a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
@@ -106,7 +116,7 @@ export default function HashtagPage() {
                         <div className="space-y-6">
                             {(activeTab === 'all' ? combinedTimeline : posts).map(item => {
                                 if ('content' in item) {
-                                    return <PostCard key={item.id} post={item as FeedPost} />;
+                                    return <PostCard key={item.id} post={item as FeedPost} onDelete={handlePostDeleted} onEdit={handlePostEdited} />;
                                 }
                                 else if (activeTab === 'all') {
                                     return (
