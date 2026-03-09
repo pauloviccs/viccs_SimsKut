@@ -1,285 +1,470 @@
 <div align="center">
 
-# 💎 SimsKut
+<br/>
 
-**Rede Social Privada para Comunidades de The Sims**
+# SimsKut
 
-[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
-[![Tailwind](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+### The Social Network for Sims Communities
 
 <br/>
 
-> *Uma intranet-social exclusiva para comunidades de jogadores de The Sims.*
-> *Acesso por convite, aprovação manual, e cada família é uma obra de arte.*
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-2.45-3FCF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![Tailwind](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Vercel](https://img.shields.io/badge/Vercel-Deploy-000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
+
+<br/>
+
+An invite-only social platform for The Sims 4 players.  
+Built with Liquid Glass aesthetics and crafted for communities that care.
+
+<br/>
+
+</div>
+
+---
+
+<br/>
+
+## Overview
+
+**SimsKut** is a private, invite-only social network inspired by the classic Orkut — reimagined with a modern **Liquid Glass** design system, personalized **Zen Theme** backgrounds, and deep integration with The Sims 4 universe.
+
+Every player manages their **Sims families**, shares screenshots through **galleries**, publishes on a **social feed** with mentions and reactions, earns **badges** through community **challenges**, and customizes their entire visual experience — all within a curated, safe community.
+
+<br/>
+
+## Features
+
+<br/>
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### Authentication & Access
+
+- OAuth login — Google & Discord
+- Invite-only registration (`SIMS-XXXX-XXXX`)
+- Admin approval workflow
+- Auto-profile creation on signup
+- Cookie consent banner (LGPD)
+- Protected & admin-only routes
+
+</td>
+<td width="50%" valign="top">
+
+### Social Feed
+
+- Chronological timeline
+- Rich posts — text + up to 4 images
+- Spoiler flag for sensitive content
+- Discord-style emoji reactions
+- Likes & threaded comments
+- @mentions with autocomplete
+- #hashtag pages with trending sidebar
+- Pin posts to your profile
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### User Profiles
+
+- Customizable avatar & banner (with cropper)
+- Username with Discord-style tag (`#0000`)
+- Bio, website, display title
+- Tabbed view: Posts · Media · Family
+- Profile stats via RPC (friends, posts, photos)
+- Friendship system — request, accept, block
+- Friends list modal
+
+</td>
+<td width="50%" valign="top">
+
+### Photo Gallery
+
+- Private gallery with folder system
+- Drag-and-drop photo upload
+- Public/Private visibility toggle per photo
+- Full-screen lightbox with zoom & navigation
+- Likes & comments on photos
+- Gallery picker in post composer
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### Sims Families
+
+- Create, edit & manage families
+- Add Sims with profession, bio, photo
+- Life Stage — Baby through Elder
+- Occult Types — Vampire, Mermaid, Alien…
+- Aspirations & personality traits
+- Skills with level progression (1–10)
+- Individual photo albums per Sim
+- Themed Sims 4 emoji set
+
+</td>
+<td width="50%" valign="top">
+
+### Community Challenges
+
+- Challenge hub with visual cards
+- Admin-managed: create, edit, archive
+- Milestone-based progression
+- Media proof uploads per milestone
+- Automatic badge on completion
+- Progress tracker with percentage
+- Optional participant cap
+- Linked hashtags
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### Badges & Titles
+
+- Earn badges by completing challenges
+- Standalone admin-created badges
+- Assign badges to specific users
+- Featured badges on profile
+- Custom titles (admin-managed)
+- Display title on user profile
+
+</td>
+<td width="50%" valign="top">
+
+### Notifications
+
+- In-app notification panel
+- Mentions, likes, friend requests
+- Mark as read & clear all
+- Web Push Notifications (VAPID)
+- Service Worker integration
+- Subscribe/unsubscribe management
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### News System
+
+- Admin-published news articles
+- Categories: Patch Note, Event, Update, Alert, Challenge
+- Rich text editor with toolbar
+- Inline images with resize, zoom & pan
+- Likes & comments on articles
+- Featured on landing page
+
+</td>
+<td width="50%" valign="top">
+
+### Admin Dashboard
+
+- Platform metrics overview
+- User management (admin toggle)
+- Invite approval/rejection
+- Feed moderation
+- News CRUD
+- Challenge management
+- Badge & title assignment
+- Dedicated admin sidebar
+
+</td>
+</tr>
+</table>
 
 <br/>
 
 ---
 
-</div>
+<br/>
 
-## 🌟 Visão Geral
+## Design System
 
-**SimsKut** (VICCS SimsKut) é uma rede social **privada e por convites** inspirada no antigo Orkut, com a estética do **Liquid Glass Design System** e fundo **Zen** (gradiente harmônico configurável). Cada usuário gerencia sua **Família Sims**, interage com a **galeria global** e **galeria privada**, publica no **feed** com menções (@username), GIFs e comentários, mantém **perfil** (estilo Twitter/X) e **rede de amizades** — tudo dentro de uma comunidade fechada e segura.
+### Liquid Glass
 
-Para visão técnica detalhada, estrutura de pastas, WIP e TODOs, veja [.agent/overview/PROJECT_STATUS.md](.agent/overview/PROJECT_STATUS.md).
+The entire interface is built on a custom **Liquid Glass** design system — translucency, layered blur, and a refined dark palette that feels both premium and familiar.
 
 <br/>
 
-## ✨ Features
-
-| Status | Feature | Descrição |
-|:------:|---------|-----------|
-| ✅ | **Landing Page** | Entrada por código de convite com validação |
-| ✅ | **Auth Pages** | Registro, Login e OAuth (Google/Discord), aprovação pendente |
-| ✅ | **Feed Social** | Timeline em tempo real, posts com texto, imagens, **GIFs** (5MB), comentários, likes, **menções** @username, **emoji picker**, **links com spoiler** (clique para revelar), **edição de post** (autor), mídias **clicáveis → fullscreen** (MediaLightbox) |
-| ✅ | **Anexar da Galeria** | No composer: seleção de fotos da galeria privada (sem re-upload) |
-| ✅ | **Galeria Pública** | Galeria global com pastas, likes e comentários; **PhotoLightbox** (fullscreen, likes/comentários) |
-| ✅ | **Galeria Privada** | Pastas e upload; botões deletar/visibilidade **sem** abrir lightbox; menu pasta (Renomear/Deletar) **glass-popup** legível, dropdown acima do card |
-| ✅ | **Família Sims** | Configuração da família, convites link/código, árvore (WIP) |
-| ✅ | **Perfil** | Página por @username (estilo Twitter/X), banner 3:1, bio, abas Posts/Respostas/Mídia/Família, **post fixado** no topo, **Editar perfil** com **cropper** de avatar e banner (mesmo da Configurações) |
-| ✅ | **Sistema de Amizades** | Solicitações, aceitar/recusar, modal de lista de amigos, unfollow |
-| ✅ | **Configurações** | Avatar (AvatarCropper 300×300), Zen gradient, Ruído, Retornar ao Dark Mode; BannerCropper (3:1) usado também no Editar perfil |
-| ✅ | **Zen Theme** | Gradiente harmônico (HarmonyEngine), Ruído, persistência em perfil (`zen_background`) |
-| ✅ | **Admin Dashboard** | Stats, convites, moderação, feed admin, avatares sincronizados |
-| ✅ | **Liquid Glass UI** | GlassCard, GlassButton, GlassInput, ZenBackground, FluidBackground, OAuthButton |
-| ✅ | **Layout Responsivo** | Sidebar colapsável (240px↔72px), Bottom Nav mobile, safe-area |
-| ✅ | **Cookie Banner** | Consentimento de cookies (localStorage) |
-| ✅ | **Notificações** | Painel (sino + badge): amizades, menções, likes e comentários em posts/fotos |
-| ✅ | **Rotas** | 5 públicas + 7 protegidas + `/admin/*` no AppShell |
+| Token | Value |
+|:------|:------|
+| Glass Background | `rgba(255, 255, 255, 0.08)` |
+| Glass Border | `rgba(255, 255, 255, 0.18)` |
+| Glass Blur | `blur(20px)` / `blur(40px)` heavy |
+| Text Primary | `rgba(255, 255, 255, 0.95)` |
+| Text Secondary | `rgba(255, 255, 255, 0.65)` |
+| Accent | `#007AFF` |
+| Success | `#34C759` |
+| Warning | `#FF9500` |
+| Danger | `#FF3B30` |
+| Font | SF Pro Display → Inter (fallback) |
+| Radius | `10px` · `16px` · `24px` · `32px` |
+| Animation | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
 
 <br/>
 
-## 🎨 Design System — Liquid Glass
+### Zen Theme
 
-O design system é inspirado no **Apple Liquid Glass** com glassmorfismo, blur layers e paleta de cores refinada.
+Every user personalizes their background through the **Zen Theme** engine — a generative gradient system powered by color harmony algorithms.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      DESIGN TOKENS                          │
-├──────────────────┬──────────────────────────────────────────┤
-│  Glass BG        │  rgba(255, 255, 255, 0.08)              │
-│  Glass Border    │  rgba(255, 255, 255, 0.18)              │
-│  Glass Blur      │  blur(20px) / blur(40px) heavy          │
-│  Text Primary    │  rgba(255, 255, 255, 0.95)              │
-│  Text Secondary  │  rgba(255, 255, 255, 0.65)              │
-├──────────────────┼──────────────────────────────────────────┤
-│  🔵 Accent       │  #007AFF                                │
-│  🟢 Success      │  #34C759                                │
-│  🟡 Warning      │  #FF9500                                │
-│  🔴 Danger       │  #FF3B30                                │
-├──────────────────┼──────────────────────────────────────────┤
-│  Font Display    │  SF Pro Display → Inter (fallback)      │
-│  Radius          │  10px / 16px / 24px / 32px              │
-│  Animation       │  cubic-bezier(0.34, 1.56, 0.64, 1)     │
-└──────────────────┴──────────────────────────────────────────┘
-```
-
-### Componentes UI Disponíveis
-
-```
-📦 src/components/ui/
-├── GlassCard.tsx        →  Container translúcido com blur
-├── GlassButton.tsx      →  Botão com hover glow + animação spring
-├── GlassInput.tsx       →  Input com label flutuante + foco glass
-├── GlassDivider.tsx     →  Divisor visual glass
-├── Avatar.tsx           →  Avatar circular com fallback de iniciais
-├── ZenBackground.tsx    →  Fundo gradiente harmônico (Zen theme)
-├── FluidBackground.tsx  →  Fundo fluido alternativo
-├── OAuthButton.tsx      →  Botão de login OAuth (Google, etc.)
-├── CookieBanner.tsx     →  Banner de consentimento de cookies
-├── NotificationsPanel.tsx →  Painel de notificações
-├── EmojiPicker.tsx      →  Seletor de emojis
-├── MediaLightbox.tsx    →  Lightbox fullscreen para mídias do feed (navegação múltiplas)
-└── MentionInput.tsx     →  Input com suporte a @menções
-```
-
-**Settings (recorte):** `AvatarCropper.tsx` (300×300), `BannerCropper.tsx` (3:1) — usados em Configurações e no Editar perfil.
-
-### Zen Theme (gradiente harmônico)
-
-O **HarmonyEngine** (`src/lib/zenTheme/HarmonyEngine.ts`) gera paletas a partir de uma cor primária usando algoritmos de harmonia: `complement`, `triadic`, `analogous`, `split`, `tetradic`. O usuário configura o fundo em **Configurações** (ZenGradientPicker): posição dos pontos, luminosidade, **ruído** (slider com preview em tempo real no picker) e algoritmo. Botão **"Retornar ao Dark Mode"** restaura o fundo sólido (#050508); o usuário pode reativar e personalizar o Zen a qualquer momento. O estado fica em `themeStore` e pode ser persistido no perfil (`zen_background`).
+- **5 harmony modes** — Complement · Triadic · Analogous · Split · Tetradic
+- **Draggable color dots** with real-time preview
+- **Lightness** and **noise** sliders (SVG turbulence)
+- **Persisted per-user** in Supabase (JSONB)
+- **Temporary override** when viewing another profile
+- **One-click reset** to solid dark mode
 
 <br/>
 
-## 🏗 Estrutura do Projeto
+### Component Library
+
+57 UI components built on **Radix UI** primitives + **shadcn/ui**, extended with custom Liquid Glass components:
+
+| Component | Purpose |
+|:----------|:--------|
+| `GlassCard` | Translucent container with backdrop blur |
+| `GlassButton` | Button with hover glow + spring animation |
+| `GlassInput` | Input with floating label + glass focus |
+| `ZenBackground` | Generative gradient background engine |
+| `NotificationsPanel` | Full notification center with actions |
+| `EmojiPicker` | Themed emoji selector |
+| `MentionInput` | Input with @mention autocomplete |
+| `MediaLightbox` | Full-screen media viewer with navigation |
+| `PhotoLightbox` | Gallery lightbox with likes & comments |
+| `AvatarCropper` | 300×300 avatar crop tool |
+| `BannerCropper` | 3:1 aspect ratio banner crop tool |
+| `CookieBanner` | LGPD-compliant cookie consent |
+
+<br/>
+
+---
+
+<br/>
+
+## Architecture
+
+<br/>
 
 ```
-viccs_SimsKut/
+src/
+├── App.tsx                         Routes — public + protected + admin
+├── main.tsx                        Bootstrap — QueryClient, Auth, Cookies
 │
-├── 📄 index.html                    # Entry point HTML
-├── 📄 package.json                  # Dependências (11 prod + 7 dev)
-├── 📄 vite.config.ts                # Vite config + alias @/
-├── 📄 vercel.json                   # SPA rewrite para Vercel
-├── 📄 tsconfig.json                 # TypeScript strict mode
+├── components/
+│   ├── admin/          (10)        Dashboard, news, challenges, badges, users
+│   ├── auth/           (6)         Login, register, OAuth, callback, guard
+│   ├── community/      (9)         Challenge hub, cards, milestones, hashtags
+│   ├── family/         (1)         Complete family & Sims editor
+│   ├── feed/           (6)         Timeline, composer, reactions, comments
+│   ├── gallery/        (4)         Private/public gallery, lightbox, upload
+│   ├── landing-v2/     (13)        Hero, features, news, showcase sections
+│   ├── layout/         (3)         AppShell, sidebar, navbar
+│   ├── profile/        (7)         Profile page, badges, friends, edit modal
+│   ├── settings/       (4)         Settings, Zen picker, avatar/banner crop
+│   └── ui/             (57)        Radix + shadcn + custom glass components
 │
-└── 📂 src/
-    ├── 📄 App.tsx                   # Router principal (públicas + protegidas + admin)
-    ├── 📄 main.tsx                  # QueryClient + BrowserRouter
-    │
-    ├── 📂 components/
-    │   ├── 📂 admin/                # AdminDashboard, InviteManager, UserManager, AdminFeed, etc.
-    │   ├── 📂 auth/                 # LandingPage, RegisterPage, LoginPage, PendingApproval, AuthCallback
-    │   ├── 📂 family/               # FamilyConfig
-    │   ├── 📂 feed/                 # FeedPage, PostCard, PostComposer, CommentSection, GalleryPicker
-    │   ├── 📂 gallery/              # GlobalGallery, PrivateGallery, PhotoUploadModal, PhotoLightbox
-    │   ├── 📂 layout/               # AppShell, Sidebar, Navbar
-    │   ├── 📂 profile/              # ProfilePage, ProfileEditModal (cropper avatar+banner), SimDetailsModal, FriendsListModal
-    │   ├── 📂 settings/             # SettingsPage, ZenGradientPicker, AvatarCropper, BannerCropper
-    │   └── 📂 ui/                   # Glass*, Avatar, ZenBackground, FluidBackground, MediaLightbox, etc.
-    │
-    ├── 📂 lib/                      # Serviços e utilitários
-    │   ├── supabaseClient.ts
-    │   ├── authService.ts, inviteService.ts, inviteUtils.ts
-    │   ├── profileService.ts, avatarService.ts, imageService.ts
-    │   ├── feedService.ts, galleryService.ts, familyService.ts, friendshipService.ts
-    │   ├── notificationService.ts, renderMentions.tsx
-    │   └── zenTheme/HarmonyEngine.ts  # Cores harmônicas (complement, triadic, etc.)
-    │
-    ├── 📂 store/                    # authStore, themeStore, cookieStore, sidebarStore (Zustand)
-    ├── 📂 styles/                   # global.css, liquid-glass.css
-    └── 📂 types/                    # TypeScript interfaces (Profile, FeedPost, Photo, Family, Sim, etc.)
+├── hooks/              (4)         useMobile, useToast, useChallenges, useShowcase
+├── lib/                (18)        Service layer — all Supabase interactions
+├── store/              (4)         Zustand — auth, theme, sidebar, cookies
+├── styles/             (3)         Global CSS, Liquid Glass, landing tokens
+├── types/              (2)         27+ TypeScript interfaces
+└── utils/              (1)         Sims 4 themed emoji mappings
 ```
 
 <br/>
 
-## 🧬 Schema de Dados
+### Data Layer
 
-O projeto define interfaces TypeScript que espelham o schema SQL do Supabase:
+All backend services run on **Supabase** with Row Level Security enabled across every table.
 
-```typescript
-Profile        →  Perfil (username, avatar_url, banner_url, bio, zen_background, pinned_post_id, is_admin)
-ProfileStats   →  Contagens (friends_count, posts_count, photos_count)
-InviteCode     →  Código de convite (status: pending → approved → used / rejected)
-Friendship     →  Relacionamento (pending → accepted / blocked)
-FeedPost       →  Post no feed (content, image_url, likes/comments)
-PostLike, PostComment
-Photo          →  Foto (visibility, folder_id, likes/comments)
-GalleryFolder  →  Pasta na galeria
-PhotoLike, PhotoComment
-Family         →  Família Sims do usuário
-Sim            →  Personagem Sim (profissão, bio, traits, fotos)
-SimTrait       →  Qualidade ou habilidade do Sim
-SimPhoto       →  Foto individual do Sim
+```
+supabase/
+├── schema.sql                      Complete schema — 965 lines
+├── migrations/         (17)        Incremental schema evolution
+└── functions/
+    ├── send-push/                  Web Push notification sender
+    └── ea-sync/                    EA Gallery sync (reserved)
 ```
 
 <br/>
 
-## 🛠 Tech Stack Completa
-
-| Camada | Tecnologia | Versão | Função |
-|--------|-----------|--------|--------|
-| **Runtime** | Node.js | 22.17 | Ambiente de execução |
-| **Framework** | React | 18.3 | UI declarativa |
-| **Linguagem** | TypeScript | 5.5 | Type-safety |
-| **Build** | Vite | 5.4 | Dev server + bundler |
-| **Styling** | Tailwind CSS | 4.0 | Utility-first CSS |
-| **Design** | Liquid Glass | — | Design system custom |
-| **Backend** | Supabase | 2.45 | Auth, DB, Storage, RLS |
-| **State (client)** | Zustand | 4.5 | Auth store global |
-| **State (server)** | TanStack Query | 5.56 | Cache + sync |
-| **Routing** | React Router | 6.26 | SPA navigation |
-| **Forms** | React Hook Form | 7.53 | Validação de formulários |
-| **Validation** | Zod | 3.23 | Schema validation |
-| **Animations** | Framer Motion | 11.5 | Animações + transições |
-| **Icons** | Lucide React | 0.441 | Ícones SVG |
-| **Deploy** | Vercel | — | Hosting + CDN |
-| **Fonts** | Inter | — | Google Fonts |
+**30+ database tables** · **5 storage buckets** · **3 triggers** · **2 RPC functions** · **2 Edge Functions**
 
 <br/>
 
-## 🚀 Quick Start
+---
 
-### Pré-requisitos
+<br/>
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|:------|:-----------|:--------|
+| Runtime | Vite 5.4 | Dev server + bundler |
+| Framework | React 18.3 | Declarative UI |
+| Language | TypeScript 5.5 | Type safety |
+| Styling | Tailwind CSS v4 | Utility-first CSS |
+| UI Primitives | Radix UI + shadcn/ui | Accessible components |
+| State | Zustand 4.5 | Client state management |
+| Server State | TanStack Query 5 | Async cache + sync |
+| Routing | React Router 6 | SPA navigation |
+| Forms | React Hook Form + Zod | Validation |
+| Animation | Framer Motion 11 | Motion & transitions |
+| Charts | Recharts 3.7 | Admin dashboard metrics |
+| Backend | Supabase 2.45 | Auth + PostgreSQL + Storage + Edge Functions |
+| Icons | Lucide React | SVG icon set |
+| Deploy | Vercel | Hosting + CDN |
+
+<br/>
+
+---
+
+<br/>
+
+## Getting Started
+
+### Prerequisites
 
 - **Node.js** ≥ 18
 - **npm** ≥ 9
-- Conta no [Supabase](https://supabase.com) (para backend)
+- A [Supabase](https://supabase.com) project
 
-### Instalação
+### Setup
 
 ```bash
-# 1. Clone o repositório
+# Clone
 git clone https://github.com/pauloviccs/viccs_SimsKut.git
 cd viccs_SimsKut
 
-# 2. Instale as dependências
+# Install
 npm install
 
-# 3. Configure as variáveis de ambiente
+# Configure
 cp .env.local.example .env.local
-# Edite .env.local com suas chaves do Supabase:
-#   VITE_SUPABASE_URL=https://seu-projeto.supabase.co
-#   VITE_SUPABASE_ANON_KEY=sua-anon-key
+# Set your Supabase credentials:
+#   VITE_SUPABASE_URL=https://your-project.supabase.co
+#   VITE_SUPABASE_ANON_KEY=your-anon-key
 
-# 4. Inicie o dev server
+# Run
 npm run dev
 ```
 
-O app estará disponível em **`http://localhost:5173`** 🎉
-
-### Scripts Disponíveis
-
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Dev server com HMR |
-| `npm run build` | Build de produção (tsc + vite build) |
-| `npm run preview` | Preview do build local |
-| `npm run lint` | Linting com ESLint |
+Open **`http://localhost:5173`** — you're in.
 
 <br/>
 
-## 🗺 Roadmap
+### Scripts
 
-```
-Phase 0 — Scaffold                         ██████████████████████ 100%
-├── Vite + React + TS + Tailwind
-├── Design System Liquid Glass
-├── Componentes UI + Layout responsivo
-├── 9 rotas (3 públicas + 6 protegidas)
-└── TypeScript interfaces completas
-
-Phase 1 — Auth & Convites                   ██████████████████████ 100%
-├── Supabase Auth (login/registro real)
-├── Fluxo de convites conectado ao banco
-├── SQL Migrations + RLS Policies
-└── Admin: aprovar/rejeitar convites
-
-Phase 2 — Social Core                      ██████████████████████ 100%
-├── Feed com posts reais (CRUD + scroll)
-├── Upload de fotos (Supabase Storage)
-├── Sistema de amizades
-└── Notificações em tempo real
-
-Phase 3 — Família & Sims                   ████░░░░░░░░░░░░░░░░   ~30%
-├── Configuração de Família (FamilyConfig) ✅
-├── CRUD completo de Família/Sims (parcial)
-├── Árvore Genealógica (refinamento visual/navegação — WIP)
-├── Traits e habilidades dos Sims
-└── Galeria individual por Sim
-
-Phase 4 — Polish                           ██████████░░░░░░░░░░   ~50%
-├── Zen theme (gradiente harmônico configurável) ✅
-├── Retornar ao Dark Mode + reativar Zen pelo picker ✅
-├── Slider Ruído com preview no picker ✅
-├── Feed: mídia fullscreen (MediaLightbox), links spoiler, editar post ✅
-├── Perfil: post fixado no topo, cropper avatar/banner no Editar perfil ✅
-├── Galeria privada: menu pasta legível (glass-popup), botões sem abrir lightbox ✅
-├── Tema claro/escuro (lightness no Zen)
-├── Favicon SVG personalizado
-├── Performance + lazy loading
-└── SEO meta tags
-```
+| Command | Description |
+|:--------|:------------|
+| `npm run dev` | Development server with HMR |
+| `npm run build` | Production build (tsc + vite) |
+| `npm run preview` | Preview production build |
+| `npm run lint` | ESLint check |
 
 <br/>
 
-## 📜 Licença
+---
 
-Este projeto é distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](./LICENSE) para mais detalhes.
+<br/>
+
+## Routes
+
+| Path | Component | Access |
+|:-----|:----------|:-------|
+| `/` | Landing Page | Public |
+| `/register` | Registration (invite code) | Public |
+| `/login` | Login (email + OAuth) | Public |
+| `/pending` | Pending Approval | Public |
+| `/auth/callback` | OAuth Redirect | Public |
+| `/feed` | Social Feed | Authenticated |
+| `/community` | Challenges Hub | Authenticated |
+| `/community/hashtag/:tag` | Hashtag Posts | Authenticated |
+| `/gallery/private` | Private Gallery | Authenticated |
+| `/family` | Family Manager | Authenticated |
+| `/settings` | User Settings | Authenticated |
+| `/profile/:username` | Public Profile | Authenticated |
+| `/admin/*` | Admin Dashboard | Admin Only |
+
+<br/>
+
+---
+
+<br/>
+
+## Database
+
+### Core Tables
+
+| Table | Description |
+|:------|:------------|
+| `profiles` | User profiles (1:1 with auth) |
+| `invite_codes` | Invite system — pending → approved → used |
+| `friendships` | Friend relationships — pending, accepted, blocked |
+| `feed_posts` | Social feed posts — text + up to 4 images |
+| `post_likes` · `post_comments` · `post_reactions` | Post interactions |
+| `post_comment_likes` | Nested comment likes |
+| `photos` · `photo_likes` · `photo_comments` | Gallery system |
+| `gallery_folders` | Gallery folder organization |
+| `families` · `sims` · `sim_traits` · `sim_photos` | Sims family management |
+| `news` · `news_likes` · `news_comments` · `news_images` | News system |
+| `notifications` · `push_subscriptions` | Notification infrastructure |
+| `challenges` · `challenge_milestones` · `challenge_participants` | Challenge system |
+| `milestone_entries` | Challenge proof submissions |
+| `user_badges` · `admin_badges` · `admin_titles` · `user_titles` | Badges & titles |
+
+### Storage
+
+| Bucket | Access | Content |
+|:-------|:-------|:--------|
+| `avatars` | Public | Profile avatars & banners |
+| `photos` | Public | Gallery photos |
+| `posts` | Public | Feed post images |
+| `news` | Public | News article images (admin upload only) |
+| `challenges` | Public | Challenge thumbnails & badges |
+
+<br/>
+
+---
+
+<br/>
+
+## Roadmap
+
+| Phase | Status | Description |
+|:------|:-------|:------------|
+| **Scaffold** | ✅ Complete | Vite + React + TypeScript + Tailwind + Liquid Glass |
+| **Auth & Invites** | ✅ Complete | Supabase Auth, invite flow, RLS policies, admin approval |
+| **Social Core** | ✅ Complete | Feed, gallery, friendships, notifications, mentions |
+| **Sims Families** | ✅ Complete | Family CRUD, Sim profiles, traits, life stages, occult types |
+| **Community** | ✅ Complete | Challenges hub, milestones, badges, titles, hashtags |
+| **News & Admin** | ✅ Complete | Rich text news, admin dashboard, moderation tools |
+| **Zen Theme** | ✅ Complete | Generative gradient backgrounds, harmony engine, persistence |
+| **Landing V2** | ✅ Complete | Hero, features, news, showcase, fluid background |
+| **EA Gallery Sync** | 🔲 Planned | Sync with EA Gallery API (Edge Function reserved) |
+| **i18n** | 🔲 Planned | Multi-language support (currently PT-BR only) |
+| **Light Mode** | 🔲 Planned | Full light theme option |
+| **Advanced Search** | 🔲 Planned | Global search across users, posts, and families |
+
+<br/>
+
+---
+
+<br/>
+
+## License
+
+Distributed under the **MIT** License. See [LICENSE](./LICENSE) for details.
 
 <br/>
 
@@ -287,8 +472,12 @@ Este projeto é distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](./
 
 <div align="center">
 
-Feito com 💎 por [Paulo Vinicios](https://github.com/pauloviccs)
+<br/>
 
-**SimsKut** — *Onde cada família conta uma história.*
+Made by [Paulo Vinicios](https://github.com/pauloviccs)
+
+**SimsKut** — Where every family tells a story.
+
+<br/>
 
 </div>
