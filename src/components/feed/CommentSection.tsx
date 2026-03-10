@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Trash2, Heart } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
@@ -119,17 +120,22 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                 <div className="space-y-3 mb-3">
                     {comments.map((comment) => (
                         <div key={comment.id} className="flex gap-2 group">
-                            <Avatar
-                                src={comment.author?.avatar_url}
-                                alt={comment.author?.display_name || 'User'}
-                                size="sm"
-                            />
+                            <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="shrink-0">
+                                <Avatar
+                                    src={comment.author?.avatar_url}
+                                    alt={comment.author?.display_name || 'User'}
+                                    size="sm"
+                                    className="cursor-pointer hover:ring-2 hover:ring-[var(--accent-primary)]/40 transition-all"
+                                />
+                            </Link>
                             <div className="flex-1 min-w-0">
                                 <div className="inline-block bg-white/[0.04] rounded-[12px] px-3 py-2 max-w-full">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-semibold text-white/80">
-                                            {comment.author?.display_name || comment.author?.username || 'Anônimo'}
-                                        </span>
+                                        <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="hover:underline">
+                                            <span className="text-xs font-semibold text-white/80">
+                                                {comment.author?.display_name || comment.author?.username || 'Anônimo'}
+                                            </span>
+                                        </Link>
                                         <span className="text-[10px] text-white/25">
                                             {timeAgo(comment.created_at)}
                                         </span>

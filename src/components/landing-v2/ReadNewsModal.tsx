@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, MessageSquare, Send, Loader2, Maximize } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -240,16 +241,20 @@ export function ReadNewsModal({ isOpen, onClose, news }: ReadNewsModalProps) {
                                                 ) : comments && comments.length > 0 ? (
                                                     comments.map((comment: any) => (
                                                         <div key={comment.id} className="flex gap-4 p-4 rounded-xl bg-black/20 border border-white/5 group">
-                                                            <img
-                                                                src={comment.author?.avatar_url || '/default-avatar.png'}
-                                                                alt={comment.author?.username || 'Unknown'}
-                                                                className="w-10 h-10 rounded-full object-cover border border-white/10 shrink-0"
-                                                            />
+                                                            <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="shrink-0">
+                                                                <img
+                                                                    src={comment.author?.avatar_url || '/default-avatar.png'}
+                                                                    alt={comment.author?.username || 'Unknown'}
+                                                                    className="w-10 h-10 rounded-full object-cover border border-white/10 cursor-pointer hover:ring-2 hover:ring-[var(--accent-primary)]/40 transition-all"
+                                                                />
+                                                            </Link>
                                                             <div className="flex-1">
                                                                 <div className="flex items-center gap-2 mb-1">
-                                                                    <span className="font-semibold text-white/90 text-sm">
-                                                                        {comment.author?.display_name || comment.author?.username || 'Usuário'}
-                                                                    </span>
+                                                                    <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="hover:underline">
+                                                                        <span className="font-semibold text-white/90 text-sm">
+                                                                            {comment.author?.display_name || comment.author?.username || 'Usuário'}
+                                                                        </span>
+                                                                    </Link>
                                                                     <span className="text-xs text-white/40">
                                                                         {new Date(comment.created_at).toLocaleDateString('pt-BR', {
                                                                             day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'

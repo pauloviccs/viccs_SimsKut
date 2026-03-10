@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, MessageSquare, Send, Trash2, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
@@ -257,16 +258,21 @@ export function PhotoLightbox({ photo, onClose, onPhotoUpdate }: PhotoLightboxPr
                                         ) : (
                                             comments.map(comment => (
                                                 <div key={comment.id} className="flex gap-3 group">
-                                                    <Avatar
-                                                        src={comment.author?.avatar_url}
-                                                        alt={comment.author?.display_name || 'User'}
-                                                        size="sm"
-                                                    />
+                                                    <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="shrink-0">
+                                                        <Avatar
+                                                            src={comment.author?.avatar_url}
+                                                            alt={comment.author?.display_name || 'User'}
+                                                            size="sm"
+                                                            className="cursor-pointer hover:ring-2 hover:ring-[var(--accent-primary)]/40 transition-all"
+                                                        />
+                                                    </Link>
                                                     <div className="flex-1">
                                                         <div className="bg-white/5 rounded-2xl rounded-tl-sm px-4 py-2 relative">
-                                                            <span className="text-xs font-bold text-white/90">
-                                                                {comment.author?.display_name || comment.author?.username || 'Anônimo'}
-                                                            </span>
+                                                            <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="hover:underline">
+                                                                <span className="text-xs font-bold text-white/90">
+                                                                    {comment.author?.display_name || comment.author?.username || 'Anônimo'}
+                                                                </span>
+                                                            </Link>
                                                             <p className="text-sm text-white/80 mt-0.5 break-words">
                                                                 {comment.content}
                                                             </p>
