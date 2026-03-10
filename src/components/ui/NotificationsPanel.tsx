@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, UserCheck, X, AtSign, MessageCircle, Heart, CheckCheck } from 'lucide-react';
+import { Bell, UserCheck, X, AtSign, MessageCircle, Heart, CheckCheck, Zap } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import {
     getPendingRequests,
@@ -331,9 +331,9 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                             />
                                                             <div
                                                                 className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ${notif.type === 'comment_photo' ||
-                                                                        notif.type === 'comment_post'
-                                                                        ? 'bg-[var(--accent-primary)]'
-                                                                        : 'bg-red-500'
+                                                                    notif.type === 'comment_post'
+                                                                    ? 'bg-[var(--accent-primary)]'
+                                                                    : 'bg-red-500'
                                                                     }`}
                                                             >
                                                                 {notif.type === 'mention_post' && (
@@ -355,6 +355,9 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                                     notif.type === 'new_post_friend') && (
                                                                         <Heart size={9} className="text-white fill-current" />
                                                                     )}
+                                                                {notif.type === 'new_flash' && (
+                                                                    <Zap size={9} className="text-[#007AFF]" />
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -372,6 +375,7 @@ export function NotificationsPanel({ collapsed = false, upward = false, hideLabe
                                                                 {notif.type === 'comment_post' && 'comentou no seu post'}
                                                                 {notif.type === 'reaction_post' && 'reagiu ao seu post'}
                                                                 {notif.type === 'new_post_friend' && 'publicou um novo post'}
+                                                                {notif.type === 'new_flash' && 'publicou um novo Flash'}
                                                             </p>
                                                             {notif.content && (
                                                                 <p className="text-[10px] text-white/30 truncate mt-0.5">

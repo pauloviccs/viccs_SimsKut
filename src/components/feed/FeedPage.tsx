@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { PostComposer } from './PostComposer';
 import { PostCard } from './PostCard';
+import { FlashBar } from '../flash/FlashBar';
 import { getPosts, getSinglePost } from '@/lib/feedService';
 import { supabase } from '@/lib/supabaseClient';
 import type { FeedPost } from '@/types';
@@ -157,6 +158,8 @@ export function FeedPage() {
             >
                 Feed
             </motion.h1>
+
+            <FlashBar />
 
             <PostComposer onPostCreated={handlePostCreated} />
 

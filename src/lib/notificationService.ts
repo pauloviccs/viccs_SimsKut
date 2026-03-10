@@ -25,7 +25,8 @@ export interface AppNotification {
     | 'new_post_friend'
     | 'friend_accept'
     | 'family_update'
-    | 'badge_awarded';
+    | 'badge_awarded'
+    | 'new_flash';
     reference_id: string | null;
     content: string | null;
     read: boolean;
@@ -93,7 +94,8 @@ export async function createInteractionNotification(
         | 'reaction_post'
         | 'new_post_friend'
         | 'friend_accept'
-        | 'family_update',
+        | 'family_update'
+        | 'new_flash',
     referenceId: string,
     contentPreview: string | null = null
 ): Promise<void> {

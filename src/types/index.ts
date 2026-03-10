@@ -250,3 +250,37 @@ export interface NewsComment {
     // Joined
     author?: Profile;
 }
+
+// ======== FLASH (STORIES) ========
+
+/** Um Flash publicado por um usuário — expira em 24h */
+export interface Flash {
+    id: string;
+    author_id: string;
+    image_url: string;
+    caption: string | null;
+    expires_at: string;
+    created_at: string;
+    // Joined
+    author?: Profile;
+    // Aggregated
+    views_count?: number;
+    viewed_by_me?: boolean;
+}
+
+/** Agrupamento de flashes por autor (usado na FlashBar) */
+export interface FlashGroup {
+    author: Profile;
+    flashes: Flash[];
+    has_unseen: boolean;   // true se algum flash não foi visto pelo usuário atual
+}
+
+/** Registro de visualização de um Flash */
+export interface FlashView {
+    id: string;
+    flash_id: string;
+    viewer_id: string;
+    viewed_at: string;
+    // Joined
+    viewer?: Profile;
+}
