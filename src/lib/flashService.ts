@@ -184,15 +184,23 @@ export async function deleteFlash(flash: Flash): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || flash.author_id !== user.id) throw new Error('Sem permissão');
 
-    // Extrair path do storage da URL pública
-    const url = new URL(flash.image_url);
-    const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/flashes\/(.+)/);
-    if (pathMatch) {
-        await supabase.storage.from(FLASH_BUCKET).remove([pathMatch[1]]);
-    }
+    // 1. Remover views associadas primeiro (safety net caso FK não tenha CASCADE)
+    await supabase.from('flash_views').delete().eq('flash_id', flash.id);
 
+    // 2. Deletar o flash do banco
     const { error } = await supabase.from('flashes').delete().eq('id', flash.id);
     if (error) throw error;
+
+    // 3. Remover imagem do storage (não-bloqueante)
+    try {
+        const url = new URL(flash.image_url);
+        const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/flashes\/(.+)/);
+        if (pathMatch) {
+            await supabase.storage.from(FLASH_BUCKET).remove([pathMatch[1]]);
+        }
+    } catch (storageErr) {
+        console.warn('Flash deletado mas falha ao remover imagem do storage:', storageErr);
+    }
 }
 
 // ── Notificações ────────────────────────────────────────────────

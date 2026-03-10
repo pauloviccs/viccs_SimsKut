@@ -115,13 +115,27 @@ export function FlashBar() {
         <>
             <div className="glass rounded-[var(--radius-lg)] border border-white/10 px-4 py-3 mb-4">
                 <div className="flex gap-4 overflow-x-auto scrollbar-none pb-1">
-                    {/* Próprio usuário: sempre primeiro */}
+                    {/* Próprio usuário: sempre primeiro — avatar + botão de adicionar */}
                     {myGroup ? (
-                        <FlashAvatar
-                            group={myGroup}
-                            isOwn
-                            onClick={() => openViewer(profile.id)}
-                        />
+                        <div className="relative flex flex-col items-center gap-1.5 flex-shrink-0" style={{ minWidth: 60 }}>
+                            {/* Avatar clicável abre o viewer */}
+                            <FlashAvatar
+                                group={myGroup}
+                                isOwn
+                                onClick={() => openViewer(profile.id)}
+                            />
+                            {/* Botão "+" no canto inferior-direito do avatar (estilo Instagram) */}
+                            <motion.button
+                                onClick={(e) => { e.stopPropagation(); setComposerOpen(true); }}
+                                whileHover={{ scale: 1.15 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="absolute bottom-[22px] right-0 w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-[#050508] z-10 cursor-pointer"
+                                style={{ background: 'linear-gradient(135deg, #007AFF, #AF52DE)' }}
+                                title="Novo Flash"
+                            >
+                                <Plus size={12} className="text-white" />
+                            </motion.button>
+                        </div>
                     ) : (
                         <AddFlashButton onClick={() => setComposerOpen(true)} />
                     )}

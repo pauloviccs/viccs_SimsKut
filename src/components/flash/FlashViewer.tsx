@@ -67,8 +67,11 @@ export function FlashViewer({ groups, onRefetch }: FlashViewerProps) {
         return () => { if (timerRef.current) clearTimeout(timerRef.current); };
     }, [viewerOpen, currentFlash?.id, goNext]);
 
-    const handleDelete = async () => {
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
         if (!currentFlash) return;
+        if (!window.confirm('Remover este Flash?')) return;
         try {
             await deleteFlash(currentFlash);
             toast.success('Flash removido.');
@@ -140,8 +143,8 @@ export function FlashViewer({ groups, onRefetch }: FlashViewerProps) {
                             ))}
                         </div>
 
-                        {/* Header: avatar + nome + tempo + fechar */}
-                        <div className="absolute top-0 left-0 right-0 flex items-center gap-2.5 px-3 pt-8 pb-2 z-10">
+                        {/* Header: avatar + nome + tempo + fechar — z-30 acima das tap zones */}
+                        <div className="absolute top-0 left-0 right-0 flex items-center gap-2.5 px-3 pt-8 pb-2 z-30">
                             <div
                                 className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/30 flex-shrink-0"
                                 style={{ background: 'linear-gradient(135deg, #007AFF, #AF52DE)' }}
@@ -166,7 +169,7 @@ export function FlashViewer({ groups, onRefetch }: FlashViewerProps) {
                             {isOwn && (
                                 <button
                                     onClick={handleDelete}
-                                    className="w-8 h-8 rounded-full flex items-center justify-center text-white/60 hover:text-[#FF3B30] hover:bg-white/10 transition-colors"
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-white/60 hover:text-[#FF3B30] hover:bg-white/10 transition-colors cursor-pointer"
                                     title="Remover Flash"
                                 >
                                     <Trash2 size={15} />
@@ -174,8 +177,8 @@ export function FlashViewer({ groups, onRefetch }: FlashViewerProps) {
                             )}
 
                             <button
-                                onClick={closeViewer}
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                                onClick={(e) => { e.stopPropagation(); closeViewer(); }}
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                             >
                                 <X size={15} />
                             </button>

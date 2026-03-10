@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, LinkIcon, Loader2, Camera, ImageIcon, MessageCircle, Users as UsersIcon, X, Maximize } from 'lucide-react';
+import { CalendarDays, LinkIcon, Loader2, Camera, ImageIcon, MessageCircle, Users as UsersIcon, X, Maximize, Zap, Eye } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
 import { withEmoji } from '@/utils/simEmojis';
@@ -14,6 +14,9 @@ import { PhotoLightbox } from '@/components/gallery/PhotoLightbox';
 import { ProfileBadges } from './ProfileBadges';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore, normalizeZenThemeConfig } from '@/store/themeStore';
+import { useFlashStore } from '@/store/flashStore';
+import { getFlashGroups } from '@/lib/flashService';
+import { FlashViewer } from '@/components/flash/FlashViewer';
 import {
     fetchProfileByUsername,
     getProfileStats,
@@ -23,7 +26,7 @@ import {
     getUserFamiliesWithSims,
     setPinnedPost,
 } from '@/lib/profileService';
-import type { Profile, ProfileStats, FeedPost, PostComment, Photo, Family } from '@/types';
+import type { Profile, ProfileStats, FeedPost, PostComment, Photo, Family, FlashGroup } from '@/types';
 
 type ProfileTab = 'posts' | 'replies' | 'media' | 'family';
 
@@ -48,6 +51,10 @@ export function ProfilePage() {
     const [viewingSim, setViewingSim] = useState<any | null>(null);
     const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
     const [showAvatarFullscreen, setShowAvatarFullscreen] = useState(false);
+    const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+    const [flashGroups, setFlashGroups] = useState<FlashGroup[]>([]);
+    const avatarMenuRef = useRef<HTMLDivElement>(null);
+    const { openViewer: openFlashViewer } = useFlashStore();
 
     // Tab data
     const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -98,6 +105,34 @@ export function ProfilePage() {
 
         return () => { mounted = false; };
     }, [username]);
+
+    // Fetch flash groups para saber se o usuário tem flashes ativos
+    useEffect(() => {
+        if (!profile) return;
+        getFlashGroups()
+            .then(groups => setFlashGroups(groups))
+            .catch(() => setFlashGroups([]));
+    }, [profile?.id]);
+
+    // Fechar menu do avatar ao clicar fora
+    useEffect(() => {
+        if (!showAvatarMenu) return;
+        const handler = (e: MouseEvent) => {
+            if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
+                setShowAvatarMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [showAvatarMenu]);
+
+    const profileHasFlashes = flashGroups.some(g => g.author.id === profile?.id);
+
+    const handleRefetchFlashes = () => {
+        getFlashGroups()
+            .then(groups => setFlashGroups(groups))
+            .catch(() => setFlashGroups([]));
+    };
 
     // Fetch tab data
     useEffect(() => {
@@ -212,25 +247,78 @@ export function ProfilePage() {
             <div className="glass-heavy rounded-b-[var(--radius-lg)] border border-white/10 border-t-0 px-4 sm:px-6 pb-4 relative">
                 {/* Avatar — Sobreposto ao banner */}
                 <div className="flex justify-between items-start">
-                    <div className="-mt-16 sm:-mt-20">
+                    <div className="-mt-16 sm:-mt-20 relative" ref={avatarMenuRef}>
                         <div
-                            className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-[#0a0a0f] overflow-hidden group cursor-pointer"
+                            className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 overflow-hidden group cursor-pointer ${profileHasFlashes
+                                ? 'border-transparent'
+                                : 'border-[#0a0a0f]'
+                                }`}
+                            style={profileHasFlashes ? {
+                                background: 'linear-gradient(135deg, #007AFF, #AF52DE)',
+                                padding: '3px',
+                                borderRadius: '9999px',
+                            } : undefined}
                             onClick={() => {
-                                if (profile.avatar_url) setShowAvatarFullscreen(true);
+                                if (profileHasFlashes) {
+                                    setShowAvatarMenu(prev => !prev);
+                                } else if (profile.avatar_url) {
+                                    setShowAvatarFullscreen(true);
+                                }
                             }}
                         >
-                            <Avatar
-                                src={profile.avatar_url}
-                                alt={profile.display_name || profile.username}
-                                size="2xl"
-                                className="w-full h-full !border-0 transition-transform duration-500 group-hover:scale-110"
-                            />
+                            <div className={`w-full h-full rounded-full overflow-hidden ${profileHasFlashes ? 'border-2 border-[#0a0a0f]' : ''
+                                }`}>
+                                <Avatar
+                                    src={profile.avatar_url}
+                                    alt={profile.display_name || profile.username}
+                                    size="2xl"
+                                    className="w-full h-full !border-0 transition-transform duration-500 group-hover:scale-110"
+                                />
+                            </div>
                             {profile.avatar_url && (
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                                     <Maximize size={24} className="text-white/80 drop-shadow-md" />
                                 </div>
                             )}
                         </div>
+
+                        {/* Menu de contexto do avatar */}
+                        <AnimatePresence>
+                            {showAvatarMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                                    className="absolute top-full left-0 mt-2 bg-[#0d0d12]/95 backdrop-blur-xl rounded-[var(--radius-md)] border border-white/15 overflow-hidden z-50 min-w-[180px] shadow-2xl"
+                                >
+                                    {profile.avatar_url && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowAvatarMenu(false);
+                                                setShowAvatarFullscreen(true);
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:bg-white/[0.08] transition-colors cursor-pointer"
+                                        >
+                                            <Eye size={16} className="text-white/50" />
+                                            Ver foto de perfil
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowAvatarMenu(false);
+                                            if (profile) openFlashViewer(profile.id);
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:bg-white/[0.08] transition-colors cursor-pointer border-t border-white/[0.06]"
+                                    >
+                                        <Zap size={16} className="text-[#007AFF]" />
+                                        Ver Flash
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Action Button */}
@@ -611,6 +699,9 @@ export function ProfilePage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* =========== FLASH VIEWER (para ver flashes do perfil) =========== */}
+            <FlashViewer groups={flashGroups} onClose={() => { }} onRefetch={handleRefetchFlashes} />
         </div>
     );
 }
