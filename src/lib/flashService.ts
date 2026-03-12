@@ -82,7 +82,7 @@ export async function getFlashGroups(): Promise<FlashGroup[]> {
         .from('flashes')
         .select(`
             *,
-            author: profiles!author_id(id, username, display_name, avatar_url),
+            author: profiles!author_id(id, username, display_name, avatar_url, is_verified),
             flash_views(viewer_id)
         `)
         .order('created_at', { ascending: false });

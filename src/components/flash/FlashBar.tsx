@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { getFlashGroups } from '@/lib/flashService';
 import { useFlashStore } from '@/store/flashStore';
 import { useAuthStore } from '@/store/authStore';
@@ -58,8 +59,9 @@ function FlashAvatar({
                     />
                 </div>
             </div>
-            <span className="text-[10px] text-white/60 truncate w-full text-center px-1">
-                {isOwn ? 'Seu Flash' : (group.author.display_name || group.author.username)}
+            <span className="text-[10px] text-white/60 truncate w-full text-center px-1 inline-flex items-center justify-center gap-0.5">
+                <span className="truncate">{isOwn ? 'Seu Flash' : (group.author.display_name || group.author.username)}</span>
+                {group.author.is_verified && <VerifiedBadge size={10} />}
             </span>
         </motion.button>
     );

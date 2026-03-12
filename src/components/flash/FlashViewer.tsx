@@ -5,6 +5,7 @@ import { useFlashStore } from '@/store/flashStore';
 import { useAuthStore } from '@/store/authStore';
 import { markFlashViewed, deleteFlash } from '@/lib/flashService';
 import { Avatar } from '@/components/ui/Avatar';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -157,8 +158,9 @@ export function FlashViewer({ groups, onRefetch }: FlashViewerProps) {
                                 />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-white text-sm font-semibold truncate leading-none">
-                                    {currentGroup.author.display_name || currentGroup.author.username}
+                                <p className="text-white text-sm font-semibold truncate leading-none flex items-center gap-1">
+                                    <span className="truncate">{currentGroup.author.display_name || currentGroup.author.username}</span>
+                                    {currentGroup.author.is_verified && <VerifiedBadge size={13} />}
                                 </p>
                                 <p className="text-white/60 text-[10px] mt-0.5">
                                     {formatDistanceToNow(new Date(currentFlash.created_at), { addSuffix: true, locale: ptBR })}
