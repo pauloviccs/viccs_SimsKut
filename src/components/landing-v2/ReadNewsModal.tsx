@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { newsService } from '@/lib/newsService';
 import type { News } from '@/types';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { supabase } from '@/lib/supabaseClient';
 
 interface ReadNewsModalProps {
@@ -173,8 +174,9 @@ export function ReadNewsModal({ isOpen, onClose, news }: ReadNewsModalProps) {
                                                         className="w-8 h-8 rounded-full border border-white/20 object-cover"
                                                     />
                                                     <div>
-                                                        <p className="text-sm text-white/90 font-medium">
+                                                        <p className="text-sm text-white/90 font-medium flex items-center gap-1">
                                                             {news.author?.display_name || news.author?.username || 'Usuário Deletado'}
+                                                            {news.author?.is_verified && <VerifiedBadge size={14} />}
                                                         </p>
                                                         <p className="text-xs text-white/50">Admin</p>
                                                     </div>
@@ -251,8 +253,9 @@ export function ReadNewsModal({ isOpen, onClose, news }: ReadNewsModalProps) {
                                                             <div className="flex-1">
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="hover:underline">
-                                                                        <span className="font-semibold text-white/90 text-sm">
+                                                                        <span className="font-semibold text-white/90 text-sm inline-flex items-center gap-1">
                                                                             {comment.author?.display_name || comment.author?.username || 'Usuário'}
+                                                                            {comment.author?.is_verified && <VerifiedBadge size={12} />}
                                                                         </span>
                                                                     </Link>
                                                                     <span className="text-xs text-white/40">

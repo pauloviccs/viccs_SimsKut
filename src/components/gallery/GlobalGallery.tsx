@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Image, Loader2, Heart, MessageSquare, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { getPublicPhotos } from '@/lib/galleryService';
 import { PhotoLightbox } from './PhotoLightbox';
 import type { Photo } from '@/types';
@@ -142,7 +143,7 @@ export function GlobalGallery() {
                             {/* User Header */}
                             <div
                                 className="flex items-center gap-3 mb-3 cursor-pointer w-fit p-2 pr-4 rounded-full bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors"
-                                onClick={() => navigate(`/profile/${photos[currentIndex].owner?.username}`)}
+                                onClick={() => navigate(`/profile/${encodeURIComponent(photos[currentIndex].owner?.username || '')}`)}
                             >
                                 <Avatar
                                     src={photos[currentIndex].owner?.avatar_url}
@@ -151,8 +152,9 @@ export function GlobalGallery() {
                                     className="border-2 border-[var(--accent-primary)]/50"
                                 />
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-bold tracking-tight text-white leading-none">
+                                    <span className="text-sm font-bold tracking-tight text-white leading-none flex items-center gap-1">
                                         {photos[currentIndex].owner?.display_name || 'Anônimo'}
+                                        {photos[currentIndex].owner?.is_verified && <VerifiedBadge size={13} />}
                                     </span>
                                     <span className="text-[11px] text-[var(--accent-tertiary)] font-medium">
                                         @{photos[currentIndex].owner?.username}

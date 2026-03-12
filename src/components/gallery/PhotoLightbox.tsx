@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, MessageSquare, Send, Trash2, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { useAuthStore } from '@/store/authStore';
 import { getPhotoComments, addPhotoComment, deletePhotoComment, togglePhotoLike } from '@/lib/galleryService';
 import type { Photo, PhotoComment } from '@/types';
@@ -193,8 +194,9 @@ export function PhotoLightbox({ photo, onClose, onPhotoUpdate }: PhotoLightboxPr
                                             size="sm"
                                         />
                                         <div>
-                                            <p className="text-sm font-semibold text-white/90">
+                                            <p className="text-sm font-semibold text-white/90 flex items-center gap-1">
                                                 {photo.owner?.display_name || photo.owner?.username || 'Anônimo'}
+                                                {photo.owner?.is_verified && <VerifiedBadge size={13} />}
                                             </p>
                                             <p className="text-[11px] text-white/40">
                                                 {new Date(photo.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -269,8 +271,9 @@ export function PhotoLightbox({ photo, onClose, onPhotoUpdate }: PhotoLightboxPr
                                                     <div className="flex-1">
                                                         <div className="bg-white/5 rounded-2xl rounded-tl-sm px-4 py-2 relative">
                                                             <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="hover:underline">
-                                                                <span className="text-xs font-bold text-white/90">
+                                                                <span className="text-xs font-bold text-white/90 inline-flex items-center gap-1">
                                                                     {comment.author?.display_name || comment.author?.username || 'Anônimo'}
+                                                                    {comment.author?.is_verified && <VerifiedBadge size={12} />}
                                                                 </span>
                                                             </Link>
                                                             <p className="text-sm text-white/80 mt-0.5 break-words">
