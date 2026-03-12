@@ -66,6 +66,7 @@ Every player manages their **Sims families**, shares screenshots through **galle
 - @mentions with autocomplete
 - #hashtag pages with trending sidebar
 - Pin posts to your profile
+- Verified badge (✓) on posts & comments
 
 </td>
 </tr>
@@ -77,6 +78,7 @@ Every player manages their **Sims families**, shares screenshots through **galle
 - Customizable avatar & banner (with cropper)
 - Username with Discord-style tag (`#0000`)
 - Bio, website, display title
+- Verified badge (✓) on profile (admin-controlled)
 - Tabbed view: Posts · Media · Family
 - Profile stats via RPC (friends, posts, photos)
 - Friendship system — request, accept, block
@@ -176,7 +178,33 @@ Every player manages their **Sims families**, shares screenshots through **galle
 - News CRUD
 - Challenge management
 - Badge & title assignment
+- User verification toggle (✓)
 - Dedicated admin sidebar
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### Flash Stories
+
+- Instagram-style story bar on feed
+- Upload image + caption (24h expiration)
+- Fullscreen viewer with progress bar
+- Unseen indicator ring on avatars
+- Grouped by author with navigation
+- View counter & delete for author
+- Friends-only visibility (RLS)
+- Verified badge (✓) on flash bar & viewer
+
+</td>
+<td width="50%" valign="top">
+
+### Zen Theme
+
+- Personalized gradient background per user
+- Configurable via settings (color picker)
+- Ambient, calming profile atmosphere
 
 </td>
 </tr>
