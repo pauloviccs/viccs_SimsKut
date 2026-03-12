@@ -14,6 +14,7 @@ export interface Profile {
     website_url: string | null;
     invite_code_used: string | null;
     is_admin: boolean;
+    is_verified?: boolean;
     tag_changed: boolean;
     zen_background?: any; // JSONB object config
     pinned_post_id?: string | null;

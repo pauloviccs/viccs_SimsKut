@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader2, Award, X, Sparkles, Ribbon, Upload } from 'lucide-react';
+import { Search, Loader2, Award, X, Sparkles, Ribbon, Upload, ShieldCheck } from 'lucide-react';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { supabase } from '@/lib/supabaseClient';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassButton } from '@/components/ui/GlassButton';
@@ -80,7 +81,7 @@ export function AdminBadgeManager() {
             setSearching(true);
             const { data } = await supabase
                 .from('profiles')
-                .select('id, username, display_name, avatar_url')
+                .select('id, username, display_name, avatar_url, is_verified')
                 .or(`username.ilike.%${searchQuery}%,display_name.ilike.%${searchQuery}%`)
                 .limit(5);
             setUsers(data || []);
@@ -359,18 +360,48 @@ export function AdminBadgeManager() {
                         </div>
 
                         {selectedUser && (
-                            <div className="flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50">
-                                        {selectedUser.avatar_url && <img src={selectedUser.avatar_url} className="w-full h-full object-cover" />}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50">
+                                            {selectedUser.avatar_url && <img src={selectedUser.avatar_url} className="w-full h-full object-cover" />}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-white flex items-center gap-1.5">
+                                                {selectedUser.display_name}
+                                                {selectedUser.is_verified && <VerifiedBadge size={14} />}
+                                            </p>
+                                            <p className="text-xs text-amber-500/70">@{selectedUser.username}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-white">{selectedUser.display_name}</p>
-                                        <p className="text-xs text-amber-500/70">@{selectedUser.username}</p>
-                                    </div>
+                                    <button onClick={() => setSelectedUser(null)} className="p-2 hover:bg-red-500/20 text-white/50 hover:text-red-400 rounded-lg">
+                                        <X className="w-4 h-4" />
+                                    </button>
                                 </div>
-                                <button onClick={() => setSelectedUser(null)} className="p-2 hover:bg-red-500/20 text-white/50 hover:text-red-400 rounded-lg">
-                                    <X className="w-4 h-4" />
+
+                                {/* Verified Toggle */}
+                                <button
+                                    onClick={async () => {
+                                        const newValue = !selectedUser.is_verified;
+                                        const { error } = await supabase
+                                            .from('profiles')
+                                            .update({ is_verified: newValue })
+                                            .eq('id', selectedUser.id);
+                                        if (error) {
+                                            toast.error('Erro ao atualizar verificação: ' + error.message);
+                                            return;
+                                        }
+                                        setSelectedUser({ ...selectedUser, is_verified: newValue });
+                                        toast.success(newValue ? 'Usuário verificado! ✓' : 'Verificação removida.');
+                                    }}
+                                    className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                                        selectedUser.is_verified
+                                            ? 'bg-blue-500/20 border border-blue-500/40 text-blue-400 hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-400'
+                                            : 'bg-white/5 border border-white/10 text-white/60 hover:bg-blue-500/20 hover:border-blue-500/40 hover:text-blue-400'
+                                    }`}
+                                >
+                                    <ShieldCheck className="w-4 h-4" />
+                                    {selectedUser.is_verified ? 'Remover Verificação' : 'Verificar Usuário'}
                                 </button>
                             </div>
                         )}

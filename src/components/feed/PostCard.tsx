@@ -11,6 +11,7 @@ import { toggleLike, deletePost, updatePost } from '@/lib/feedService';
 import { renderPostContent } from '@/lib/renderMentions';
 import { getPostImageUrls } from '@/types';
 import type { FeedPost, PostReactionAggregate } from '@/types';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 
 interface PostCardProps {
     post: FeedPost;
@@ -147,10 +148,11 @@ export function PostCard({ post, onDelete, onEdit, onLikeToggle, showPinOption, 
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`} className="hover:underline">
+                        <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`} className="hover:underline flex items-center gap-1">
                             <span className="text-sm font-semibold text-white/90 truncate">
                                 {post.author?.display_name || post.author?.username || 'Anônimo'}
                             </span>
+                            {post.author?.is_verified && <VerifiedBadge size={14} />}
                         </Link>
                         <Link to={`/profile/${encodeURIComponent(post.author?.username || '')}`} className="hover:underline">
                             <span className="text-xs text-white/30">

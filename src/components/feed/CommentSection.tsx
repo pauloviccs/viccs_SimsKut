@@ -10,6 +10,7 @@ import { getComments, addComment, deleteComment, toggleCommentLike } from '@/lib
 import { processMentions } from '@/lib/notificationService';
 import { renderMentions } from '@/lib/renderMentions';
 import type { PostComment } from '@/types';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 
 interface CommentSectionProps {
     postId: string;
@@ -131,10 +132,11 @@ export function CommentSection({ postId, onCommentCountChange }: CommentSectionP
                             <div className="flex-1 min-w-0">
                                 <div className="inline-block bg-white/[0.04] rounded-[12px] px-3 py-2 max-w-full">
                                     <div className="flex items-center gap-2">
-                                        <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="hover:underline">
+                                        <Link to={`/profile/${encodeURIComponent(comment.author?.username || '')}`} className="hover:underline flex items-center gap-1">
                                             <span className="text-xs font-semibold text-white/80">
                                                 {comment.author?.display_name || comment.author?.username || 'Anônimo'}
                                             </span>
+                                            {comment.author?.is_verified && <VerifiedBadge size={12} />}
                                         </Link>
                                         <span className="text-[10px] text-white/25">
                                             {timeAgo(comment.created_at)}

@@ -12,6 +12,7 @@ import { FriendsListModal } from './FriendsListModal';
 import { SimDetailsModal } from './SimDetailsModal';
 import { PhotoLightbox } from '@/components/gallery/PhotoLightbox';
 import { ProfileBadges } from './ProfileBadges';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore, normalizeZenThemeConfig } from '@/store/themeStore';
 import { useFlashStore } from '@/store/flashStore';
@@ -338,8 +339,9 @@ export function ProfilePage() {
 
                 {/* Name & Username */}
                 <div className="mt-3">
-                    <h1 className="text-xl font-bold text-white/95">
+                    <h1 className="text-xl font-bold text-white/95 flex items-center gap-1.5">
                         {profile.display_name || profile.username}
+                        {profile.is_verified && <VerifiedBadge size={18} />}
                     </h1>
                     <div className="flex flex-col gap-0.5">
                         <p className="text-sm text-white/40">@{profile.username}</p>
