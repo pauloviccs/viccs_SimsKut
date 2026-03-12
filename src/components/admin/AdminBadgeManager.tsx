@@ -383,10 +383,10 @@ export function AdminBadgeManager() {
                                 <button
                                     onClick={async () => {
                                         const newValue = !selectedUser.is_verified;
-                                        const { error } = await supabase
-                                            .from('profiles')
-                                            .update({ is_verified: newValue })
-                                            .eq('id', selectedUser.id);
+                                        const { error } = await supabase.rpc('admin_set_verified', {
+                                            target_user_id: selectedUser.id,
+                                            verified: newValue,
+                                        });
                                         if (error) {
                                             toast.error('Erro ao atualizar verificação: ' + error.message);
                                             return;
