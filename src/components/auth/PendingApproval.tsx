@@ -9,9 +9,10 @@ import { useAuthStore } from '@/store/authStore';
 import { getMyInvite, checkInviteStatus } from '@/lib/inviteService';
 import { fetchProfile } from '@/lib/authService';
 import { supabase } from '@/lib/supabaseClient';
+import { getDiscordInviteUrl } from '@/lib/settingsService';
 import type { InviteCode } from '@/types';
 
-const DISCORD_URL = 'https://discord.gg/6PsfjsNuGV';
+const DISCORD_FALLBACK = 'https://discord.gg/vGzF4vyXkf';
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
 export function PendingApproval() {
@@ -21,6 +22,7 @@ export function PendingApproval() {
     const [copied, setCopied] = useState(false);
     const [checking, setChecking] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
+    const [discordUrl, setDiscordUrl] = useState(DISCORD_FALLBACK);
 
     useEffect(() => {
         if (user) {
@@ -34,6 +36,13 @@ export function PendingApproval() {
             }).catch(console.error);
         }
     }, [user]);
+
+    // Carrega o link do Discord do banco (dinâmico)
+    useEffect(() => {
+        getDiscordInviteUrl().then((url) => {
+            if (url) setDiscordUrl(url);
+        });
+    }, []);
 
     async function syncProfileAndRedirect(currentInvite: InviteCode) {
         if (!user) return;
@@ -143,7 +152,7 @@ export function PendingApproval() {
                             </GlassButton>
 
                             <GlassButton
-                                onClick={() => window.open(DISCORD_URL, '_blank')}
+                                onClick={() => window.open(discordUrl, '_blank')}
                                 className="w-full"
                                 style={{ background: 'var(--discord-brand)' }}
                             >

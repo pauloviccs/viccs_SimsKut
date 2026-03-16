@@ -991,3 +991,53 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- ╔══════════════════════════════════════════════╗
+-- ║  14. TABELA: site_settings                  ║
+-- ║  Configurações do site (chave→valor)        ║
+-- ╚══════════════════════════════════════════════╝
+
+CREATE TABLE IF NOT EXISTS public.site_settings (
+    key         TEXT PRIMARY KEY,
+    value       TEXT NOT NULL,
+    updated_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_by  UUID REFERENCES public.profiles(id)
+);
+
+COMMENT ON TABLE public.site_settings IS 'Configurações do site em formato chave→valor. Apenas admins editam.';
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+
+-- Qualquer autenticado pode LER
+CREATE POLICY "site_settings_select_authenticated"
+    ON public.site_settings FOR SELECT
+    TO authenticated
+    USING (true);
+
+-- Apenas admin pode INSERT
+CREATE POLICY "site_settings_insert_admin"
+    ON public.site_settings FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND is_admin = true
+        )
+    );
+
+-- Apenas admin pode UPDATE
+CREATE POLICY "site_settings_update_admin"
+    ON public.site_settings FOR UPDATE
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND is_admin = true
+        )
+    );
+
+-- Seed: link atual do Discord
+INSERT INTO public.site_settings (key, value)
+VALUES ('discord_invite_url', 'https://discord.gg/vGzF4vyXkf')
+ON CONFLICT (key) DO NOTHING;
